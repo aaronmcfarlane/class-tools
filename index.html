@@ -83,7 +83,47 @@ const settings = [
     "Haunted House",
     "Zoo",
     "Camping Trip",
-    "Secret Laboratory"
+    "Secret Laboratory",
+    "Medieval Castle",
+    "Underwater City",
+    "Mountain Summit",
+    "Desert Island",
+    "Amusement Park",
+    "Airport",
+    "Train Station",
+    "Pirate Ship",
+    "Hospital",
+    "Fire Station",
+    "Police Station",
+    "Movie Set",
+    "TV News Studio",
+    "Bakery",
+    "Museum",
+    "Art Gallery",
+    "Skating Rink",
+    "Ski Hill",
+    "Jungle",
+    "Arctic Research Base",
+    "Volcano Edge",
+    "Space Station",
+    "Time Machine",
+    "Ancient Egypt",
+    "Dinosaur Park",
+    "Carnival",
+    "Farm",
+    "Pet Store",
+    "Aquarium",
+    "Library After Dark",
+    "School Bus",
+    "Submarine",
+    "Treehouse",
+    "Magic School",
+    "Courtroom",
+    "City Rooftop",
+    "Hidden Cave",
+    "Treasure Island",
+    "Science Fair",
+    "Video Game World"
 ];
 
 const problems = [
@@ -96,16 +136,81 @@ const problems = [
     "A secret is revealed.",
     "There is not enough time.",
     "Someone refuses to help.",
-    "An object stops working."
+    "An object stops working.",
+    "A surprise visitor arrives.",
+    "The lights suddenly go out.",
+    "A plan goes wrong.",
+    "Someone tells a lie.",
+    "A competition begins.",
+    "A character feels left out.",
+    "Something valuable is broken.",
+    "A storm is coming.",
+    "Two friends want the same thing.",
+    "A misunderstanding causes trouble.",
+    "A challenge must be completed.",
+    "Someone overhears a secret.",
+    "A new student arrives.",
+    "A character must make a difficult choice.",
+    "An animal escapes.",
+    "A treasure map is found.",
+    "Someone gets stuck somewhere.",
+    "The wrong message is delivered.",
+    "A race against time begins.",
+    "A promise is broken.",
+    "A strange noise is heard.",
+    "Someone is blamed unfairly.",
+    "A character loses their voice.",
+    "An invention goes out of control.",
+    "A surprise test is announced.",
+    "A character must work with someone they dislike.",
+    "Food runs out.",
+    "A door will not open.",
+    "A character forgets something important.",
+    "A mysterious package appears.",
+    "The team cannot agree on a plan.",
+    "A character is hiding something.",
+    "A celebration is ruined.",
+    "Someone takes credit for another’s work.",
+    "A character must face their fear.",
+    "The weather suddenly changes.",
+    "A character feels jealous.",
+    "The power source is missing.",
+    "A character is challenged to prove something.",
+    "An unexpected rule is announced."
 ];
 
 function getRandomItem(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
+let usedCombinations = new Set();
+
 function generateCards() {
-    document.getElementById("settingCard").textContent = getRandomItem(settings);
-    document.getElementById("problemCard").textContent = getRandomItem(problems);
+    const totalPossible = settings.length * problems.length;
+
+    if (usedCombinations.size >= totalPossible) {
+        alert("All possible combinations have been used. Resetting session.");
+        usedCombinations.clear();
+    }
+
+    let setting, problem, comboKey;
+
+    do {
+        setting = getRandomItem(settings);
+        problem = getRandomItem(problems);
+        comboKey = setting + "|" + problem;
+    } while (usedCombinations.has(comboKey));
+
+    usedCombinations.add(comboKey);
+
+    document.getElementById("settingCard").textContent = setting;
+    document.getElementById("problemCard").textContent = problem;
+}
+
+function resetCards() {
+    usedCombinations.clear();
+    document.getElementById("settingCard").textContent = "Click generate";
+    document.getElementById("problemCard").textContent = "Click generate";
 }
 
 function resetCards() {
