@@ -2,28 +2,46 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Group Maker</title>
+<title>Monster Group Maker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: linear-gradient(135deg, #667eea, #764ba2);
     margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    font-family: "Comic Sans MS", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+}
+
+/* floating monster background */
+body::before {
+    content: "👾 👻 🐸 🐙 🦄 🐵 👹 🐱 🐼 🐰";
+    position: fixed;
+    font-size: 40px;
+    opacity: 0.08;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    animation: float 60s linear infinite;
+}
+
+@keyframes float {
+    from { transform: translate(0,0); }
+    to { transform: translate(-50%, -50%); }
 }
 
 .container {
     background: white;
+    border-radius: 20px;
     padding: 20px;
-    border-radius: 16px;
-    width: 100%;
-    max-width: 1000px;
+    margin: 20px auto;
+    max-width: 1100px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
-h2 { margin-top: 0; }
+h2 {
+    text-align: center;
+    font-size: 28px;
+}
 
 .layout {
     display: flex;
@@ -31,23 +49,21 @@ h2 { margin-top: 0; }
     flex-wrap: wrap;
 }
 
-/* Left panel */
+/* LEFT PANEL */
 .left {
-    flex: 0 0 220px;
-    display: flex;
-    flex-direction: column;
+    flex: 0 0 250px;
 }
 
 textarea {
-    height: 400px;
     width: 100%;
-    border-radius: 10px;
-    border: 1px solid #ccc;
+    height: 420px;
+    border-radius: 15px;
+    border: 2px dashed #ffb6b9;
     padding: 10px;
-    resize: vertical;
+    font-size: 14px;
 }
 
-/* Controls */
+/* controls */
 .controls {
     margin-top: 10px;
     display: flex;
@@ -55,104 +71,85 @@ textarea {
     gap: 6px;
 }
 
-.controls input[type="number"] {
-    width: 100%;
-}
-
 button {
-    padding: 8px 12px;
+    background: #ff7eb3;
     border: none;
-    border-radius: 8px;
-    background: #667eea;
     color: white;
+    padding: 10px;
+    border-radius: 12px;
     cursor: pointer;
+    font-size: 14px;
 }
 
-/* Student list */
+button:hover {
+    background: #ff5c9c;
+}
+
+/* STUDENT MONSTERS */
 .students {
     flex: 1;
-    min-width: 250px;
-    max-height: 400px;
-    overflow-y: auto;
-    border-left: 1px solid #eee;
-    padding-left: 15px;
-}
-
-.student-row {
     display: flex;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: flex-start;
+}
+
+.student {
+    background: #fff5f7;
+    border-radius: 14px;
+    padding: 8px 10px;
+    display: flex;
     align-items: center;
-    padding: 6px 4px;
-    border-bottom: 1px solid #f0f0f0;
+    gap: 8px;
+    border: 2px solid transparent;
 }
 
-/* Toggle switch */
-.switch {
-    position: relative;
-    width: 36px;
-    height: 20px;
+.student.off {
+    opacity: 0.4;
 }
 
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+.monster {
+    font-size: 20px;
 }
 
-.slider {
-    position: absolute;
-    cursor: pointer;
-    inset: 0;
-    background-color: #ccc;
-    border-radius: 20px;
-    transition: .2s;
+.student input {
+    transform: scale(1.2);
 }
 
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    top: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: .2s;
-}
-
-input:checked + .slider {
-    background-color: #667eea;
-}
-
-input:checked + .slider:before {
-    transform: translateX(16px);
-}
-
-/* Groups */
+/* GROUPS */
 .groups {
     margin-top: 20px;
     display: flex;
-    gap: 10px;
+    gap: 15px;
     flex-wrap: wrap;
 }
 
 .group {
-    background: #f7f7ff;
+    background: #f0f9ff;
+    border-radius: 16px;
     padding: 10px;
-    border-radius: 10px;
-    min-width: 160px;
     flex: 1;
+    min-width: 160px;
+    border: 3px solid #a0e7e5;
+}
+
+.group h4 {
+    margin: 0 0 6px 0;
 }
 
 .group li {
+    list-style: none;
     background: white;
     margin: 5px 0;
     padding: 6px;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-/* Fullscreen */
+/* FULLSCREEN */
 .fullscreen .layout,
 .fullscreen textarea,
 .fullscreen .controls,
@@ -162,19 +159,20 @@ input:checked + .slider:before {
 
 .topbar {
     display: none;
-    margin-bottom: 10px;
     gap: 10px;
+    margin-bottom: 10px;
 }
 
 .fullscreen .topbar {
     display: flex;
+    justify-content: center;
 }
 </style>
 </head>
 <body>
 
 <div class="container" id="app">
-<h2>Group Maker</h2>
+<h2>👾 Monster Group Maker 👾</h2>
 
 <div class="layout">
     <div class="left">
@@ -195,15 +193,15 @@ input:checked + .slider:before {
 </div>
 
 <div class="topbar">
-<button onclick="shuffleGroups()">Shuffle</button>
-<button onclick="toggleFullscreen()">Exit Full Screen</button>
+<button onclick="shuffleGroups()">🔀 Shuffle</button>
+<button onclick="toggleFullscreen()">🖥 Exit</button>
 </div>
 
 <div id="groups" class="groups"></div>
 
-<div style="margin-top:10px;">
-<button onclick="toggleFullscreen()">Full Screen</button>
-<button onclick="shuffleGroups()">Shuffle</button>
+<div style="margin-top:10px; text-align:center;">
+<button onclick="toggleFullscreen()">🖥 Full Screen</button>
+<button onclick="shuffleGroups()">🔀 Shuffle</button>
 </div>
 
 </div>
@@ -212,6 +210,7 @@ input:checked + .slider:before {
 let allStudents = [];
 let present = new Set();
 let groups = [];
+const monsters = ["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰"];
 
 const textarea = document.getElementById("names");
 const app = document.getElementById("app");
@@ -232,6 +231,12 @@ function shuffle(a) {
     }
 }
 
+function getMonster(name) {
+    let sum = 0;
+    for (let c of name) sum += c.charCodeAt(0);
+    return monsters[sum % monsters.length];
+}
+
 function generate() {
     allStudents = textarea.value.split("\n").map(x => x.trim()).filter(x => x);
     present = new Set(allStudents);
@@ -244,35 +249,36 @@ function renderStudentList() {
     div.innerHTML = "";
 
     allStudents.forEach(name => {
-        const row = document.createElement("div");
-        row.className = "student-row";
+        const el = document.createElement("div");
+        el.className = "student";
 
-        const span = document.createElement("span");
-        span.textContent = name;
+        const monster = document.createElement("span");
+        monster.className = "monster";
+        monster.textContent = getMonster(name);
 
-        const label = document.createElement("label");
-        label.className = "switch";
+        const label = document.createElement("span");
+        label.textContent = name;
 
         const cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = true;
 
         cb.onchange = () => {
-            if (cb.checked) present.add(name);
-            else present.delete(name);
+            if (cb.checked) {
+                present.add(name);
+                el.classList.remove("off");
+            } else {
+                present.delete(name);
+                el.classList.add("off");
+            }
             buildGroups();
         };
 
-        const slider = document.createElement("span");
-        slider.className = "slider";
+        el.appendChild(monster);
+        el.appendChild(label);
+        el.appendChild(cb);
 
-        label.appendChild(cb);
-        label.appendChild(slider);
-
-        row.appendChild(span);
-        row.appendChild(label);
-
-        div.appendChild(row);
+        div.appendChild(el);
     });
 }
 
@@ -319,13 +325,13 @@ function renderGroups() {
 
         group.forEach(name => {
             const li = document.createElement("li");
-            li.textContent = name;
             li.draggable = true;
 
             li.ondragstart = e => {
                 e.dataTransfer.setData("text", name);
             };
 
+            li.textContent = getMonster(name) + " " + name;
             ul.appendChild(li);
         });
 
