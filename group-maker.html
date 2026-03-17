@@ -1,0 +1,255 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Group Maker Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+textarea {
+    width: 100%;
+    height: 120px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+.controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+button {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button:hover { background: #5a67d8; }
+
+.section {
+    margin-top: 20px;
+}
+
+.students {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.student {
+    background: #f1f3ff;
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+.groups {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.group {
+    flex: 1;
+    min-width: 200px;
+    background: #f7f7ff;
+    border-radius: 10px;
+    padding: 10px;
+}
+.group h3 {
+    margin-top: 0;
+}
+.member {
+    padding: 6px;
+    margin: 4px 0;
+    background: white;
+    border-radius: 6px;
+    cursor: grab;
+}
+.member.dragging {
+    opacity: 0.5;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Group Maker</h2>
+
+    <textarea id="names" placeholder="One student per line"></textarea>
+
+    <div class="controls">
+        <label><input type="radio" name="mode" value="size" checked> Group size</label>
+        <input type="number" id="groupSize" placeholder="3">
+
+        <label><input type="radio" name="mode" value="count"> # Groups</label>
+        <input type="number" id="groupCount" placeholder="5">
+
+        <button onclick="generate()">Generate</button>
+    </div>
+
+    <div class="section">
+        <strong>Attendance</strong>
+        <div id="attendance" class="students"></div>
+    </div>
+
+    <div class="section">
+        <strong>Groups</strong>
+        <div id="groups" class="groups"></div>
+    </div>
+</div>
+
+<script>
+let allStudents = [];
+let attendance = {};
+let groups = [];
+
+const textarea = document.getElementById("names");
+
+// Load
+window.onload = () => {
+    const savedNames = localStorage.getItem("names");
+    const savedAttendance = localStorage.getItem("attendance");
+
+    if (savedNames) textarea.value = savedNames;
+    if (savedAttendance) attendance = JSON.parse(savedAttendance);
+};
+
+// Save names
+textarea.addEventListener("input", () => {
+    localStorage.setItem("names", textarea.value);
+});
+
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+function generate() {
+    allStudents = textarea.value.split("\n").map(s => s.trim()).filter(Boolean);
+
+    allStudents.forEach(s => {
+        if (!(s in attendance)) attendance[s] = true;
+    });
+
+    renderAttendance();
+    rebalance();
+}
+
+function renderAttendance() {
+    const div = document.getElementById("attendance");
+    div.innerHTML = "";
+
+    allStudents.forEach(name => {
+        const label = document.createElement("label");
+        label.className = "student";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = attendance[name];
+
+        cb.onchange = () => {
+            attendance[name] = cb.checked;
+            localStorage.setItem("attendance", JSON.stringify(attendance));
+            rebalance();
+        };
+
+        label.appendChild(cb);
+        label.append(" " + name);
+        div.appendChild(label);
+    });
+}
+
+function rebalance() {
+    let present = allStudents.filter(s => attendance[s]);
+
+    shuffle(present);
+
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+
+    if (mode === "size") {
+        let size = parseInt(document.getElementById("groupSize").value);
+        groups = [];
+        for (let i = 0; i < present.length; i += size) {
+            groups.push(present.slice(i, i + size));
+        }
+    } else {
+        let count = parseInt(document.getElementById("groupCount").value);
+        groups = Array.from({length: count}, () => []);
+        present.forEach((s, i) => {
+            groups[i % count].push(s);
+        });
+    }
+
+    renderGroups();
+}
+
+function renderGroups() {
+    const container = document.getElementById("groups");
+    container.innerHTML = "";
+
+    groups.forEach((group, gi) => {
+        const div = document.createElement("div");
+        div.className = "group";
+        div.dataset.index = gi;
+
+        const title = document.createElement("h3");
+        title.textContent = "Group " + (gi + 1);
+        div.appendChild(title);
+
+        div.ondragover = e => e.preventDefault();
+        div.ondrop = e => {
+            const name = e.dataTransfer.getData("text");
+            moveStudent(name, gi);
+        };
+
+        group.forEach(name => {
+            const item = document.createElement("div");
+            item.className = "member";
+            item.textContent = name;
+            item.draggable = true;
+
+            item.ondragstart = e => {
+                e.dataTransfer.setData("text", name);
+                item.classList.add("dragging");
+            };
+            item.ondragend = () => item.classList.remove("dragging");
+
+            div.appendChild(item);
+        });
+
+        container.appendChild(div);
+    });
+}
+
+function moveStudent(name, targetGroup) {
+    groups.forEach(g => {
+        const idx = g.indexOf(name);
+        if (idx !== -1) g.splice(idx, 1);
+    });
+
+    groups[targetGroup].push(name);
+    renderGroups();
+}
+</script>
+
+</body>
+</html>
+```
