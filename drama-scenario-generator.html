@@ -7,7 +7,7 @@
 
 <title>Drama Scenario Generator</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
 
@@ -15,27 +15,26 @@ body{
 margin:0;
 font-family:Inter,system-ui;
 background:linear-gradient(135deg,#f4efe9,#e8e2da);
-min-height:100vh;
 display:flex;
-align-items:center;
 justify-content:center;
+align-items:center;
+min-height:100vh;
 }
 
 .container{
-width:900px;
-max-width:92vw;
+width:1000px;
+max-width:94vw;
 }
 
 .title{
-font-family:"Playfair Display",serif;
+font-family:"Playfair Display";
 font-size:48px;
 letter-spacing:4px;
-margin-bottom:6px;
 }
 
 .subtitle{
 opacity:.7;
-margin-bottom:30px;
+margin-bottom:25px;
 }
 
 .card{
@@ -49,7 +48,7 @@ text-align:center;
 button{
 border:none;
 border-radius:30px;
-padding:16px 36px;
+padding:14px 30px;
 font-size:18px;
 cursor:pointer;
 }
@@ -57,69 +56,64 @@ cursor:pointer;
 .generateBtn{
 background:linear-gradient(90deg,#c25400,#e87a2f);
 color:white;
-margin-bottom:30px;
+margin-bottom:25px;
+}
+
+.label{
+font-size:14px;
+letter-spacing:2px;
+opacity:.7;
+margin-top:25px;
 }
 
 .setting{
 font-size:32px;
-font-family:"Playfair Display",serif;
-margin-top:20px;
+font-family:"Playfair Display";
 }
 
 .problem{
 font-size:26px;
-margin-top:16px;
-}
-
-.label{
-letter-spacing:2px;
-font-size:14px;
-opacity:.7;
-margin-top:30px;
+margin-top:10px;
 }
 
 .topControls{
 position:absolute;
-top:20px;
-right:30px;
+top:15px;
+right:20px;
+display:flex;
+gap:8px;
 }
 
-.smallBtn{
-background:white;
-padding:8px 14px;
-margin-left:8px;
+.smallBtn, select{
+padding:8px;
 border-radius:8px;
+border:none;
 font-size:14px;
 }
 
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:16px;
-margin-top:25px;
+gap:15px;
+margin-top:20px;
 }
 
 .groupCard{
 background:white;
-padding:20px;
+padding:18px;
 border-radius:10px;
-box-shadow:0 8px 25px rgba(0,0,0,.1);
+box-shadow:0 6px 20px rgba(0,0,0,.1);
 font-size:20px;
 }
 
-.hidden{
-display:none;
-}
+.hidden{display:none}
 
-.groupControls{
-margin-top:20px;
-text-align:center;
-}
+/* BIG SCREEN MODE */
 
-input{
-padding:8px;
-font-size:16px;
-}
+.big .setting{font-size:70px}
+.big .problem{font-size:55px}
+.big .label{font-size:22px}
+.big .generateBtn{font-size:28px;padding:18px 40px}
 
 </style>
 </head>
@@ -127,36 +121,45 @@ font-size:16px;
 <body>
 
 <div class="topControls">
+
+<select id="gradeSelect" onchange="updateGrade()">
+<option value="1">Grade 1</option>
+<option value="2">Grade 2</option>
+<option value="3">Grade 3</option>
+<option value="4" selected>Grade 4</option>
+<option value="5">Grade 5</option>
+<option value="6">Grade 6</option>
+</select>
+
+<button class="smallBtn" onclick="toggleLanguage()">EN / FR</button>
 <button class="smallBtn" onclick="toggleFullscreen()">Fullscreen</button>
-<button class="smallBtn" onclick="setMode('carousel')">Carousel</button>
-<button class="smallBtn" onclick="setMode('groups')">Groups</button>
+
 </div>
 
 <div class="container">
 
-<div class="title">Drama Scenario Generator</div>
-  
+<div class="title" id="title">DRA_MA_S</div>
+<div class="subtitle" id="subtitle">Story Scenarios & Conflicts</div>
+
 <div class="card">
 
-<button class="generateBtn" onclick="generateCards()">Generate Scenario</button>
+<button class="generateBtn" onclick="generateCards()" id="generateBtn">Generate Scenario</button>
 
 <div id="carouselMode">
 
-<div class="label">SETTING</div>
+<div class="label" id="settingLabel">SETTING</div>
 <div id="settingCard" class="setting">—</div>
 
-<div class="label">CONFLICT</div>
+<div class="label" id="problemLabel">CONFLICT</div>
 <div id="problemCard" class="problem">—</div>
 
 </div>
 
 <div id="groupsMode" class="hidden">
 
-<div class="groupControls">
-<label>Groups:</label>
+<label id="groupLabel">Groups:</label>
 <input id="groupCount" type="number" value="4" min="1" max="20">
-<button onclick="generateGroups()">Generate</button>
-</div>
+<button onclick="generateGroups()" id="groupBtn">Generate</button>
 
 <div id="groupGrid" class="grid"></div>
 
@@ -168,16 +171,251 @@ font-size:16px;
 
 <script>
 
-const settings=[
-"Playground","Forest","Spaceship","Classroom","Restaurant","Beach","Haunted House","Zoo","Camping Trip","Secret Laboratory","Medieval Castle","Underwater City","Mountain Summit","Desert Island","Amusement Park","Airport","Train Station","Pirate Ship","Hospital","Fire Station","Police Station","Movie Set","TV Studio","Bakery","Museum","Art Gallery","Skating Rink","Ski Hill","Jungle","Arctic Research Base","Volcano Edge","Space Station","Time Machine","Ancient Egypt","Dinosaur Park","Carnival","Farm","Pet Store","Aquarium","Library After Dark","School Bus","Submarine","Treehouse","Magic School","Courtroom","City Rooftop","Hidden Cave","Treasure Island","Science Fair","Video Game World"
-];
+/* LANGUAGE */
 
-const problems=[
-"Something important is lost.","A rule has been broken.","Someone is afraid.","A big mistake was made.","Two characters disagree.","Something unexpected happens.","A secret is revealed.","There is not enough time.","Someone refuses to help.","An object stops working.","A surprise visitor arrives.","The lights go out.","A plan goes wrong.","Someone tells a lie.","A competition begins.","Someone feels left out.","Something valuable breaks.","A storm is coming.","Two friends want the same thing.","A misunderstanding causes trouble.","A challenge must be completed.","Someone overhears a secret.","A new student arrives.","Someone must make a difficult choice.","An animal escapes.","A treasure map is found.","Someone gets stuck.","The wrong message is delivered.","A race against time begins.","A promise is broken.","A strange noise is heard.","Someone is blamed unfairly.","Someone loses their voice.","An invention goes out of control.","A surprise test is announced.","Someone must work with someone they dislike.","Food runs out.","A door will not open.","Someone forgets something important.","A mysterious package appears."
-];
+let lang="en"
 
-let usedCombinations=new Set();
-let lastProblem=null;
+function toggleLanguage(){
+lang = lang==="en" ? "fr" : "en"
+updateUI()
+}
+
+/* GRADE DATA */
+
+let grade=4
+
+function updateGrade(){
+grade=parseInt(gradeSelect.value)
+}
+
+/* CONTENT BY GRADE */
+
+const data = {
+
+1:{
+settings:{
+en:[
+"Playground","Classroom","Home","Park","Kitchen","Bedroom","School Yard","Library",
+"Gym","Sandbox","Bus","Bathroom","Lunchroom","Hallway","Garden","Backyard",
+"Toy Store","Pet Store","Zoo","Beach"
+],
+fr:[
+"Cour d'école","Classe","Maison","Parc","Cuisine","Chambre","Cour","Bibliothèque",
+"Gymnase","Bac à sable","Autobus","Salle de bain","Cafétéria","Corridor","Jardin","Arrière-cour",
+"Magasin de jouets","Animalerie","Zoo","Plage"
+]
+},
+problems:{
+en:[
+"Something is lost.","A toy breaks.","Someone is sad.","Someone is scared.",
+"Two friends want the same toy.","Someone falls down.","Someone is left out.",
+"A mess is made.","Someone is too loud.","Someone won’t share.",
+"A game stops working.","Someone forgets something.","A pet runs away.",
+"Someone is tired.","Someone is hungry.","Someone is late.",
+"A rule is broken.","Someone needs help.","Something is missing.",
+"A friend says no."
+],
+fr:[
+"Quelque chose est perdu.","Un jouet est brisé.","Quelqu’un est triste.","Quelqu’un a peur.",
+"Deux amis veulent le même jouet.","Quelqu’un tombe.","Quelqu’un est exclu.",
+"Un dégât est fait.","Quelqu’un est trop bruyant.","Quelqu’un ne partage pas.",
+"Un jeu ne fonctionne plus.","Quelqu’un oublie quelque chose.","Un animal s’enfuit.",
+"Quelqu’un est fatigué.","Quelqu’un a faim.","Quelqu’un est en retard.",
+"Une règle est brisée.","Quelqu’un a besoin d’aide.","Quelque chose manque.",
+"Un ami dit non."
+]
+}
+},
+
+2:{
+settings:{
+en:[
+"Playground","Classroom","Home","Park","Library","Gym","School Bus","Zoo",
+"Farm","Beach","Forest","Kitchen","Backyard","Hallway","Lunchroom",
+"Toy Store","Pet Store","Birthday Party","Swimming Pool","Camp"
+],
+fr:[
+"Cour d'école","Classe","Maison","Parc","Bibliothèque","Gymnase","Autobus scolaire","Zoo",
+"Ferme","Plage","Forêt","Cuisine","Arrière-cour","Corridor","Cafétéria",
+"Magasin de jouets","Animalerie","Fête d'anniversaire","Piscine","Camp"
+]
+},
+problems:{
+en:[
+"Something is lost.","Someone is scared.","A friend is left out.","A toy breaks.",
+"Someone won’t listen.","A game goes wrong.","Someone tells a lie.",
+"Someone is too loud.","Someone forgets something.","A mess is made.",
+"Someone needs help.","Two people argue.","Someone is late.",
+"Someone feels sick.","Someone won’t share.","A rule is broken.",
+"Something is missing.","Someone feels shy.","A surprise happens.","Someone gets stuck."
+],
+fr:[
+"Quelque chose est perdu.","Quelqu’un a peur.","Un ami est exclu.","Un jouet est brisé.",
+"Quelqu’un n’écoute pas.","Un jeu tourne mal.","Quelqu’un dit un mensonge.",
+"Quelqu’un est trop bruyant.","Quelqu’un oublie quelque chose.","Un dégât est fait.",
+"Quelqu’un a besoin d’aide.","Deux personnes se disputent.","Quelqu’un est en retard.",
+"Quelqu’un est malade.","Quelqu’un ne partage pas.","Une règle est brisée.",
+"Quelque chose manque.","Quelqu’un est timide.","Une surprise arrive.","Quelqu’un est coincé."
+]
+}
+},
+
+3:{
+settings:{
+en:[
+"Classroom","Playground","Zoo","Beach","School Bus","Farm","Forest","City",
+"Library","Gym","Restaurant","Store","Park","Aquarium","Museum",
+"Camping Trip","Backyard","Birthday Party","Swimming Pool","Bus Stop"
+],
+fr:[
+"Classe","Cour d'école","Zoo","Plage","Autobus scolaire","Ferme","Forêt","Ville",
+"Bibliothèque","Gymnase","Restaurant","Magasin","Parc","Aquarium","Musée",
+"Camping","Arrière-cour","Fête","Piscine","Arrêt d'autobus"
+]
+},
+problems:{
+en:[
+"Someone is left out.","Something goes wrong.","Someone is scared.",
+"A rule is broken.","Someone lies.","A mistake is made.",
+"Two friends argue.","Something is lost.","Someone needs help.",
+"A game becomes unfair.","Someone forgets something.","A surprise happens.",
+"A secret is told.","Someone gets stuck.","Someone feels jealous.",
+"Someone won’t help.","A plan fails.","Someone is blamed.",
+"A problem must be fixed.","Something is broken."
+],
+fr:[
+"Quelqu’un est exclu.","Quelque chose tourne mal.","Quelqu’un a peur.",
+"Une règle est brisée.","Quelqu’un ment.","Une erreur est faite.",
+"Deux amis se disputent.","Quelque chose est perdu.","Quelqu’un a besoin d’aide.",
+"Un jeu devient injuste.","Quelqu’un oublie quelque chose.","Une surprise arrive.",
+"Un secret est révélé.","Quelqu’un est coincé.","Quelqu’un est jaloux.",
+"Quelqu’un refuse d’aider.","Un plan échoue.","Quelqu’un est accusé.",
+"Un problème doit être réglé.","Quelque chose est brisé."
+]
+}
+},
+
+4:{
+settings:{
+en:[
+"Classroom","School Yard","Forest","Beach","City","Restaurant","Museum",
+"Science Lab","Library","Park","Camping Trip","Zoo","Aquarium","Mall",
+"Movie Set","Sports Field","Bus","Train Station","Farm","Mountain"
+],
+fr:[
+"Classe","Cour d'école","Forêt","Plage","Ville","Restaurant","Musée",
+"Laboratoire","Bibliothèque","Parc","Camping","Zoo","Aquarium","Centre commercial",
+"Plateau de tournage","Terrain de sport","Autobus","Gare","Ferme","Montagne"
+]
+},
+problems:{
+en:[
+"Something is lost.","A rule is broken.","A secret is revealed.",
+"Someone is left out.","A mistake causes trouble.","Two people disagree.",
+"A plan goes wrong.","Someone is blamed unfairly.","A challenge must be solved.",
+"Someone refuses to help.","Something important breaks.","A race against time begins.",
+"Someone feels jealous.","A misunderstanding happens.","Someone lies.",
+"A surprise changes everything.","Someone gets stuck.","A conflict grows.",
+"A problem must be fixed.","Someone must make a choice."
+],
+fr:[
+"Quelque chose est perdu.","Une règle est brisée.","Un secret est révélé.",
+"Quelqu’un est exclu.","Une erreur cause un problème.","Deux personnes ne sont pas d’accord.",
+"Un plan échoue.","Quelqu’un est accusé injustement.","Un défi doit être relevé.",
+"Quelqu’un refuse d’aider.","Quelque chose d’important se brise.","Une course contre le temps commence.",
+"Quelqu’un est jaloux.","Un malentendu arrive.","Quelqu’un ment.",
+"Une surprise change tout.","Quelqu’un est coincé.","Un conflit grandit.",
+"Un problème doit être réglé.","Quelqu’un doit faire un choix."
+]
+}
+},
+
+5:{
+settings:{
+en:[
+"City","Forest","Beach","Mountain","Museum","Laboratory","Courtroom",
+"Airport","Train Station","School","Sports Arena","Library","Aquarium",
+"Restaurant","Movie Set","Camp","Island","Ship","Zoo","Desert"
+],
+fr:[
+"Ville","Forêt","Plage","Montagne","Musée","Laboratoire","Tribunal",
+"Aéroport","Gare","École","Aréna","Bibliothèque","Aquarium",
+"Restaurant","Plateau de tournage","Camp","Île","Navire","Zoo","Désert"
+]
+},
+problems:{
+en:[
+"A secret is revealed.","A plan fails.","A difficult choice is needed.",
+"Someone is blamed.","A conflict grows.","Something important is lost.",
+"A rule is broken.","Someone betrays trust.","A challenge must be solved.",
+"A misunderstanding causes trouble.","Someone refuses to help.",
+"A race against time begins.","A mistake has consequences.",
+"Someone feels left out.","A problem gets worse.","Someone lies.",
+"A surprise changes everything.","A decision must be made.",
+"A goal is at risk.","Something unexpected happens."
+],
+fr:[
+"Un secret est révélé.","Un plan échoue.","Un choix difficile est nécessaire.",
+"Quelqu’un est accusé.","Un conflit grandit.","Quelque chose d’important est perdu.",
+"Une règle est brisée.","Quelqu’un trahit la confiance.","Un défi doit être relevé.",
+"Un malentendu cause un problème.","Quelqu’un refuse d’aider.",
+"Une course contre le temps commence.","Une erreur a des conséquences.",
+"Quelqu’un est exclu.","Un problème s’aggrave.","Quelqu’un ment.",
+"Une surprise change tout.","Une décision doit être prise.",
+"Un objectif est en danger.","Quelque chose d’inattendu arrive."
+]
+}
+},
+
+6:{
+settings:{
+en:[
+"City","Space Station","Laboratory","Courtroom","Ancient City","Island",
+"Ship","Mountain","Desert","Forest","Museum","Airport","Train Station",
+"School","Underground Base","Castle","Arctic Base","Jungle","Ocean","Battlefield"
+],
+fr:[
+"Ville","Station spatiale","Laboratoire","Tribunal","Ville ancienne","Île",
+"Navire","Montagne","Désert","Forêt","Musée","Aéroport","Gare",
+"École","Base souterraine","Château","Base arctique","Jungle","Océan","Champ de bataille"
+]
+},
+problems:{
+en:[
+"A secret is revealed.","A conflict escalates.","A difficult choice must be made.",
+"A plan fails.","Someone is betrayed.","A mystery must be solved.",
+"A mistake has serious consequences.","A race against time begins.",
+"A truth is hidden.","Someone is blamed unfairly.","A problem grows worse.",
+"A leader must decide.","Trust is broken.","A goal is in danger.",
+"Someone refuses to act.","A risky plan is made.","An unexpected event changes everything.",
+"A challenge must be completed.","A decision affects everyone.","A hidden truth comes out."
+],
+fr:[
+"Un secret est révélé.","Un conflit s’aggrave.","Un choix difficile doit être fait.",
+"Un plan échoue.","Quelqu’un est trahi.","Un mystère doit être résolu.",
+"Une erreur a de graves conséquences.","Une course contre le temps commence.",
+"Une vérité est cachée.","Quelqu’un est accusé injustement.","Un problème s’aggrave.",
+"Un leader doit décider.","La confiance est brisée.","Un objectif est en danger.",
+"Quelqu’un refuse d’agir.","Un plan risqué est proposé.","Un événement change tout.",
+"Un défi doit être complété.","Une décision affecte tout le monde.","Une vérité cachée est révélée."
+]
+}
+}
+
+};
+
+/* fallback mixing */
+
+function getSet(){
+if(grade<=2)return data[1]
+if(grade<=4)return data[3]
+return data[6]
+}
+
+/* GENERATION */
+
+let used=new Set()
+let lastProblem=null
 
 function rand(arr){
 return arr[Math.floor(Math.random()*arr.length)]
@@ -185,28 +423,30 @@ return arr[Math.floor(Math.random()*arr.length)]
 
 function generateCards(){
 
-let setting,problem,key
+let set=getSet()
+
+let s,p,key
 
 do{
-setting=rand(settings)
-problem=rand(problems)
-key=setting+"|"+problem
+s=rand(set.settings[lang])
+p=rand(set.problems[lang])
+key=s+"|"+p
 }
-while(
-usedCombinations.has(key) ||
-problem===lastProblem
-)
+while(used.has(key)||p===lastProblem)
 
-usedCombinations.add(key)
-lastProblem=problem
+used.add(key)
+lastProblem=p
 
-settingCard.textContent=setting
-problemCard.textContent=problem
+settingCard.textContent=s
+problemCard.textContent=p
 
 }
+
+/* GROUP MODE */
 
 function generateGroups(){
 
+let set=getSet()
 const count=parseInt(groupCount.value)
 const grid=document.getElementById("groupGrid")
 
@@ -214,18 +454,15 @@ grid.innerHTML=""
 
 for(let i=1;i<=count;i++){
 
-let setting=rand(settings)
-let problem=rand(problems)
+let s=rand(set.settings[lang])
+let p=rand(set.problems[lang])
 
 const div=document.createElement("div")
-
 div.className="groupCard"
 
-div.innerHTML=`
-<b>Group ${i}</b><br><br>
-<b>Setting:</b> ${setting}<br>
-<b>Problem:</b> ${problem}
-`
+div.innerHTML=`<b>${lang==="en"?"Group":"Groupe"} ${i}</b><br><br>
+<b>${lang==="en"?"Setting":"Lieu"}:</b> ${s}<br>
+<b>${lang==="en"?"Problem":"Problème"}:</b> ${p}`
 
 grid.appendChild(div)
 
@@ -233,27 +470,41 @@ grid.appendChild(div)
 
 }
 
-function setMode(mode){
+/* UI TEXT */
 
-carouselMode.classList.add("hidden")
-groupsMode.classList.add("hidden")
+function updateUI(){
 
-if(mode==="carousel"){
-carouselMode.classList.remove("hidden")
-}
-else{
-groupsMode.classList.remove("hidden")
+if(lang==="en"){
+title.textContent="DRA_MA_S"
+subtitle.textContent="Story Scenarios & Conflicts"
+generateBtn.textContent="Generate Scenario"
+settingLabel.textContent="SETTING"
+problemLabel.textContent="CONFLICT"
+groupLabel.textContent="Groups:"
+groupBtn.textContent="Generate"
+}else{
+title.textContent="DRA_MA_S"
+subtitle.textContent="Scénarios et conflits"
+generateBtn.textContent="Générer"
+settingLabel.textContent="LIEU"
+problemLabel.textContent="PROBLÈME"
+groupLabel.textContent="Groupes:"
+groupBtn.textContent="Générer"
 }
 
 }
+
+/* FULLSCREEN BIG MODE */
 
 function toggleFullscreen(){
 
 if(!document.fullscreenElement){
 document.documentElement.requestFullscreen()
+document.body.classList.add("big")
 }
 else{
 document.exitFullscreen()
+document.body.classList.remove("big")
 }
 
 }
