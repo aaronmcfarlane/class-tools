@@ -54,6 +54,12 @@ color:white;
 margin-bottom:25px;
 }
 
+.groupBtn{
+background:linear-gradient(90deg,#c25400,#e87a2f);
+color:white;
+margin-left:10px;
+}
+
 .label{
 font-size:14px;
 letter-spacing:2px;
@@ -99,12 +105,18 @@ padding:18px;
 border-radius:10px;
 box-shadow:0 6px 20px rgba(0,0,0,.1);
 font-size:20px;
+cursor:pointer;
+transition:transform .15s, box-shadow .15s;
+}
+
+.groupCard:hover{
+transform:scale(1.03);
+box-shadow:0 10px 25px rgba(0,0,0,.2);
 }
 
 .hidden{display:none}
 
 /* BIG SCREEN */
-
 .big .setting{font-size:70px}
 .big .problem{font-size:55px}
 .big .label{font-size:22px}
@@ -156,7 +168,7 @@ font-size:20px;
 <div style="margin-top:10px;">
 <label id="groupLabel">Groups:</label>
 <input id="groupCount" type="number" value="4" min="1" max="20">
-<button id="groupBtn" onclick="generateGroups()">Generate</button>
+<button id="groupBtn" class="groupBtn" onclick="generateGroups()">Generate</button>
 </div>
 
 <div id="groupGrid" class="grid"></div>
@@ -174,143 +186,98 @@ let lang="en"
 let grade=4
 let used=new Set()
 let lastProblem=null
+let currentGroupScenarios=[]
 
-/* DATA */
+/* FULL DATA */
 
 const data = {
-
-1:{
-settings:{
-en:["Playground","Classroom","Home","Park","Kitchen","Bedroom","School Yard","Library","Gym","Sandbox","Bus","Bathroom","Lunchroom","Hallway","Garden","Backyard","Toy Store","Pet Store","Zoo","Beach"],
-fr:["Cour d'école","Classe","Maison","Parc","Cuisine","Chambre","Cour","Bibliothèque","Gymnase","Bac à sable","Autobus","Salle de bain","Cafétéria","Corridor","Jardin","Arrière-cour","Magasin de jouets","Animalerie","Zoo","Plage"]
-},
-problems:{
-en:["Something is lost.","A toy breaks.","Someone is sad.","Someone is scared.","Two friends want the same toy.","Someone falls down.","Someone is left out.","A mess is made.","Someone is too loud.","Someone won’t share.","A game stops working.","Someone forgets something.","A pet runs away.","Someone is tired.","Someone is hungry.","Someone is late.","A rule is broken.","Someone needs help.","Something is missing.","A friend says no."],
-fr:["Quelque chose est perdu.","Un jouet est brisé.","Quelqu’un est triste.","Quelqu’un a peur.","Deux amis veulent le même jouet.","Quelqu’un tombe.","Quelqu’un est exclu.","Un dégât est fait.","Quelqu’un est trop bruyant.","Quelqu’un ne partage pas.","Un jeu ne fonctionne plus.","Quelqu’un oublie quelque chose.","Un animal s’enfuit.","Quelqu’un est fatigué.","Quelqu’un a faim.","Quelqu’un est en retard.","Une règle est brisée.","Quelqu’un a besoin d’aide.","Quelque chose manque.","Un ami dit non."]
-}
-},
-
-2:{
-settings:{
-en:["Playground","Classroom","Home","Park","Library","Gym","School Bus","Zoo","Farm","Beach","Forest","Kitchen","Backyard","Hallway","Lunchroom","Toy Store","Pet Store","Birthday Party","Swimming Pool","Camp"],
-fr:["Cour d'école","Classe","Maison","Parc","Bibliothèque","Gymnase","Autobus scolaire","Zoo","Ferme","Plage","Forêt","Cuisine","Arrière-cour","Corridor","Cafétéria","Magasin de jouets","Animalerie","Fête d'anniversaire","Piscine","Camp"]
-},
-problems:{
-en:["Something is lost.","Someone is scared.","A friend is left out.","A toy breaks.","Someone won’t listen.","A game goes wrong.","Someone tells a lie.","Someone is too loud.","Someone forgets something.","A mess is made.","Someone needs help.","Two people argue.","Someone is late.","Someone feels sick.","Someone won’t share.","A rule is broken.","Something is missing.","Someone feels shy.","A surprise happens.","Someone gets stuck."],
-fr:["Quelque chose est perdu.","Quelqu’un a peur.","Un ami est exclu.","Un jouet est brisé.","Quelqu’un n’écoute pas.","Un jeu tourne mal.","Quelqu’un dit un mensonge.","Quelqu’un est trop bruyant.","Quelqu’un oublie quelque chose.","Un dégât est fait.","Quelqu’un a besoin d’aide.","Deux personnes se disputent.","Quelqu’un est en retard.","Quelqu’un est malade.","Quelqu’un ne partage pas.","Une règle est brisée.","Quelque chose manque.","Quelqu’un est timide.","Une surprise arrive.","Quelqu’un est coincé."]
-}
-},
-
-3:{
-settings:{
-en:["Classroom","Playground","Zoo","Beach","School Bus","Farm","Forest","City","Library","Gym","Restaurant","Store","Park","Aquarium","Museum","Camping Trip","Backyard","Birthday Party","Swimming Pool","Bus Stop"],
-fr:["Classe","Cour d'école","Zoo","Plage","Autobus scolaire","Ferme","Forêt","Ville","Bibliothèque","Gymnase","Restaurant","Magasin","Parc","Aquarium","Musée","Camping","Arrière-cour","Fête","Piscine","Arrêt d'autobus"]
-},
-problems:{
-en:["Someone is left out.","Something goes wrong.","Someone is scared.","A rule is broken.","Someone lies.","A mistake is made.","Two friends argue.","Something is lost.","Someone needs help.","A game becomes unfair.","Someone forgets something.","A surprise happens.","A secret is told.","Someone gets stuck.","Someone feels jealous.","Someone won’t help.","A plan fails.","Someone is blamed.","A problem must be fixed.","Something is broken."],
-fr:["Quelqu’un est exclu.","Quelque chose tourne mal.","Quelqu’un a peur.","Une règle est brisée.","Quelqu’un ment.","Une erreur est faite.","Deux amis se disputent.","Quelque chose est perdu.","Quelqu’un a besoin d’aide.","Un jeu devient injuste.","Quelqu’un oublie quelque chose.","Une surprise arrive.","Un secret est révélé.","Quelqu’un est coincé.","Quelqu’un est jaloux.","Quelqu’un refuse d’aider.","Un plan échoue.","Quelqu’un est accusé.","Un problème doit être réglé.","Quelque chose est brisé."]
-}
-},
-
-4:{
-settings:{
-en:["Classroom","School Yard","Forest","Beach","City","Restaurant","Museum","Science Lab","Library","Park","Camping Trip","Zoo","Aquarium","Mall","Movie Set","Sports Field","Bus","Train Station","Farm","Mountain"],
-fr:["Classe","Cour d'école","Forêt","Plage","Ville","Restaurant","Musée","Laboratoire","Bibliothèque","Parc","Camping","Zoo","Aquarium","Centre commercial","Plateau de tournage","Terrain de sport","Autobus","Gare","Ferme","Montagne"]
-},
-problems:{
-en:["Something is lost.","A rule is broken.","A secret is revealed.","Someone is left out.","A mistake causes trouble.","Two people disagree.","A plan goes wrong.","Someone is blamed unfairly.","A challenge must be solved.","Someone refuses to help.","Something important breaks.","A race against time begins.","Someone feels jealous.","A misunderstanding happens.","Someone lies.","A surprise changes everything.","Someone gets stuck.","A conflict grows.","A problem must be fixed.","Someone must make a choice."],
-fr:["Quelque chose est perdu.","Une règle est brisée.","Un secret est révélé.","Quelqu’un est exclu.","Une erreur cause un problème.","Deux personnes ne sont pas d’accord.","Un plan échoue.","Quelqu’un est accusé injustement.","Un défi doit être relevé.","Quelqu’un refuse d’aider.","Quelque chose d’important se brise.","Une course contre le temps commence.","Quelqu’un est jaloux.","Un malentendu arrive.","Quelqu’un ment.","Une surprise change tout.","Quelqu’un est coincé.","Un conflit grandit.","Un problème doit être réglé.","Quelqu’un doit faire un choix."]
-}
-},
-
-5:{
-settings:{
-en:["City","Forest","Beach","Mountain","Museum","Laboratory","Courtroom","Airport","Train Station","School","Sports Arena","Library","Aquarium","Restaurant","Movie Set","Camp","Island","Ship","Zoo","Desert"],
-fr:["Ville","Forêt","Plage","Montagne","Musée","Laboratoire","Tribunal","Aéroport","Gare","École","Aréna","Bibliothèque","Aquarium","Restaurant","Plateau de tournage","Camp","Île","Navire","Zoo","Désert"]
-},
-problems:{
-en:["A secret is revealed.","A plan fails.","A difficult choice is needed.","Someone is blamed.","A conflict grows.","Something important is lost.","A rule is broken.","Someone betrays trust.","A challenge must be solved.","A misunderstanding causes trouble.","Someone refuses to help.","A race against time begins.","A mistake has consequences.","Someone feels left out.","A problem gets worse.","Someone lies.","A surprise changes everything.","A decision must be made.","A goal is at risk.","Something unexpected happens."],
-fr:["Un secret est révélé.","Un plan échoue.","Un choix difficile est nécessaire.","Quelqu’un est accusé.","Un conflit grandit.","Quelque chose d’important est perdu.","Une règle est brisée.","Quelqu’un trahit la confiance.","Un défi doit être relevé.","Un malentendu cause un problème.","Quelqu’un refuse d’aider.","Une course contre le temps commence.","Une erreur a des conséquences.","Quelqu’un est exclu.","Un problème s’aggrave.","Quelqu’un ment.","Une surprise change tout.","Une décision doit être prise.","Un objectif est en danger.","Quelque chose d’inattendu arrive."]
-}
-},
-
-6:{
-settings:{
-en:["City","Space Station","Laboratory","Courtroom","Ancient City","Island","Ship","Mountain","Desert","Forest","Museum","Airport","Train Station","School","Underground Base","Castle","Arctic Base","Jungle","Ocean","Battlefield"],
-fr:["Ville","Station spatiale","Laboratoire","Tribunal","Ville ancienne","Île","Navire","Montagne","Désert","Forêt","Musée","Aéroport","Gare","École","Base souterraine","Château","Base arctique","Jungle","Océan","Champ de bataille"]
-},
-problems:{
-en:["A secret is revealed.","A conflict escalates.","A difficult choice must be made.","A plan fails.","Someone is betrayed.","A mystery must be solved.","A mistake has serious consequences.","A race against time begins.","A truth is hidden.","Someone is blamed unfairly.","A problem grows worse.","A leader must decide.","Trust is broken.","A goal is in danger.","Someone refuses to act.","A risky plan is made.","An unexpected event changes everything.","A challenge must be completed.","A decision affects everyone.","A hidden truth comes out."],
-fr:["Un secret est révélé.","Un conflit s’aggrave.","Un choix difficile doit être fait.","Un plan échoue.","Quelqu’un est trahi.","Un mystère doit être résolu.","Une erreur a de graves conséquences.","Une course contre le temps commence.","Une vérité est cachée.","Quelqu’un est accusé injustement.","Un problème s’aggrave.","Un leader doit décider.","La confiance est brisée.","Un objectif est en danger.","Quelqu’un refuse d’agir.","Un plan risqué est proposé.","Un événement change tout.","Un défi doit être complété.","Une décision affecte tout le monde.","Une vérité cachée est révélée."]
-}
+1:{settings:{en:["Playground","Classroom","Home","Park","Kitchen","Bedroom","School Yard","Library","Gym","Sandbox","Bus","Bathroom","Lunchroom","Hallway","Garden","Backyard","Toy Store","Pet Store","Zoo","Beach"],fr:["Cour d'école","Classe","Maison","Parc","Cuisine","Chambre","Cour","Bibliothèque","Gymnase","Bac à sable","Autobus","Salle de bain","Cafétéria","Corridor","Jardin","Arrière-cour","Magasin de jouets","Animalerie","Zoo","Plage"]},
+problems:{en:["Something is lost.","A toy breaks.","Someone is sad.","Someone is scared.","Two friends want the same toy.","Someone falls down.","Someone is left out.","A mess is made.","Someone is too loud.","Someone won’t share.","A game stops working.","Someone forgets something.","A pet runs away.","Someone is tired.","Someone is hungry.","Someone is late.","A rule is broken.","Someone needs help.","Something is missing.","A friend says no."],
+fr:["Quelque chose est perdu.","Un jouet est brisé.","Quelqu’un est triste.","Quelqu’un a peur.","Deux amis veulent le même jouet.","Quelqu’un tombe.","Quelqu’un est exclu.","Un dégât est fait.","Quelqu’un est trop bruyant.","Quelqu’un ne partage pas.","Un jeu ne fonctionne plus.","Quelqu’un oublie quelque chose.","Un animal s’enfuit.","Quelqu’un est fatigué.","Quelqu’un a faim.","Quelqu’un est en retard.","Une règle est brisée.","Quelqu’un a besoin d’aide.","Quelque chose manque.","Un ami dit non."]}},
+2:{settings:{en:["Playground","Classroom","Home","Park","Library","Gym","School Bus","Zoo","Farm","Beach","Forest","Kitchen","Backyard","Hallway","Lunchroom","Toy Store","Pet Store","Birthday Party","Swimming Pool","Camp"],fr:["Cour d'école","Classe","Maison","Parc","Bibliothèque","Gymnase","Autobus scolaire","Zoo","Ferme","Plage","Forêt","Cuisine","Arrière-cour","Corridor","Cafétéria","Magasin de jouets","Animalerie","Fête","Piscine","Camp"]},
+problems:{en:["Something is lost.","Someone is scared.","A friend is left out.","A toy breaks.","Someone won’t listen.","A game goes wrong.","Someone tells a lie.","Someone is too loud.","Someone forgets something.","A mess is made.","Someone needs help.","Two people argue.","Someone is late.","Someone feels sick.","Someone won’t share.","A rule is broken.","Something is missing.","Someone feels shy.","A surprise happens.","Someone gets stuck."],
+fr:["Quelque chose est perdu.","Quelqu’un a peur.","Un ami est exclu.","Un jouet est brisé.","Quelqu’un n’écoute pas.","Un jeu tourne mal.","Quelqu’un ment.","Quelqu’un est trop bruyant.","Quelqu’un oublie quelque chose.","Un dégât est fait.","Quelqu’un a besoin d’aide.","Deux personnes se disputent.","Quelqu’un est en retard.","Quelqu’un est malade.","Quelqu’un ne partage pas.","Une règle est brisée.","Quelque chose manque.","Quelqu’un est timide.","Une surprise arrive.","Quelqu’un est coincé."]}},
+3:{settings:{en:["Classroom","Playground","Zoo","Beach","School Bus","Farm","Forest","City","Library","Gym","Restaurant","Store","Park","Aquarium","Museum","Camping Trip","Backyard","Birthday Party","Swimming Pool","Bus Stop"],fr:["Classe","Cour d'école","Zoo","Plage","Autobus scolaire","Ferme","Forêt","Ville","Bibliothèque","Gymnase","Restaurant","Magasin","Parc","Aquarium","Musée","Camping","Arrière-cour","Fête","Piscine","Arrêt d'autobus"]},
+problems:{en:["Someone is left out.","Something goes wrong.","Someone is scared.","A rule is broken.","Someone lies.","A mistake is made.","Two friends argue.","Something is lost.","Someone needs help.","A game becomes unfair.","Someone forgets something.","A surprise happens.","A secret is told.","Someone gets stuck.","Someone feels jealous.","Someone won’t help.","A plan fails.","Someone is blamed.","A problem must be fixed.","Something is broken."],
+fr:["Quelqu’un est exclu.","Quelque chose tourne mal.","Quelqu’un a peur.","Une règle est brisée.","Quelqu’un ment.","Une erreur est faite.","Deux amis se disputent.","Quelque chose est perdu.","Quelqu’un a besoin d’aide.","Un jeu devient injuste.","Quelqu’un oublie quelque chose.","Une surprise arrive.","Un secret est révélé.","Quelqu’un est coincé.","Quelqu’un est jaloux.","Quelqu’un refuse d’aider.","Un plan échoue.","Quelqu’un est accusé.","Un problème doit être réglé.","Quelque chose est brisé."]}},
+4:{settings:{en:["Classroom","School Yard","Forest","Beach","City","Restaurant","Museum","Science Lab","Library","Park","Camping Trip","Zoo","Aquarium","Mall","Movie Set","Sports Field","Bus","Train Station","Farm","Mountain"],fr:["Classe","Cour d'école","Forêt","Plage","Ville","Restaurant","Musée","Laboratoire","Bibliothèque","Parc","Camping","Zoo","Aquarium","Centre commercial","Plateau","Terrain de sport","Autobus","Gare","Ferme","Montagne"]},
+problems:{en:["Something is lost.","A rule is broken.","A secret is revealed.","Someone is left out.","A mistake causes trouble.","Two people disagree.","A plan goes wrong.","Someone is blamed unfairly.","A challenge must be solved.","Someone refuses to help.","Something important breaks.","A race against time begins.","Someone feels jealous.","A misunderstanding happens.","Someone lies.","A surprise changes everything.","Someone gets stuck.","A conflict grows.","A problem must be fixed.","Someone must make a choice."],
+fr:["Quelque chose est perdu.","Une règle est brisée.","Un secret est révélé.","Quelqu’un est exclu.","Une erreur cause un problème.","Deux personnes ne sont pas d’accord.","Un plan échoue.","Quelqu’un est accusé injustement.","Un défi doit être relevé.","Quelqu’un refuse d’aider.","Quelque chose d’important se brise.","Une course contre le temps commence.","Quelqu’un est jaloux.","Un malentendu arrive.","Quelqu’un ment.","Une surprise change tout.","Quelqu’un est coincé.","Un conflit grandit.","Un problème doit être réglé.","Quelqu’un doit faire un choix."]}},
+5:{settings:{en:["City","Forest","Beach","Mountain","Museum","Laboratory","Courtroom","Airport","Train Station","School","Sports Arena","Library","Aquarium","Restaurant","Movie Set","Camp","Island","Ship","Zoo","Desert"],fr:["Ville","Forêt","Plage","Montagne","Musée","Laboratoire","Tribunal","Aéroport","Gare","École","Aréna","Bibliothèque","Aquarium","Restaurant","Plateau","Camp","Île","Navire","Zoo","Désert"]},
+problems:{en:["A secret is revealed.","A plan fails.","A difficult choice is needed.","Someone is blamed.","A conflict grows.","Something important is lost.","A rule is broken.","Someone betrays trust.","A challenge must be solved.","A misunderstanding causes trouble.","Someone refuses to help.","A race against time begins.","A mistake has consequences.","Someone feels left out.","A problem gets worse.","Someone lies.","A surprise changes everything.","A decision must be made.","A goal is at risk.","Something unexpected happens."],
+fr:["Un secret est révélé.","Un plan échoue.","Un choix difficile est nécessaire.","Quelqu’un est accusé.","Un conflit grandit.","Quelque chose d’important est perdu.","Une règle est brisée.","Quelqu’un trahit la confiance.","Un défi doit être relevé.","Un malentendu cause un problème.","Quelqu’un refuse d’aider.","Une course contre le temps commence.","Une erreur a des conséquences.","Quelqu’un est exclu.","Un problème s’aggrave.","Quelqu’un ment.","Une surprise change tout.","Une décision doit être prise.","Un objectif est en danger.","Quelque chose d’inattendu arrive."]}},
+6:{settings:{en:["City","Space Station","Laboratory","Courtroom","Ancient City","Island","Ship","Mountain","Desert","Forest","Museum","Airport","Train Station","School","Underground Base","Castle","Arctic Base","Jungle","Ocean","Battlefield"],fr:["Ville","Station spatiale","Laboratoire","Tribunal","Ville ancienne","Île","Navire","Montagne","Désert","Forêt","Musée","Aéroport","Gare","École","Base souterraine","Château","Base arctique","Jungle","Océan","Champ de bataille"]},
+problems:{en:["A secret is revealed.","A conflict escalates.","A difficult choice must be made.","A plan fails.","Someone is betrayed.","A mystery must be solved.","A mistake has serious consequences.","A race against time begins.","A truth is hidden.","Someone is blamed unfairly.","A problem grows worse.","A leader must decide.","Trust is broken.","A goal is in danger.","Someone refuses to act.","A risky plan is made.","An unexpected event changes everything.","A challenge must be completed.","A decision affects everyone.","A hidden truth comes out."],
+fr:["Un secret est révélé.","Un conflit s’aggrave.","Un choix difficile doit être fait.","Un plan échoue.","Quelqu’un est trahi.","Un mystère doit être résolu.","Une erreur a de graves conséquences.","Une course contre le temps commence.","Une vérité est cachée.","Quelqu’un est accusé injustement.","Un problème s’aggrave.","Un leader doit décider.","La confiance est brisée.","Un objectif est en danger.","Quelqu’un refuse d’agir.","Un plan risqué est proposé.","Un événement change tout.","Un défi doit être complété.","Une décision affecte tout le monde.","Une vérité cachée est révélée."]}}
 }
 
-};
-
-/* FUNCTIONS */
+/* LOGIC (same as before) */
 
 function getSet(){ return data[grade] }
-
 function rand(arr){ return arr[Math.floor(Math.random()*arr.length)] }
 
 function generateCards(){
-
 let set=getSet()
 let s,p,key
-
 do{
 s=rand(set.settings[lang])
 p=rand(set.problems[lang])
 key=s+"|"+p
-}
-while(used.has(key)||p===lastProblem)
-
+}while(used.has(key)||p===lastProblem)
 used.add(key)
 lastProblem=p
-
 settingCard.textContent=s
 problemCard.textContent=p
-
 }
 
 function generateGroups(){
-
 let set=getSet()
 const count=parseInt(groupCount.value)
-const grid=document.getElementById("groupGrid")
-
-grid.innerHTML=""
+groupGrid.innerHTML=""
+currentGroupScenarios=[]
 let localUsed=new Set()
 
-for(let i=1;i<=count;i++){
-
+for(let i=0;i<count;i++){
 let s,p,key
-
 do{
 s=rand(set.settings[lang])
 p=rand(set.problems[lang])
 key=s+"|"+p
-}
-while(localUsed.has(key))
+}while(localUsed.has(key))
 
 localUsed.add(key)
-
-const div=document.createElement("div")
-div.className="groupCard"
-
-div.innerHTML=`
-<b>${lang==="en"?"Group":"Groupe"} ${i}</b><br><br>
-<b>${lang==="en"?"Setting":"Lieu"}:</b> ${s}<br>
-<b>${lang==="en"?"Problem":"Problème"}:</b> ${p}
-`
-
-grid.appendChild(div)
+currentGroupScenarios.push({s,p})
+createGroupCard(i)
+}
 }
 
+function createGroupCard(i){
+let item=currentGroupScenarios[i]
+let div=document.createElement("div")
+div.className="groupCard"
+div.onclick=()=>regenerateSingleGroup(i)
+div.innerHTML=`
+<b>${lang==="en"?"Group":"Groupe"} ${i+1}</b><br><br>
+<b>${lang==="en"?"Setting":"Lieu"}:</b> ${item.s}<br>
+<b>${lang==="en"?"Problem":"Problème"}:</b> ${item.p}`
+groupGrid.appendChild(div)
+}
+
+function regenerateSingleGroup(index){
+let set=getSet()
+let localUsed=new Set(currentGroupScenarios.map((x,i)=>i!==index?x.s+"|"+x.p:null))
+let s,p,key
+do{
+s=rand(set.settings[lang])
+p=rand(set.problems[lang])
+key=s+"|"+p
+}while(localUsed.has(key))
+currentGroupScenarios[index]={s,p}
+groupGrid.innerHTML=""
+currentGroupScenarios.forEach((_,i)=>createGroupCard(i))
 }
 
 function updateUI(){
-
 if(lang==="en"){
 title.textContent="Drama Scenario Generator"
 generateBtn.textContent="Generate Scenario"
@@ -326,15 +293,15 @@ problemLabel.textContent="PROBLÈME"
 groupLabel.textContent="Groupes:"
 groupBtn.textContent="Générer"
 }
-
 generateCards()
 }
 
 function toggleLanguage(){
-lang = lang==="en" ? "fr" : "en"
+lang=lang==="en"?"fr":"en"
 used.clear()
 lastProblem=null
 updateUI()
+if(!groupsMode.classList.contains("hidden")) generateGroups()
 }
 
 function updateGrade(){
@@ -342,13 +309,19 @@ grade=parseInt(gradeSelect.value)
 used.clear()
 lastProblem=null
 generateCards()
+if(!groupsMode.classList.contains("hidden")) generateGroups()
 }
 
 function setMode(mode){
 carouselMode.classList.add("hidden")
 groupsMode.classList.add("hidden")
-if(mode==="carousel") carouselMode.classList.remove("hidden")
-else groupsMode.classList.remove("hidden")
+if(mode==="carousel"){
+carouselMode.classList.remove("hidden")
+generateBtn.style.display="inline-block"
+}else{
+groupsMode.classList.remove("hidden")
+generateBtn.style.display="none"
+}
 }
 
 function toggleFullscreen(){
@@ -361,7 +334,6 @@ document.body.classList.remove("big")
 }
 }
 
-/* INIT */
 generateCards()
 
 </script>
