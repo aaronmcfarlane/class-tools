@@ -4,84 +4,238 @@
 <meta charset="UTF-8">
 <title>Aaron's Classroom Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
-    body {
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .container {
-        text-align: center;
-        max-width: 500px;
-        width: 90%;
-    }
+:root {
+  --bg:       #f7f2ee;
+  --card:     #ffffff;
+  --text:     #2a2420;
+  --muted:    #9e8e80;
+  --shadow:   0 4px 24px rgba(80,40,40,0.10);
+  --radius:   20px;
 
-    h1 {
-        margin-bottom: 10px;
-        font-size: 2.2em;
-    }
+  /* Tool accent colours */
+  --pink:     #ff6b9d;
+  --pink-light: #ffe0ee;
+  --red:      #c94040;
+  --red-light: #fdeaea;
+  --gold:     #d4a843;
+  --gold-light: #fdf5e0;
+}
 
-    p {
-        opacity: 0.85;
-        margin-bottom: 30px;
-    }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
 
-    .card {
-        display: block;
-        background: white;
-        color: #333;
-        text-decoration: none;
-        padding: 20px;
-        border-radius: 14px;
-        margin-bottom: 15px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
+/* FLOATING DECO */
+.deco {
+  position: fixed;
+  opacity: 0.10;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
 
-    .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 25px rgba(0,0,0,0.25);
-    }
+/* CONTENT */
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+}
 
-    .card h2 {
-        margin: 0 0 5px 0;
-    }
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
 
-    .card p {
-        margin: 0;
-        font-size: 0.9em;
-        color: #666;
-    }
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--text);
+  margin-bottom: 10px;
+}
 
-    footer {
-        margin-top: 25px;
-        font-size: 0.8em;
-        opacity: 0.7;
-    }
+.subtitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 40px;
+}
+
+/* TOOL CARDS */
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  text-decoration: none;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  border-left: 6px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(80,40,40,0.15);
+}
+.tool-card:hover::before { opacity: 1; }
+.tool-card:active { transform: scale(0.98); }
+
+.tool-card.monsters {
+  border-left-color: var(--pink);
+}
+.tool-card.monsters::before {
+  background: linear-gradient(90deg, var(--pink-light), transparent);
+}
+
+.tool-card.drama {
+  border-left-color: var(--red);
+}
+.tool-card.drama::before {
+  background: linear-gradient(90deg, var(--red-light), transparent);
+}
+
+.tool-icon {
+  font-size: 2.4rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.tool-text { flex: 1; }
+
+.tool-text h2 {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+.tool-text p {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.tool-arrow {
+  font-size: 1.1rem;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform 0.15s, color 0.15s;
+}
+.tool-card:hover .tool-arrow {
+  transform: translateX(4px);
+  color: var(--text);
+}
+
+/* FOOTER */
+footer {
+  margin-top: 36px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Aaron's Classroom Tools</h1>
-
-    <a href="group-maker.html" class="card">
-        <h2>Group Maker</h2>
-        <p>Create balanced student groups quickly</p>
+  <div class="eyebrow">Mr. McFarlane · Grade 4</div>
+  <h1>Classroom Tools</h1>
+  <div class="tools" style="margin-top:32px;">
+    <a href="group-maker.html" class="tool-card monsters">
+      <div class="tool-icon">👾</div>
+      <div class="tool-text">
+        <h2>Monster Group Maker</h2>
+        <p>Create balanced student groups with constraints, absence tracking, and drag-to-swap.</p>
+      </div>
+      <div class="tool-arrow">→</div>
     </a>
 
-    <a href="drama-scenario-generator.html" class="card">
+    <a href="drama-scenario-generator.html" class="tool-card drama">
+      <div class="tool-icon">🎭</div>
+      <div class="tool-text">
         <h2>Drama Scenario Generator</h2>
-        <p>Generate fun and engaging drama prompts</p>
+        <p>Generate settings and conflicts for drama class — by grade, in English or French.</p>
+      </div>
+      <div class="tool-arrow">→</div>
     </a>
+  </div>
+
 
 </div>
 
+<script>
+/* Floating mixed deco from both tools */
+(function () {
+  const icons = ["👾","👻","🐸","🦄","🎭","🎬","🎪","🪄","🐙","🎨","🐼","🎩","🦊","🌟","✨","🎲"];
+  for (let i = 0; i < 14; i++) {
+    const el = document.createElement("div");
+    el.className = "deco";
+    const size = 22 + Math.random() * 18;
+    el.style.fontSize = size + "px";
+    el.textContent = icons[Math.floor(Math.random() * icons.length)];
+    document.body.appendChild(el);
+
+    const s = {
+      el,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.85,
+      vy: (Math.random() - 0.5) * 0.85,
+    };
+
+    (function tick() {
+      const W = window.innerWidth, H = window.innerHeight;
+      s.x += s.vx; s.y += s.vy;
+      if (s.x < 0)  { s.x = 0;  s.vx *= -1; }
+      if (s.x > W)  { s.x = W;  s.vx *= -1; }
+      if (s.y < 0)  { s.y = 0;  s.vy *= -1; }
+      if (s.y > H)  { s.y = H;  s.vy *= -1; }
+      s.el.style.left = s.x + "px";
+      s.el.style.top  = s.y + "px";
+      requestAnimationFrame(tick);
+    })();
+  }
+})();
+</script>
 </body>
 </html>
