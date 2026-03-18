@@ -4,125 +4,219 @@
 <meta charset="UTF-8">
 <title>Monster Group Maker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
-    margin: 0;
-    font-family: "Comic Sans MS", "Segoe UI", sans-serif;
-    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    margin:0;
+    font-family:"Segoe UI",sans-serif;
+    background:linear-gradient(135deg,#ff9a9e,#fad0c4);
 }
-body::before {
-    content: "👾 👻 🐸 🐙 🦄 🐵 👹 🐱 🐼 🐰 🐯 🐨 🐮 🐷 🐧 🦊 🐻 🐔 🐢 🐍 🦖 🐲 🦕 🐺 🦁 🐗 🐙 🐬 🦈 🐝";
-    position: fixed;
-    font-size: 40px;
-    opacity: 0.08;
-    width: 300%;
-    height: 300%;
-    animation: float 120s linear infinite;
-    pointer-events: none;
+
+/* bouncing monsters */
+.monster {
+    position:fixed;
+    font-size:28px;
+    opacity:0.15;
+    pointer-events:none;
 }
-@keyframes float {
-    0% { transform: translate(0,0); }
-    100% { transform: translate(-30%, -30%); }
-}
+
+/* layout */
 .container {
-    background: white;
-    border-radius: 20px;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 1200px;
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
 }
-.top-actions {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 10px;
+
+.grid {
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:20px;
 }
-button {
-    background: #ff7eb3;
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 12px;
-    cursor: pointer;
+
+.card {
+    background:white;
+    border-radius:16px;
+    padding:15px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
-.layout { display:flex; gap:20px; flex-wrap:wrap; }
-.left { width:260px; }
+
 textarea {
     width:100%;
-    height:420px;
-    border-radius:15px;
-    border:2px dashed #ffb6b9;
+    height:300px;
+    border-radius:12px;
     padding:10px;
 }
-.mode-toggle { display:flex; gap:6px; margin:10px 0; }
-.mode-toggle button { flex:1; }
-.mode-toggle .active { background:#ff5c9c; }
-.students { flex:1; display:flex; flex-wrap:wrap; gap:8px; }
+
+.students {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
 .student {
-    background:#fff5f7;
+    background:#fff0f5;
     padding:6px 10px;
     border-radius:12px;
     display:flex;
     gap:6px;
     align-items:center;
 }
-.student.off { opacity:0.4; }
-.groups { margin-top:20px; display:flex; flex-wrap:wrap; gap:15px; }
+
+/* buttons */
+button {
+    background:#ff7eb3;
+    border:none;
+    color:white;
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+}
+
+.top-actions {
+    position:fixed;
+    top:10px;
+    right:10px;
+    display:flex;
+    gap:10px;
+}
+
+/* groups */
+.groups {
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-top:20px;
+}
+
 .group {
-    background:#f0f9ff;
-    border-radius:16px;
+    background:#e6f7ff;
+    border-radius:14px;
     padding:10px;
-    flex:1;
     min-width:180px;
 }
-.fullscreen { font-size:1.6em; }
-.fullscreen .layout, .fullscreen textarea { display:none; }
+
+/* tabs */
+.tabs {
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+}
+.tab {
+    padding:6px 10px;
+    border-radius:10px;
+    background:#eee;
+    cursor:pointer;
+}
+.tab.active { background:#ff7eb3; color:white; }
+
+.hidden { display:none; }
+
+/* constraints */
+.constraint-list {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.constraint-pill {
+    background:#ffe4ec;
+    padding:6px 10px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+}
+.constraint-pill.avoid {
+    background:#e0f7fa;
+}
+.constraint-pill button {
+    background:none;
+    color:black;
+    padding:0 4px;
+    font-weight:bold;
+}
+
+/* fullscreen */
+.fullscreen .grid,
+.fullscreen textarea,
+.fullscreen .tabs,
+.fullscreen .card:not(.groups-card) {
+    display:none;
+}
+.fullscreen .groups {
+    font-size:2em;
+}
 </style>
 </head>
+
 <body>
 
 <div class="top-actions">
-<button onclick="toggleFullscreen()">🖥</button>
-<button onclick="shuffleGroups()">🔀</button>
+<button onclick="shuffleGroups()">🔀 Shuffle</button>
+<button onclick="toggleFullscreen()">🖥 Full Screen</button>
 </div>
 
 <div class="container" id="app">
-<h2>👾 Monster Group Maker 👾</h2>
+
+<h2>👾 Monster Group Maker</h2>
+
+<div class="tabs">
+<div class="tab active" onclick="showTab(event,'main')">Main</div>
+<div class="tab" onclick="showTab(event,'constraints')">Constraints</div>
+</div>
+
+<div id="mainTab">
+
+<div class="grid">
+
+<div class="card">
+<textarea id="names"></textarea>
 
 <select onchange="loadPreset(this.value)">
-<option value="">Load Class List</option>
+<option value="">Load Class</option>
 <option value="mcfarlane">Mr. McFarlane Grade 4</option>
 </select>
 
-<div class="layout">
-<div class="left">
-<textarea id="names"></textarea>
-
-<div class="mode-toggle">
-<button id="modeSize" class="active" onclick="setMode('size')">Size</button>
-<button id="modeCount" onclick="setMode('count')">Groups</button>
+<div style="display:flex;gap:5px;margin-top:10px;">
+<button onclick="setMode('size')">Size</button>
+<button onclick="setMode('count')">Groups</button>
+<input type="number" id="modeValue" value="3" style="width:70px;">
 </div>
 
-<input type="number" id="modeValue" value="3">
-
-<button onclick="generate()">Generate</button>
+<button onclick="generate()" style="margin-top:10px;width:100%;">Generate</button>
 </div>
 
+<div class="card">
 <div id="studentList" class="students"></div>
 </div>
 
-<h3>🚫 Do Not Pair</h3>
-<div id="avoidList"></div>
+</div>
+</div>
 
-<h3>❤️ Must Pair</h3>
-<div id="mustList"></div>
+<div id="constraintsTab" class="hidden card">
 
+<h3>Constraints</h3>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
+<select id="studentA"></select>
+<select id="studentB"></select>
+</div>
+
+<div style="margin-top:10px;display:flex;gap:10px;">
+<button onclick="addMust()">➕ Must Pair</button>
+<button onclick="addAvoid()">➕ Do Not Pair</button>
+</div>
+
+<h4>Must Pair</h4>
+<div id="mustList" class="constraint-list"></div>
+
+<h4>Do Not Pair</h4>
+<div id="avoidList" class="constraint-list"></div>
+
+</div>
+
+<div class="groups-card">
 <div id="groups" class="groups"></div>
-
-<div style="text-align:center;margin-top:10px;">
-<button onclick="toggleFullscreen()">Full Screen</button>
-<button onclick="shuffleGroups()">Shuffle</button>
 </div>
 
 </div>
@@ -131,20 +225,43 @@ textarea {
 const monsters=["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
 
 let mode="size";
-let allStudents=[], present=new Set(), groups=[];
-let avoidPairs=[], mustPairs=[];
+let allStudents=[], present=new Set();
+let mustPairs=[], avoidPairs=[], groups=[];
 
-function setMode(m){
-mode=m;
-modeSize.classList.toggle("active",m==="size");
-modeCount.classList.toggle("active",m==="count");
-modeValue.value = m==="size"?3:6;
-buildGroups();
+/* bouncing monsters */
+function spawnMonsters(){
+for(let i=0;i<15;i++){
+let m=document.createElement("div");
+m.className="monster";
+m.textContent=monsters[Math.floor(Math.random()*monsters.length)];
+m.x=Math.random()*window.innerWidth;
+m.y=Math.random()*window.innerHeight;
+m.dx=(Math.random()*2)+0.5;
+m.dy=(Math.random()*2)+0.5;
+document.body.appendChild(m);
+
+function move(){
+m.x+=m.dx;
+m.y+=m.dy;
+if(m.x<0||m.x>window.innerWidth-30) m.dx*=-1;
+if(m.y<0||m.y>window.innerHeight-30) m.dy*=-1;
+m.style.left=m.x+"px";
+m.style.top=m.y+"px";
+requestAnimationFrame(move);
+}
+move();
+}
+}
+spawnMonsters();
+
+function showTab(e,t){
+mainTab.classList.toggle("hidden",t!=="main");
+constraintsTab.classList.toggle("hidden",t!=="constraints");
+document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
+e.target.classList.add("active");
 }
 
-function getMonster(n){
-return monsters[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%monsters.length];
-}
+function setMode(m){ mode=m; }
 
 function loadPreset(v){
 if(v==="mcfarlane"){
@@ -173,7 +290,7 @@ function generate(){
 allStudents=names.value.split("\n").map(x=>x.trim()).filter(x=>x);
 present=new Set(allStudents);
 renderStudents();
-renderConstraints();
+populateDropdowns();
 buildGroups();
 }
 
@@ -191,90 +308,125 @@ studentList.appendChild(d);
 });
 }
 
-function renderConstraints(){
-avoidList.innerHTML="";
-mustList.innerHTML="";
-avoidPairs=[]; mustPairs=[];
-
-allStudents.forEach((a,i)=>{
-for(let j=i+1;j<allStudents.length;j++){
-let b=allStudents[j];
-
-let cb1=document.createElement("input");
-cb1.type="checkbox";
-cb1.onchange=e=>{
-if(e.target.checked) avoidPairs.push([a,b]);
-else avoidPairs=avoidPairs.filter(p=>!(p[0]===a&&p[1]===b));
-buildGroups();
-};
-
-let cb2=document.createElement("input");
-cb2.type="checkbox";
-cb2.onchange=e=>{
-if(e.target.checked) mustPairs.push([a,b]);
-else mustPairs=mustPairs.filter(p=>!(p[0]===a&&p[1]===b));
-buildGroups();
-};
-
-avoidList.append(`${a}-${b} `,cb1,document.createElement("br"));
-mustList.append(`${a}-${b} `,cb2,document.createElement("br"));
-}
+function populateDropdowns(){
+studentA.innerHTML="";
+studentB.innerHTML="";
+allStudents.forEach(n=>{
+studentA.innerHTML+=`<option>${n}</option>`;
+studentB.innerHTML+=`<option>${n}</option>`;
 });
 }
 
-/* SMART SOLVER */
-function violates(group, student){
+/* constraints logic */
+function pairExists(list,a,b){
+return list.some(p => (p[0]===a && p[1]===b)||(p[0]===b && p[1]===a));
+}
+
+function addMust(){
+let a=studentA.value, b=studentB.value;
+if(a===b || pairExists(mustPairs,a,b)) return;
+mustPairs.push([a,b]);
+renderConstraints();
+buildGroups();
+}
+
+function addAvoid(){
+let a=studentA.value, b=studentB.value;
+if(a===b || pairExists(avoidPairs,a,b)) return;
+avoidPairs.push([a,b]);
+renderConstraints();
+buildGroups();
+}
+
+function removeConstraint(type,i){
+if(type==="must") mustPairs.splice(i,1);
+else avoidPairs.splice(i,1);
+renderConstraints();
+buildGroups();
+}
+
+function editConstraint(pair){
+studentA.value=pair[0];
+studentB.value=pair[1];
+}
+
+function renderConstraints(){
+mustList.innerHTML="";
+avoidList.innerHTML="";
+
+mustPairs.forEach((p,i)=>{
+let el=document.createElement("div");
+el.className="constraint-pill";
+el.innerHTML=`${p[0]} + ${p[1]} <button>✕</button>`;
+el.onclick=()=>editConstraint(p);
+el.querySelector("button").onclick=(e)=>{
+e.stopPropagation();
+removeConstraint("must",i);
+};
+mustList.appendChild(el);
+});
+
+avoidPairs.forEach((p,i)=>{
+let el=document.createElement("div");
+el.className="constraint-pill avoid";
+el.innerHTML=`${p[0]} × ${p[1]} <button>✕</button>`;
+el.onclick=()=>editConstraint(p);
+el.querySelector("button").onclick=(e)=>{
+e.stopPropagation();
+removeConstraint("avoid",i);
+};
+avoidList.appendChild(el);
+});
+}
+
+/* solver */
+function violates(group,s){
 return avoidPairs.some(([a,b]) =>
-(group.includes(a)&&student===b)||(group.includes(b)&&student===a)
+(group.includes(a)&&s===b)||(group.includes(b)&&s===a)
 );
 }
 
-function satisfiesMust(groups){
+function satisfiesMust(gs){
 return mustPairs.every(([a,b]) =>
-groups.some(g=>g.includes(a)&&g.includes(b))
+gs.some(g=>g.includes(a)&&g.includes(b))
 );
 }
 
-function backtrack(list, groups, sizes){
-if(list.length===0){
-return satisfiesMust(groups) ? groups : null;
-}
+function solve(list,groups,sizes){
+if(list.length===0) return satisfiesMust(groups)?groups:null;
 
-let student=list[0];
+let s=list[0];
 for(let i=0;i<groups.length;i++){
 if(groups[i].length>=sizes[i]) continue;
-if(violates(groups[i], student)) continue;
+if(violates(groups[i],s)) continue;
 
-groups[i].push(student);
-let res=backtrack(list.slice(1), groups, sizes);
-if(res) return res;
+groups[i].push(s);
+let r=solve(list.slice(1),groups,sizes);
+if(r) return r;
 groups[i].pop();
 }
 return null;
 }
 
 function buildGroups(){
-let list=[...present];
-list.sort(()=>Math.random()-0.5);
-
+let list=[...present].sort(()=>Math.random()-0.5);
 let sizes=[];
+
 if(mode==="size"){
-let s=parseInt(modeValue.value)||1;
-for(let i=0;i<Math.ceil(list.length/s);i++) sizes.push(s);
+let s=parseInt(modeValue.value)||3;
+let count=Math.ceil(list.length/s);
+for(let i=0;i<count;i++){
+sizes.push(i===0?list.length%s||s:s);
+}
 }else{
-let c=parseInt(modeValue.value)||1;
-sizes=Array(c).fill(Math.ceil(list.length/c));
+let c=parseInt(modeValue.value)||6;
+let base=Math.floor(list.length/c);
+let extra=list.length%c;
+for(let i=0;i<c;i++) sizes.push(base+(i<extra?1:0));
 }
 
-let attempt=0, solution=null;
-while(attempt<20 && !solution){
-attempt++;
-let gs=sizes.map(()=>[]);
-solution=backtrack(list, gs, sizes);
-}
-
-groups=solution || sizes.map(()=>[]);
-if(!solution) console.warn("No perfect solution found");
+let result=solve(list,sizes.map(()=>[]),sizes);
+groups=result||sizes.map(()=>[]);
 
 renderGroups();
 }
@@ -286,26 +438,20 @@ let d=document.createElement("div");
 d.className="group";
 d.innerHTML="<h4>Group "+(i+1)+"</h4>";
 g.forEach(n=>{
-let li=document.createElement("div");
-li.textContent=getMonster(n)+" "+n;
-li.onclick=()=>moveTap(n,i);
-d.appendChild(li);
+let el=document.createElement("div");
+el.textContent=getMonster(n)+" "+n;
+d.appendChild(el);
 });
 groupsEl.appendChild(d);
 });
 }
 
-let selected=null;
-function moveTap(n,i){
-if(!selected){selected=n;return;}
-groups.forEach(g=>{let idx=g.indexOf(selected);if(idx>-1)g.splice(idx,1);});
-groups[i].push(selected);
-selected=null;
-renderGroups();
+function getMonster(n){
+return monsters[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%monsters.length];
 }
 
-function shuffleGroups(){buildGroups();}
-function toggleFullscreen(){app.classList.toggle("fullscreen");}
+function shuffleGroups(){ buildGroups(); }
+function toggleFullscreen(){ app.classList.toggle("fullscreen"); }
 </script>
 
 </body>
