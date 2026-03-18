@@ -2,481 +2,863 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Monster Group Maker</title>
+<title>👾 Monster Group Maker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-* { box-sizing:border-box; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink: #ff6b9d;
+  --pink-light: #ffe0ee;
+  --pink-dark: #e8457f;
+  --blue: #6ec6f5;
+  --blue-light: #e8f6ff;
+  --green: #7dd9a0;
+  --green-light: #e8fff0;
+  --yellow: #ffd166;
+  --yellow-light: #fff8e1;
+  --purple: #b78fff;
+  --purple-light: #f3eeff;
+  --bg: #fff5f9;
+  --card: #ffffff;
+  --text: #2d2d3a;
+  --muted: #9e9eae;
+  --radius: 18px;
+  --shadow: 0 4px 20px rgba(255,107,157,0.13);
+}
 
 body {
-    margin:0;
-    font-family:"Segoe UI",sans-serif;
-    background:linear-gradient(135deg,#ff9a9e,#fad0c4);
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
 }
 
-/* MONSTERS */
-.monster {
-    position:fixed;
-    font-size:26px;
-    opacity:0.12;
-    pointer-events:none;
+/* HEADER */
+header {
+  background: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(255,107,157,0.12);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-/* LAYOUT */
-.container {
-    max-width:1200px;
-    margin:auto;
-    padding:20px;
+header h1 {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--pink);
+  letter-spacing: -0.5px;
 }
 
-.grid {
-    display:grid;
-    grid-template-columns:260px 1fr;
-    gap:20px;
+.header-actions { display: flex; gap: 8px; }
+
+/* MAIN LAYOUT */
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
 }
 
+/* SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+/* CARDS */
 .card {
-    background:white;
-    border-radius:16px;
-    padding:15px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
 }
 
+.card-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* TEXTAREA */
 textarea {
-    width:100%;
-    height:300px;
-    border-radius:12px;
-    padding:10px;
+  width: 100%;
+  height: 220px;
+  border: 2px solid #f0e0ea;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  outline: none;
+  transition: border 0.2s;
+  color: var(--text);
 }
+textarea:focus { border-color: var(--pink); }
 
-/* STUDENTS */
-.students {
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
+/* SELECT / INPUT */
+select, input[type="number"], input[type="text"] {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  border: 2px solid #f0e0ea;
+  border-radius: 10px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border 0.2s;
+  color: var(--text);
+  background: white;
 }
-
-.student {
-    background:#fff0f5;
-    padding:6px 10px;
-    border-radius:12px;
-    display:flex;
-    gap:6px;
-    align-items:center;
-}
+select:focus, input:focus { border-color: var(--pink); }
 
 /* BUTTONS */
 button {
-    background:#ff7eb3;
-    border:none;
-    color:white;
-    padding:8px 12px;
-    border-radius:10px;
-    cursor:pointer;
-    transition:0.15s;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: transform 0.12s, opacity 0.15s;
 }
-button.active {
-    outline:3px solid #ff4d88;
-    transform:scale(1.05);
+button:active { transform: scale(0.95); }
+
+.btn-primary {
+  background: var(--pink);
+  color: white;
+  width: 100%;
+  padding: 11px;
+  font-size: 1rem;
+  font-weight: 800;
+  border-radius: 12px;
+  margin-top: 4px;
 }
-button:active {
-    transform:scale(0.95);
+.btn-primary:hover { background: var(--pink-dark); }
+
+.btn-sm {
+  background: var(--pink-light);
+  color: var(--pink-dark);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+}
+.btn-sm:hover { background: #ffd0e4; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border: 2px solid #eee;
+}
+.btn-ghost:hover { border-color: var(--pink); color: var(--pink); }
+
+.btn-mode {
+  background: #f5f0f8;
+  color: var(--muted);
+  flex: 1;
+  font-weight: 700;
+}
+.btn-mode.active {
+  background: var(--purple);
+  color: white;
 }
 
-.top-actions {
-    position:fixed;
-    top:10px;
-    right:10px;
-    display:flex;
-    gap:10px;
+/* GROUP SIZE ROW */
+.mode-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
 }
-
-/* GROUPS */
-.groups-card { margin-top:20px; }
-
-.groups {
-    display:flex;
-    gap:15px;
-    flex-wrap:wrap;
-}
-
-.group {
-    background:#e6f7ff;
-    border-radius:14px;
-    padding:15px;
-    min-width:200px;
-}
-
-/* draggable */
-.member {
-    padding:4px;
-    border-radius:8px;
-    cursor:pointer;
-}
-.member.dragging {
-    opacity:0.5;
+.mode-row input[type="number"] {
+  width: 70px;
+  text-align: center;
 }
 
 /* TABS */
 .tabs {
-    display:flex;
-    gap:10px;
-    margin-bottom:10px;
+  display: flex;
+  gap: 6px;
+  background: #f5f0f5;
+  padding: 5px;
+  border-radius: 12px;
 }
 .tab {
-    padding:6px 10px;
-    border-radius:10px;
-    background:#eee;
-    cursor:pointer;
+  flex: 1;
+  text-align: center;
+  padding: 7px 10px;
+  border-radius: 9px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.18s;
 }
-.tab.active { background:#ff7eb3; color:white; }
+.tab.active { background: white; color: var(--pink); box-shadow: 0 2px 8px rgba(255,107,157,0.15); }
 
-.hidden { display:none; }
+/* STUDENT CHIPS */
+.student-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  background: var(--pink-light);
+  color: var(--pink-dark);
+  border-radius: 20px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.chip.absent {
+  background: #f0f0f0;
+  color: #aaa;
+  text-decoration: line-through;
+  border-color: #ddd;
+}
+.chip:hover { border-color: var(--pink); }
+
+/* MAIN CONTENT */
+.main-content { display: flex; flex-direction: column; gap: 16px; }
+
+/* CONSTRAINTS */
+.constraint-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.constraint-row select { flex: 1; min-width: 100px; }
+
+.constraint-list { display: flex; flex-direction: column; gap: 7px; }
+
+.constraint-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.constraint-item .badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+.badge-must { background: var(--green-light); color: #2d9a5a; }
+.badge-avoid { background: #ffe8e8; color: #c0392b; }
+.constraint-item .del { margin-left: auto; color: #ccc; font-size: 1rem; background: none; border: none; cursor: pointer; padding: 2px 6px; }
+.constraint-item .del:hover { color: #e74c3c; }
+
+/* GROUPS AREA */
+.groups-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.groups-header h2 { font-size: 1rem; font-weight: 900; }
+
+.groups-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.group-card {
+  border-radius: 16px;
+  padding: 14px;
+  min-width: 160px;
+  flex: 1;
+  max-width: 220px;
+}
+
+.group-card:nth-child(6n+1) { background: var(--blue-light); }
+.group-card:nth-child(6n+2) { background: var(--green-light); }
+.group-card:nth-child(6n+3) { background: var(--yellow-light); }
+.group-card:nth-child(6n+4) { background: var(--purple-light); }
+.group-card:nth-child(6n+5) { background: var(--pink-light); }
+.group-card:nth-child(6n+6) { background: #fff0e6; }
+
+.group-card h4 {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: grab;
+  transition: background 0.15s;
+}
+.member:hover { background: rgba(255,255,255,0.6); }
+.member.dragging { opacity: 0.4; }
+.member.selected { outline: 2px solid var(--pink); background: rgba(255,255,255,0.7); }
+
+.group-card.drag-over { outline: 2px dashed var(--pink); }
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  padding: 30px;
+  font-size: 0.95rem;
+}
+
+/* FULLSCREEN EXIT BUTTON */
+#exitFullscreenBtn {
+  display: none;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 999;
+  background: rgba(255,107,157,0.92);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+#exitFullscreenBtn:hover { background: var(--pink-dark); }
 
 /* FULLSCREEN */
-.fullscreen .grid,
-.fullscreen .tabs,
-.fullscreen .card:not(.groups-card),
-.fullscreen h2 {
-    display:none;
+body.fullscreen header,
+body.fullscreen .sidebar,
+body.fullscreen .main-content > :not(.groups-card) {
+  display: none;
 }
-.fullscreen .groups {
-    justify-content:center;
-    align-items:center;
-    height:90vh;
-    font-size:2em;
+body.fullscreen #exitFullscreenBtn {
+  display: block;
+}
+body.fullscreen .app {
+  grid-template-columns: 1fr;
+  max-width: 100%;
+  padding: 24px;
+}
+body.fullscreen .groups-grid {
+  justify-content: center;
+}
+body.fullscreen .group-card {
+  min-width: 180px;
+}
+/* Font scaling is handled by JS based on group count */
+
+/* HIDDEN */
+.hidden { display: none !important; }
+
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+/* Animate groups in */
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.group-card { animation: popIn 0.2s ease both; }
+
+/* FLOATING MONSTERS */
+.monster {
+  position: fixed;
+  font-size: 28px;
+  opacity: 0.13;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
 }
 </style>
 </head>
-
 <body>
 
-<div class="top-actions">
-<button onclick="shuffleGroups()">🔀 Shuffle</button>
-<button onclick="toggleFullscreen()">🖥 Full Screen</button>
-</div>
+<button id="exitFullscreenBtn" onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
 
-<div class="container" id="app">
+<header>
+  <h1>👾 Monster Group Maker</h1>
+  <div class="header-actions">
+    <button class="btn-ghost" onclick="shuffleGroups()">🔀 Shuffle</button>
+    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 Fullscreen</button>
+  </div>
+</header>
 
-<h2>👾 Monster Group Maker</h2>
+<div class="app" id="app">
 
-<div class="tabs">
-<div class="tab active" onclick="showTab(event,'main')">Main</div>
-<div class="tab" onclick="showTab(event,'constraints')">Constraints</div>
-</div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
 
-<div id="mainTab">
+    <div class="tabs">
+      <div class="tab active" onclick="showTab(event,'setup')">Setup</div>
+      <div class="tab" onclick="showTab(event,'constraints')">Constraints</div>
+    </div>
 
-<div class="grid">
+    <!-- SETUP TAB -->
+    <div id="setupTab">
+      <div class="card">
+        <div class="card-title">Students (one per line)</div>
+        <textarea id="names" placeholder="Enter student names..."></textarea>
 
-<div class="card">
-<textarea id="names"></textarea>
+        <div style="margin-top:10px;">
+          <select onchange="loadPreset(this.value)" style="width:100%;">
+            <option value="">— Load a class —</option>
+            <option value="mcfarlane">Mr. McFarlane Grade 4</option>
+          </select>
+        </div>
 
-<select onchange="loadPreset(this.value)">
-<option value="">Load Class</option>
-<option value="mcfarlane">Mr. McFarlane Grade 4</option>
-</select>
+        <div class="mode-row" style="margin-top:12px;">
+          <button id="modeSize" class="btn-mode active" onclick="setMode('size')">By Size</button>
+          <button id="modeCount" class="btn-mode" onclick="setMode('count')">By Count</button>
+          <input type="number" id="modeValue" value="3" min="1" max="99">
+        </div>
 
-<div style="display:flex;gap:5px;margin-top:10px;">
-<button id="modeSize" class="active" onclick="setMode('size')">Size</button>
-<button id="modeCount" onclick="setMode('count')">Groups</button>
-<input type="number" id="modeValue" value="3" style="width:70px;">
-</div>
+        <button class="btn-primary" onclick="generate(event)">Generate Groups</button>
+      </div>
+    </div>
 
-<button onclick="generate(event)" style="margin-top:10px;width:100%;">Generate</button>
-</div>
+    <!-- CONSTRAINTS TAB -->
+    <div id="constraintsTab" class="hidden">
+      <div class="card">
+        <div class="card-title">Add Constraint</div>
+        <div class="constraint-row">
+          <select id="pairA"><option value="">Student A</option></select>
+          <select id="pairB"><option value="">Student B</option></select>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" style="flex:1;background:var(--green-light);color:#2d9a5a;" onclick="addConstraint('must')">✅ Must Pair</button>
+          <button class="btn-sm" style="flex:1;background:#ffe8e8;color:#c0392b;" onclick="addConstraint('avoid')">🚫 Keep Apart</button>
+        </div>
 
-<div class="card">
-<div id="studentList" class="students"></div>
-</div>
+        <div style="margin-top:16px;">
+          <div class="card-title">Active Constraints</div>
+          <div class="constraint-list" id="constraintList">
+            <div style="color:var(--muted);font-size:0.85rem;">No constraints yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-</div>
-</div>
+  </aside>
 
-<!-- CONSTRAINTS -->
-<div id="constraintsTab" class="hidden card">
-<h3>Constraints</h3>
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
-<div style="display:flex;gap:5px;margin-bottom:10px;">
-<input id="pairA" placeholder="Student A">
-<input id="pairB" placeholder="Student B">
-<button onclick="addConstraint('must')">Must Pair</button>
-<button onclick="addConstraint('avoid')">Do Not Pair</button>
-</div>
+    <!-- PRESENT STUDENTS -->
+    <div class="card" id="studentsCard" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">Click to mark absent</div>
+        <span id="presentCount" style="font-size:0.82rem;font-weight:700;color:var(--muted);"></span>
+      </div>
+      <div class="student-chips" id="studentList"></div>
+    </div>
 
-<ul id="constraintList"></ul>
-</div>
+    <!-- GROUPS -->
+    <div class="card groups-card">
+      <div class="groups-header">
+        <h2>Groups</h2>
+        <button class="btn-ghost" onclick="shuffleGroups()" style="font-size:0.82rem;">🔀 Re-shuffle</button>
+      </div>
+      <div id="groups" class="groups-grid">
+        <div class="empty-state">Generate groups to see them here 👆</div>
+      </div>
+    </div>
 
-<div class="groups-card card">
-<h3>Groups</h3>
-<div id="groups" class="groups"></div>
-</div>
-
+  </div>
 </div>
 
 <script>
 const groupsEl = document.getElementById("groups");
-const studentList = document.getElementById("studentList");
-const mainTab = document.getElementById("mainTab");
-const constraintsTab = document.getElementById("constraintsTab");
+const studentListEl = document.getElementById("studentList");
+const studentsCard = document.getElementById("studentsCard");
 
-const monsters=["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
+const monsters = ["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
 
-let mode="size";
-let allStudents=[], present=new Set(), groups=[];
-let dragItem=null, selected=null;
-let constraints=[];
+let mode = "size";
+let allStudents = [], present = new Set(), groups = [];
+let dragItem = null, selectedMember = null;
+let constraints = [];
 
-/* persistence */
-function save(){
-localStorage.setItem("groupMaker",JSON.stringify({
-names:names.value,
-constraints
-}));
+/* ── PERSISTENCE ── */
+function save() {
+  localStorage.setItem("groupMaker", JSON.stringify({ names: document.getElementById("names").value, constraints }));
 }
-function load(){
-let data=JSON.parse(localStorage.getItem("groupMaker")||"{}");
-if(data.names) names.value=data.names;
-if(data.constraints) constraints=data.constraints;
-renderConstraints();
+function loadSaved() {
+  let data = JSON.parse(localStorage.getItem("groupMaker") || "{}");
+  if (data.names) document.getElementById("names").value = data.names;
+  if (data.constraints) constraints = data.constraints;
+  renderConstraints();
 }
-load();
+loadSaved();
 
-/* UI */
-function showTab(e,t){
-mainTab.classList.toggle("hidden",t!=="main");
-constraintsTab.classList.toggle("hidden",t!=="constraints");
-document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
-e.target.classList.add("active");
+/* ── TABS ── */
+function showTab(e, t) {
+  document.getElementById("setupTab").classList.toggle("hidden", t !== "setup");
+  document.getElementById("constraintsTab").classList.toggle("hidden", t !== "constraints");
+  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
+  e.target.classList.add("active");
 }
 
-function setMode(m){
-mode=m;
-modeSize.classList.toggle("active",m==="size");
-modeCount.classList.toggle("active",m==="count");
-modeValue.value=(m==="size")?3:6;
+/* ── MODE ── */
+function setMode(m) {
+  mode = m;
+  document.getElementById("modeSize").classList.toggle("active", m === "size");
+  document.getElementById("modeCount").classList.toggle("active", m === "count");
+  document.getElementById("modeValue").value = (m === "size") ? 3 : 4;
+  document.getElementById("modeValue").title = m === "size" ? "Students per group" : "Number of groups";
 }
 
-function loadPreset(v){
-if(v==="mcfarlane"){
-names.value=`Adam
-Alec
-Aliyah
-Alyssa
-Anika
-Anna
-Ayden
-Clyde
-Émylie-Maude
-Jonathan
-Joshua
-Julian
-Junior
-Maejor
-Max
-Niaganii
-Phoenix
-Samuel`;
-}
+/* ── PRESETS ── */
+function loadPreset(v) {
+  if (v === "mcfarlane") {
+    document.getElementById("names").value = `Adam\nAlec\nAliyah\nAlyssa\nAnika\nAnna\nAyden\nClyde\nÉmylie-Maude\nJonathan\nJoshua\nJulian\nJunior\nMaejor\nMax\nNiaganii\nPhoenix\nSamuel`;
+  }
 }
 
-/* generate */
-function generate(e){
-let btn=e.target;
-btn.textContent="Generating...";
+/* ── GENERATE ── */
+function generate(e) {
+  const btn = e.target;
+  btn.textContent = "Generating...";
+  btn.disabled = true;
 
-try{
-allStudents=names.value.split("\n").map(x=>x.trim()).filter(x=>x);
-present=new Set(allStudents);
+  try {
+    allStudents = document.getElementById("names").value.split("\n").map(x => x.trim()).filter(x => x);
+    present = new Set(allStudents);
+    renderStudents();
+    updateConstraintDropdowns();
+    buildGroups();
+    save();
+  } catch (err) {
+    console.error(err);
+    alert("Error generating groups");
+  }
 
-renderStudents();
-buildGroups();
-save();
-}catch(err){
-console.error(err);
-alert("Error generating groups");
+  btn.textContent = "Generate Groups";
+  btn.disabled = false;
 }
 
-btn.textContent="Generate";
+/* ── STUDENTS ── */
+function renderStudents() {
+  studentsCard.style.display = "";
+  studentListEl.innerHTML = "";
+  allStudents.forEach(n => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.textContent = getMonster(n) + " " + n;
+    chip.dataset.name = n;
+    chip.onclick = () => togglePresence(n, chip);
+    studentListEl.appendChild(chip);
+  });
+  updatePresentCount();
 }
 
-/* students */
-function renderStudents(){
-studentList.innerHTML="";
-allStudents.forEach(n=>{
-let d=document.createElement("div");
-d.className="student";
-d.innerHTML=`${getMonster(n)} ${n} <input type="checkbox" checked>`;
-d.querySelector("input").onchange=e=>{
-e.target.checked?present.add(n):present.delete(n);
-buildGroups();
-};
-studentList.appendChild(d);
-});
+function togglePresence(n, chip) {
+  if (present.has(n)) {
+    present.delete(n);
+    chip.classList.add("absent");
+  } else {
+    present.add(n);
+    chip.classList.remove("absent");
+  }
+  updatePresentCount();
+  buildGroups();
 }
 
-/* SMART GROUPING */
-function buildGroups(){
-let list=[...present];
-
-if(list.length===0){
-groupsEl.innerHTML="<p>No students selected</p>";
-return;
+function updatePresentCount() {
+  document.getElementById("presentCount").textContent = `${present.size} present`;
 }
 
-let value=parseInt(modeValue.value)||3;
+/* ── BALANCED GROUP BUILDING ── */
+function buildGroups() {
+  const list = [...present];
+  if (list.length === 0) {
+    groupsEl.innerHTML = '<div class="empty-state">No students selected.</div>';
+    return;
+  }
 
-for(let attempt=0;attempt<50;attempt++){
+  const value = parseInt(document.getElementById("modeValue").value) || 3;
 
-let shuffled=[...list].sort(()=>Math.random()-0.5);
+  for (let attempt = 0; attempt < 100; attempt++) {
+    const tempGroups = attemptGrouping(list, value);
+    if (!tempGroups) continue;
 
-/* apply must-pairs (merge) */
-let merged=[];
-let used=new Set();
+    const bad = constraints.filter(c => c.type === "avoid").some(c =>
+      tempGroups.some(g => g.includes(c.a) && g.includes(c.b))
+    );
 
-constraints.filter(c=>c.type==="must").forEach(c=>{
-if(!used.has(c.a)&&!used.has(c.b)){
-merged.push([c.a,c.b]);
-used.add(c.a);used.add(c.b);
-}
-});
+    if (!bad) {
+      groups = tempGroups;
+      renderGroups();
+      return;
+    }
+  }
 
-shuffled.forEach(s=>{
-if(!used.has(s)) merged.push([s]);
-});
-
-/* create groups */
-let tempGroups=[];
-
-if(mode==="size"){
-let current=[];
-merged.forEach(chunk=>{
-if(current.length+chunk.length>value){
-tempGroups.push(current);
-current=[];
-}
-current=current.concat(chunk);
-});
-if(current.length) tempGroups.push(current);
-}else{
-let count=value;
-tempGroups=Array.from({length:count},()=>[]);
-merged.forEach((chunk,i)=>{
-tempGroups[i%count]=tempGroups[i%count].concat(chunk);
-});
+  // Fallback: use last attempt anyway
+  groups = attemptGrouping(list, value);
+  renderGroups();
 }
 
-/* check avoid constraints */
-let bad=false;
-constraints.filter(c=>c.type==="avoid").forEach(c=>{
-tempGroups.forEach(g=>{
-if(g.includes(c.a)&&g.includes(c.b)) bad=true;
-});
-});
+function attemptGrouping(list, value) {
+  // Shuffle
+  const shuffled = [...list].sort(() => Math.random() - 0.5);
 
-if(!bad){
-groups=tempGroups;
-renderGroups();
-return;
-}
-}
+  // Determine number of groups
+  let numGroups;
+  if (mode === "size") {
+    numGroups = Math.ceil(list.length / value);
+  } else {
+    numGroups = Math.min(value, list.length);
+  }
 
-/* fallback */
-groups=[list];
-renderGroups();
-}
+  // Initialize empty groups
+  const tempGroups = Array.from({ length: numGroups }, () => []);
 
-/* render groups */
-function renderGroups(){
-groupsEl.innerHTML="";
+  // Lock in must-pair constraints first
+  const used = new Set();
+  const mustPairs = constraints.filter(c => c.type === "must");
 
-groups.forEach((g,i)=>{
-let d=document.createElement("div");
-d.className="group";
-d.innerHTML="<h4>Group "+(i+1)+"</h4>";
+  mustPairs.forEach(c => {
+    if (present.has(c.a) && present.has(c.b) && !used.has(c.a) && !used.has(c.b)) {
+      // Find smallest group and add them
+      const smallest = tempGroups.reduce((min, g, i) => g.length < tempGroups[min].length ? i : min, 0);
+      tempGroups[smallest].push(c.a, c.b);
+      used.add(c.a);
+      used.add(c.b);
+    }
+  });
 
-d.ondragover=e=>e.preventDefault();
-d.ondrop=()=>{
-if(dragItem){
-groups.forEach(gr=>{
-let idx=gr.indexOf(dragItem);
-if(idx>-1) gr.splice(idx,1);
-});
-g.push(dragItem);
-renderGroups();
-}
-};
+  // Distribute remaining students round-robin (balanced)
+  shuffled.filter(s => !used.has(s)).forEach(s => {
+    const smallest = tempGroups.reduce((min, g, i) => g.length < tempGroups[min].length ? i : min, 0);
+    tempGroups[smallest].push(s);
+  });
 
-g.forEach(n=>{
-let el=document.createElement("div");
-el.className="member";
-el.draggable=true;
-el.textContent=getMonster(n)+" "+n;
-
-el.ondragstart=()=>{dragItem=n;};
-el.ondragend=()=>{dragItem=null;};
-
-/* TOUCH */
-el.onclick=()=>{
-if(!selected){
-selected=n;
-el.style.outline="2px solid red";
-}else{
-groups.forEach(gr=>{
-let idx=gr.indexOf(selected);
-if(idx>-1) gr.splice(idx,1);
-});
-g.push(selected);
-selected=null;
-renderGroups();
-}
-};
-
-d.appendChild(el);
-});
-
-groupsEl.appendChild(d);
-});
+  return tempGroups.filter(g => g.length > 0);
 }
 
-/* constraints */
-function addConstraint(type){
-let a=pairA.value.trim();
-let b=pairB.value.trim();
-if(!a||!b) return;
+/* ── RENDER GROUPS ── */
+function renderGroups() {
+  groupsEl.innerHTML = "";
 
-constraints.push({a,b,type});
-pairA.value="";pairB.value="";
-renderConstraints();
-save();
+  groups.forEach((g, i) => {
+    const card = document.createElement("div");
+    card.className = "group-card";
+    card.style.animationDelay = `${i * 0.04}s`;
+    card.innerHTML = `<h4>Group ${i + 1}</h4>`;
+
+    card.ondragover = e => { e.preventDefault(); card.classList.add("drag-over"); };
+    card.ondragleave = () => card.classList.remove("drag-over");
+    card.ondrop = () => {
+      card.classList.remove("drag-over");
+      if (dragItem !== null) {
+        groups.forEach(gr => {
+          const idx = gr.indexOf(dragItem);
+          if (idx > -1) gr.splice(idx, 1);
+        });
+        g.push(dragItem);
+        dragItem = null;
+        renderGroups();
+      }
+    };
+
+    g.forEach(n => {
+      const el = document.createElement("div");
+      el.className = "member";
+      el.draggable = true;
+      el.textContent = getMonster(n) + " " + n;
+
+      el.ondragstart = () => { dragItem = n; el.classList.add("dragging"); };
+      el.ondragend = () => { dragItem = null; el.classList.remove("dragging"); };
+
+      // Touch / click to swap
+      el.onclick = () => {
+        if (!selectedMember) {
+          selectedMember = n;
+          el.classList.add("selected");
+        } else if (selectedMember === n) {
+          selectedMember = null;
+          el.classList.remove("selected");
+        } else {
+          // Swap groups
+          let fromGroup = null, toGroup = g;
+          groups.forEach(gr => { if (gr.includes(selectedMember)) fromGroup = gr; });
+          if (fromGroup) {
+            fromGroup.splice(fromGroup.indexOf(selectedMember), 1);
+            toGroup.push(selectedMember);
+            selectedMember = null;
+            renderGroups();
+          }
+        }
+      };
+
+      card.appendChild(el);
+    });
+
+    groupsEl.appendChild(card);
+  });
+  applyFullscreenFontSize();
 }
 
-function renderConstraints(){
-constraintList.innerHTML="";
-constraints.forEach((c,i)=>{
-let li=document.createElement("li");
-li.textContent=`${c.a} ${c.type==="must"?"↔":"✖"} ${c.b}`;
-
-let del=document.createElement("button");
-del.textContent="X";
-del.onclick=()=>{
-constraints.splice(i,1);
-renderConstraints();
-save();
-};
-
-li.appendChild(del);
-constraintList.appendChild(li);
-});
+/* ── CONSTRAINTS ── */
+function updateConstraintDropdowns() {
+  const pairA = document.getElementById("pairA");
+  const pairB = document.getElementById("pairB");
+  [pairA, pairB].forEach(sel => {
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">Select student…</option>';
+    allStudents.forEach(n => {
+      const opt = document.createElement("option");
+      opt.value = n;
+      opt.textContent = getMonster(n) + " " + n;
+      sel.appendChild(opt);
+    });
+    sel.value = prev;
+  });
 }
 
-function getMonster(n){
-return monsters[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%monsters.length];
+function addConstraint(type) {
+  const a = document.getElementById("pairA").value;
+  const b = document.getElementById("pairB").value;
+  if (!a || !b || a === b) return;
+  // Avoid duplicates
+  const exists = constraints.some(c => (c.a === a && c.b === b) || (c.a === b && c.b === a));
+  if (exists) return;
+
+  constraints.push({ a, b, type });
+  document.getElementById("pairA").value = "";
+  document.getElementById("pairB").value = "";
+  renderConstraints();
+  save();
 }
 
-function shuffleGroups(){ buildGroups(); }
-function toggleFullscreen(){ app.classList.toggle("fullscreen"); }
+function renderConstraints() {
+  const list = document.getElementById("constraintList");
+  if (constraints.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;">No constraints yet.</div>';
+    return;
+  }
+  list.innerHTML = "";
+  constraints.forEach((c, i) => {
+    const item = document.createElement("div");
+    item.className = "constraint-item";
+    const badge = c.type === "must"
+      ? `<span class="badge badge-must">Together</span>`
+      : `<span class="badge badge-avoid">Apart</span>`;
+    item.innerHTML = `${badge} ${getMonster(c.a)} ${c.a} & ${getMonster(c.b)} ${c.b}
+      <button class="del" title="Remove" onclick="removeConstraint(${i})">✕</button>`;
+    list.appendChild(item);
+  });
+}
+
+function removeConstraint(i) {
+  constraints.splice(i, 1);
+  renderConstraints();
+  save();
+  if (groups.length) buildGroups();
+}
+
+/* ── HELPERS ── */
+function getMonster(n) {
+  return monsters[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % monsters.length];
+}
+
+function shuffleGroups() { buildGroups(); }
+
+function toggleFullscreen() {
+  document.body.classList.toggle("fullscreen");
+  applyFullscreenFontSize();
+}
+
+function applyFullscreenFontSize() {
+  const groupsGrid = document.getElementById("groups");
+  if (!document.body.classList.contains("fullscreen")) {
+    groupsGrid.style.fontSize = "";
+    return;
+  }
+  // Scale font based on total number of students across all groups
+  const totalStudents = groups.reduce((sum, g) => sum + g.length, 0);
+  const numGroups = groups.length;
+  // Fewer students / groups = bigger font
+  const base = 1.6; // rem
+  const scale = Math.max(0.85, Math.min(base, base - (totalStudents - 6) * 0.045 - (numGroups - 2) * 0.03));
+  groupsGrid.style.fontSize = scale + "rem";
+}
+
+// Init constraint dropdowns in case names were saved
+if (document.getElementById("names").value) {
+  allStudents = document.getElementById("names").value.split("\n").map(x => x.trim()).filter(x => x);
+  present = new Set(allStudents);
+  updateConstraintDropdowns();
+}
+
+/* ── FLOATING MONSTERS ── */
+(function() {
+  const COUNT = 16;
+  const pool = ["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
+
+  const particles = Array.from({ length: COUNT }, () => {
+    const el = document.createElement("div");
+    el.className = "monster";
+    el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    document.body.appendChild(el);
+
+    return {
+      el,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      size: 22 + Math.random() * 18,
+    };
+  });
+
+  particles.forEach(p => { p.el.style.fontSize = p.size + "px"; });
+
+  function tick() {
+    const W = window.innerWidth, H = window.innerHeight;
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0)   { p.x = 0;  p.vx *= -1; }
+      if (p.x > W)   { p.x = W;  p.vx *= -1; }
+      if (p.y < 0)   { p.y = 0;  p.vy *= -1; }
+      if (p.y > H)   { p.y = H;  p.vy *= -1; }
+      p.el.style.left = p.x + "px";
+      p.el.style.top  = p.y + "px";
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
 </script>
-
 </body>
 </html>
