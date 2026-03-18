@@ -333,25 +333,33 @@ button:active { transform: scale(0.95); }
   font-size: 0.95rem;
 }
 
-/* FULLSCREEN EXIT BUTTON */
-#exitFullscreenBtn {
+/* FULLSCREEN TOOLBAR */
+#fullscreenToolbar {
   display: none;
   position: fixed;
-  top: 16px;
-  right: 16px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 999;
   background: rgba(255,107,157,0.92);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  padding: 10px 16px;
-  font-size: 0.9rem;
-  font-weight: 800;
-  cursor: pointer;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 8px 12px;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
-#exitFullscreenBtn:hover { background: var(--pink-dark); }
+#fullscreenToolbar button {
+  background: rgba(255,255,255,0.25);
+  color: white;
+  font-weight: 800;
+  font-size: 0.88rem;
+  border-radius: 10px;
+  padding: 8px 14px;
+  border: none;
+  cursor: pointer;
+}
+#fullscreenToolbar button:hover { background: rgba(255,255,255,0.4); }
 
 /* FULLSCREEN */
 body.fullscreen header,
@@ -359,21 +367,34 @@ body.fullscreen .sidebar,
 body.fullscreen .main-content > :not(.groups-card) {
   display: none;
 }
-body.fullscreen #exitFullscreenBtn {
-  display: block;
+body.fullscreen #fullscreenToolbar {
+  display: flex;
+}
+body.fullscreen {
+  overflow: hidden;
 }
 body.fullscreen .app {
   grid-template-columns: 1fr;
   max-width: 100%;
-  padding: 24px;
+  padding: 20px 20px 70px 20px; /* bottom padding clears toolbar */
+  height: 100vh;
+}
+body.fullscreen .main-content {
+  height: calc(100vh - 40px - 70px); /* viewport minus top/bottom padding */
+}
+body.fullscreen .groups-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 body.fullscreen .groups-grid {
   justify-content: center;
+  flex: 1;
 }
 body.fullscreen .group-card {
-  min-width: 180px;
+  min-width: 160px;
 }
-/* Font scaling is handled by JS based on group count */
+/* Font size filled to screen via JS */
 
 /* HIDDEN */
 .hidden { display: none !important; }
@@ -403,7 +424,10 @@ body.fullscreen .group-card {
 </head>
 <body>
 
-<button id="exitFullscreenBtn" onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+<div id="fullscreenToolbar">
+  <button onclick="shuffleGroups()">🔀 Shuffle</button>
+  <button onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+</div>
 
 <header>
   <h1>👾 Monster Group Maker</h1>
@@ -798,19 +822,32 @@ function toggleFullscreen() {
   applyFullscreenFontSize();
 }
 
+window.addEventListener("resize", applyFullscreenFontSize);
+
 function applyFullscreenFontSize() {
   const groupsGrid = document.getElementById("groups");
-  if (!document.body.classList.contains("fullscreen")) {
-    groupsGrid.style.fontSize = "";
-    return;
-  }
-  // Scale font based on total number of students across all groups
-  const totalStudents = groups.reduce((sum, g) => sum + g.length, 0);
+  groupsGrid.style.fontSize = "";
+
+  if (!document.body.classList.contains("fullscreen") || groups.length === 0) return;
+
+  // Available height: viewport minus app padding (20px top) minus toolbar (70px) minus card header (~50px)
+  const availableH = window.innerHeight - 20 - 70 - 50;
   const numGroups = groups.length;
-  // Fewer students / groups = bigger font
-  const base = 1.6; // rem
-  const scale = Math.max(0.85, Math.min(base, base - (totalStudents - 6) * 0.045 - (numGroups - 2) * 0.03));
-  groupsGrid.style.fontSize = scale + "rem";
+  const maxPerGroup = Math.max(...groups.map(g => g.length));
+
+  // Each group card has: h4 (~28px) + members. Try to fit all rows within availableH.
+  // Binary search for the largest font size that fits.
+  let lo = 10, hi = 72, best = 14;
+  for (let iter = 0; iter < 12; iter++) {
+    const mid = (lo + hi) / 2;
+    // Row height ≈ font * 2.2 (line height + padding)
+    const rowH = mid * 2.2;
+    const cardH = 28 + maxPerGroup * rowH; // h4 + members
+    if (cardH <= availableH) { best = mid; lo = mid; }
+    else hi = mid;
+  }
+
+  groupsGrid.style.fontSize = best + "px";
 }
 
 // Init constraint dropdowns in case names were saved
