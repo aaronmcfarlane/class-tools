@@ -3,647 +3,838 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAVEFORM</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&display=swap" rel="stylesheet">
+<title>🎵 Waveform Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #050508;
-    --panel: #0a0a10;
-    --cyan: #00f5ff;
-    --green: #00ff88;
-    --amber: #ffaa00;
-    --red: #ff3355;
-    --grid: rgba(0, 245, 255, 0.04);
-    --border: rgba(0, 245, 255, 0.15);
-    --glow: 0 0 20px rgba(0, 245, 255, 0.4);
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg:          #f7f2ee;
+  --card:        #ffffff;
+  --text:        #2a2420;
+  --muted:       #9e8e80;
+  --blue:        #4a7fc1;
+  --blue-light:  #e6eefa;
+  --teal:        #3a9e8f;
+  --teal-light:  #e0f5f2;
+  --gold:        #d4a843;
+  --gold-light:  #fdf5e0;
+  --red:         #c94040;
+  --red-light:   #fdeaea;
+  --green:       #4a9e6a;
+  --shadow:      0 4px 20px rgba(40,60,100,0.10);
+  --radius:      18px;
+}
 
-  body {
-    background: var(--bg);
-    color: var(--cyan);
-    font-family: 'Share Tech Mono', monospace;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    cursor: crosshair;
-  }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  /* Scanline overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 100;
-  }
+/* FLOATING DECO */
+.deco {
+  position: fixed;
+  opacity: 0.09;
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
+}
 
-  /* CRT vignette */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.75) 100%);
-    pointer-events: none;
-    z-index: 99;
-  }
+/* HEADER */
+header {
+  background: var(--card);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(40,60,100,0.10);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
 
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    background: var(--panel);
-  }
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--blue);
+}
 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 0.25em;
-    color: var(--cyan);
-    text-shadow: var(--glow);
-  }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  .logo span {
-    color: var(--green);
-  }
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--muted);
+  border: 2px solid #e8e0d8;
+}
+.status-pill.live {
+  background: var(--teal-light);
+  border-color: var(--teal);
+  color: var(--teal);
+}
 
-  .status-row {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-  }
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex-shrink: 0;
+}
+.status-pill.live .status-dot {
+  background: var(--teal);
+  box-shadow: 0 0 6px var(--teal);
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
 
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--red);
-    display: inline-block;
-    margin-right: 6px;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
+/* BUTTONS */
+button {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: transform 0.12s, background 0.15s;
+}
+button:active { transform: scale(0.95); }
+button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .status-dot.live {
-    background: var(--green);
-    box-shadow: 0 0 10px var(--green);
-    animation: pulse-dot 1.2s ease-in-out infinite;
-  }
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  font-weight: 800;
+}
+.btn-primary:hover:not(:disabled) { background: #3a6aaa; }
 
-  @keyframes pulse-dot {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
+.btn-danger {
+  background: var(--red-light);
+  color: var(--red);
+  font-weight: 800;
+  border: 2px solid transparent;
+}
+.btn-danger:hover:not(:disabled) { background: var(--red); color: white; }
 
-  .stat {
-    color: rgba(0, 245, 255, 0.5);
-  }
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 2px solid #e8e0d8;
+  font-size: 0.82rem;
+}
+.btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+.btn-ghost.active {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  color: var(--blue);
+}
 
-  .stat b {
-    color: var(--cyan);
-  }
+/* MAIN LAYOUT */
+.app {
+  flex: 1;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
 
-  /* Main canvas area */
-  .viz-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    overflow: hidden;
-    position: relative;
-  }
+/* SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
 
-  .canvas-wrap {
-    position: relative;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
 
-  .canvas-label {
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
-    color: rgba(0, 245, 255, 0.35);
-    padding: 8px 28px 4px;
-    text-transform: uppercase;
-  }
+.card-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
 
-  canvas {
-    width: 100%;
-    flex: 1;
-    display: block;
-  }
+/* CONTROLS */
+.control-row {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
 
-  .divider {
-    height: 1px;
-    background: var(--border);
-    flex-shrink: 0;
-  }
+.control-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-  /* Controls bar */
-  .controls {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 14px 28px;
-    border-top: 1px solid var(--border);
-    background: var(--panel);
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
+.control-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+.control-label span {
+  color: var(--text);
+  font-weight: 900;
+}
 
-  .btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--cyan);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    padding: 8px 20px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #e8e0d8;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--blue);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(74,127,193,0.4);
+  transition: transform 0.12s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-  .btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--cyan);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.2s;
-    z-index: -1;
-  }
+/* MODE BUTTONS */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
 
-  .btn:hover {
-    color: var(--bg);
-    border-color: var(--cyan);
-    box-shadow: var(--glow);
-  }
+.mode-btn {
+  background: #f0ebe6;
+  color: var(--muted);
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 8px 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+}
+.mode-btn:hover { border-color: var(--blue); color: var(--blue); }
+.mode-btn.active {
+  background: var(--blue-light);
+  border-color: var(--blue);
+  color: var(--blue);
+}
 
-  .btn:hover::before {
-    transform: scaleX(1);
-  }
+/* ACTION BTNS */
+.action-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.action-row button { width: 100%; padding: 11px; font-size: 0.95rem; }
 
-  .btn.active {
-    background: var(--cyan);
-    color: var(--bg);
-    box-shadow: var(--glow);
-  }
+/* CANVAS AREA */
+.canvas-area { display: flex; flex-direction: column; gap: 0; }
 
-  .btn.danger {
-    border-color: var(--red);
-    color: var(--red);
-  }
+.canvas-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 18px 20px 20px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
 
-  .btn.danger:hover {
-    background: var(--red);
-    color: var(--bg);
-    box-shadow: 0 0 20px rgba(255,51,85,0.4);
-  }
+.canvas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
 
-  .btn.danger::before { background: var(--red); }
+.canvas-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
 
-  .sep {
-    width: 1px;
-    height: 24px;
-    background: var(--border);
-  }
+.canvas-subtitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
 
-  .control-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.65rem;
-    color: rgba(0,245,255,0.5);
-    letter-spacing: 0.1em;
-  }
+/* The actual canvas */
+.wave-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f0f5ff;
+  border: 2px solid #dde8f8;
+}
 
-  input[type=range] {
-    -webkit-appearance: none;
-    width: 80px;
-    height: 2px;
-    background: var(--border);
-    outline: none;
-    cursor: pointer;
-  }
+canvas {
+  display: block;
+  width: 100%;
+  height: 320px;
+}
 
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
-    background: var(--cyan);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--cyan);
-  }
+/* Idle overlay */
+#idle-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+  transition: opacity 0.4s;
+  background: rgba(240,245,255,0.85);
+  border-radius: 12px;
+}
+#idle-overlay.hidden { opacity: 0; }
 
-  .mode-btns {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-  }
+.idle-icon {
+  font-size: 2.8rem;
+  animation: float 3s ease-in-out infinite;
+}
+.idle-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
 
-  .mode-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: rgba(0,245,255,0.4);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    padding: 5px 12px;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: all 0.2s;
-  }
+/* AXIS LABELS */
+.axis-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+.axis-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
 
-  .mode-btn.active {
-    border-color: var(--green);
-    color: var(--green);
-    box-shadow: 0 0 10px rgba(0,255,136,0.3);
-  }
+/* STAT CHIPS */
+.stat-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.stat-chip {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  border: 2px solid #e8e0d8;
+}
+.stat-chip b { color: var(--text); }
 
-  /* Idle overlay */
-  #idle-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    pointer-events: none;
-    transition: opacity 0.5s;
-  }
+/* VOL meter */
+.vol-track {
+  flex: 1;
+  height: 6px;
+  background: #e8e0d8;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 1px;
+}
+.vol-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--teal), var(--gold), var(--red));
+  transition: width 0.05s;
+}
+.vol-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+.vol-label { font-size: 0.72rem; font-weight: 800; color: var(--muted); white-space: nowrap; }
 
-  #idle-overlay.hidden {
-    opacity: 0;
-  }
+/* FULLSCREEN */
+#fullscreenToolbar {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: rgba(74,127,193,0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 8px 12px;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+#fullscreenToolbar button {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-weight: 800;
+  font-size: 0.88rem;
+  border-radius: 10px;
+  padding: 8px 14px;
+  border: none;
+}
+#fullscreenToolbar button:hover { background: rgba(255,255,255,0.35); }
 
-  .idle-icon {
-    font-size: 3rem;
-    opacity: 0.15;
-    animation: float 3s ease-in-out infinite;
-  }
+body.fullscreen header,
+body.fullscreen .sidebar {
+  display: none;
+}
+body.fullscreen #fullscreenToolbar { display: flex; }
+body.fullscreen .app {
+  grid-template-columns: 1fr;
+  max-width: 100%;
+  padding: 20px 20px 70px 20px;
+  height: 100vh;
+  align-items: stretch;
+}
+body.fullscreen .canvas-area {
+  height: 100%;
+}
+body.fullscreen .canvas-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+body.fullscreen .wave-wrap {
+  flex: 1;
+}
+body.fullscreen canvas {
+  height: 100%;
+}
 
-  .idle-text {
-    font-size: 0.75rem;
-    letter-spacing: 0.25em;
-    color: rgba(0,245,255,0.2);
-    text-transform: uppercase;
-  }
+/* RESPONSIVE */
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; }
+}
 
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
-
-  /* dB meter */
-  .db-meter {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.65rem;
-    color: rgba(0,245,255,0.5);
-  }
-
-  .db-bar-track {
-    width: 100px;
-    height: 6px;
-    background: rgba(0,245,255,0.08);
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .db-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--green), var(--amber), var(--red));
-    transition: width 0.05s;
-  }
+/* ANIMATE IN */
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.card, .canvas-card { animation: popIn 0.25s ease both; }
 </style>
 </head>
 <body>
 
+<div id="fullscreenToolbar">
+  <button onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+</div>
+
 <header>
-  <div class="logo">WAVE<span>FORM</span></div>
-  <div class="status-row">
-    <div>
-      <span class="status-dot" id="status-dot"></span>
-      <span id="status-text">OFFLINE</span>
+  <h1>🎵 Waveform Visualizer</h1>
+  <div class="header-right">
+    <div class="status-pill" id="status-pill">
+      <div class="status-dot"></div>
+      <span id="status-text">Offline</span>
     </div>
-    <div class="stat">SR: <b id="stat-sr">–</b> Hz</div>
-    <div class="stat">FFT: <b id="stat-fft">–</b></div>
-    <div class="db-meter">
-      VOL:
-      <div class="db-bar-track"><div class="db-bar-fill" id="db-fill"></div></div>
-    </div>
+    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 Fullscreen</button>
   </div>
 </header>
 
-<div class="viz-container">
-  <div id="idle-overlay">
-    <div class="idle-icon">◈</div>
-    <div class="idle-text">Press [ START ] to capture microphone input</div>
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="card action-row">
+      <button class="btn-primary" id="start-btn" onclick="startAudio()">▶ Start Microphone</button>
+      <button class="btn-danger" id="stop-btn" onclick="stopAudio()" disabled>■ Stop</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Display Mode</div>
+      <div class="mode-grid">
+        <button class="mode-btn active" id="mode-line"   onclick="setMode('line')">〰 Line</button>
+        <button class="mode-btn"        id="mode-fill"   onclick="setMode('fill')">▨ Fill</button>
+        <button class="mode-btn"        id="mode-mirror" onclick="setMode('mirror')">⇅ Mirror</button>
+        <button class="mode-btn"        id="mode-dots"   onclick="setMode('dots')">· · Dots</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Settings</div>
+      <div class="control-row">
+
+        <div class="control-item">
+          <div class="control-label">Amplitude (Gain) <span id="gain-val">3.0×</span></div>
+          <input type="range" id="gain-slider" min="0.5" max="12" step="0.1" value="3"
+            oninput="document.getElementById('gain-val').textContent = parseFloat(this.value).toFixed(1)+'×'">
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">Smoothing <span id="smooth-val">70%</span></div>
+          <input type="range" id="smooth-slider" min="0" max="0.95" step="0.05" value="0.7"
+            oninput="
+              document.getElementById('smooth-val').textContent = Math.round(this.value*100)+'%';
+              if(analyser) analyser.smoothingTimeConstant = parseFloat(this.value);
+            ">
+        </div>
+
+        <div class="control-item">
+          <div class="control-label">Zoom (Time Window) <span id="zoom-val">100%</span></div>
+          <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100"
+            oninput="document.getElementById('zoom-val').textContent = this.value+'%'">
+        </div>
+
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- CANVAS AREA -->
+  <div class="canvas-area">
+    <div class="canvas-card">
+      <div class="canvas-header">
+        <div>
+          <div class="canvas-title">Oscilloscope</div>
+          <div class="canvas-subtitle">Time Domain — Amplitude vs. Time</div>
+        </div>
+      </div>
+
+      <div class="wave-wrap">
+        <canvas id="wave-canvas"></canvas>
+        <div id="idle-overlay">
+          <div class="idle-icon">🎵</div>
+          <div class="idle-text">Press ▶ Start Microphone to begin</div>
+        </div>
+      </div>
+
+      <div class="axis-labels">
+        <div class="axis-label">← Earlier</div>
+        <div class="axis-label" style="color:var(--blue);font-size:0.68rem;">TIME →</div>
+        <div class="axis-label">Now →</div>
+      </div>
+
+      <div class="vol-row">
+        <div class="vol-label">AMPLITUDE</div>
+        <div class="vol-track"><div class="vol-fill" id="vol-fill"></div></div>
+        <div class="vol-label" id="vol-pct">0%</div>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-chip">Sample Rate: <b id="stat-sr">—</b> Hz</div>
+        <div class="stat-chip">Buffer: <b id="stat-buf">—</b> samples</div>
+        <div class="stat-chip">Mode: <b id="stat-mode">Line</b></div>
+      </div>
+    </div>
   </div>
 
-  <div class="canvas-wrap" style="flex: 1.2;">
-    <div class="canvas-label">◦ Oscilloscope — Time Domain</div>
-    <canvas id="wave-canvas"></canvas>
-  </div>
-
-  <div class="divider"></div>
-
-  <div class="canvas-wrap" style="flex: 0.8;">
-    <div class="canvas-label">◦ Spectrum Analyzer — Frequency Domain</div>
-    <canvas id="freq-canvas"></canvas>
-  </div>
-</div>
-
-<div class="controls">
-  <button class="btn" id="start-btn" onclick="startAudio()">[ START ]</button>
-  <button class="btn danger" id="stop-btn" onclick="stopAudio()" disabled>[ STOP ]</button>
-
-  <div class="sep"></div>
-
-  <div class="control-group">
-    GAIN
-    <input type="range" id="gain-slider" min="1" max="10" step="0.1" value="3">
-  </div>
-
-  <div class="control-group">
-    SMOOTH
-    <input type="range" id="smooth-slider" min="0" max="0.95" step="0.05" value="0.6">
-  </div>
-
-  <div class="sep"></div>
-
-  <div class="mode-btns">
-    <button class="mode-btn active" id="mode-line" onclick="setWaveMode('line')">LINE</button>
-    <button class="mode-btn" id="mode-fill" onclick="setWaveMode('fill')">FILL</button>
-    <button class="mode-btn" id="mode-mirror" onclick="setWaveMode('mirror')">MIRROR</button>
-    <button class="mode-btn" id="mode-dots" onclick="setWaveMode('dots')">DOTS</button>
-  </div>
 </div>
 
 <script>
-  let audioCtx, analyser, source, stream;
-  let animFrame;
-  let waveMode = 'line';
-  let isRunning = false;
+let audioCtx, analyser, source, stream;
+let animFrame;
+let waveMode = 'line';
+let isRunning = false;
 
-  const waveCanvas = document.getElementById('wave-canvas');
-  const freqCanvas = document.getElementById('freq-canvas');
-  const wCtx = waveCanvas.getContext('2d');
-  const fCtx = freqCanvas.getContext('2d');
+const waveCanvas = document.getElementById('wave-canvas');
+const wCtx = waveCanvas.getContext('2d');
 
-  function resizeCanvases() {
-    waveCanvas.width = waveCanvas.offsetWidth * devicePixelRatio;
-    waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
-    freqCanvas.width = freqCanvas.offsetWidth * devicePixelRatio;
-    freqCanvas.height = freqCanvas.offsetHeight * devicePixelRatio;
+function resizeCanvas() {
+  waveCanvas.width  = waveCanvas.offsetWidth  * devicePixelRatio;
+  waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function setMode(mode) {
+  waveMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode-' + mode).classList.add('active');
+  document.getElementById('stat-mode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+}
+
+async function startAudio() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+
+    // Large FFT = more samples = smoother, more stable wave — great for teaching
+    analyser.fftSize = 8192;
+    analyser.smoothingTimeConstant = parseFloat(document.getElementById('smooth-slider').value);
+
+    source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+
+    document.getElementById('stat-sr').textContent  = audioCtx.sampleRate.toLocaleString();
+    document.getElementById('stat-buf').textContent = analyser.frequencyBinCount.toLocaleString();
+
+    const pill = document.getElementById('status-pill');
+    pill.classList.add('live');
+    document.getElementById('status-text').textContent = 'Live';
+
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('stop-btn').disabled  = false;
+    document.getElementById('idle-overlay').classList.add('hidden');
+
+    isRunning = true;
+    draw();
+
+  } catch (err) {
+    alert('Microphone access denied or unavailable.\n\n' + err.message);
+  }
+}
+
+function stopAudio() {
+  isRunning = false;
+  cancelAnimationFrame(animFrame);
+  if (source)   source.disconnect();
+  if (audioCtx) audioCtx.close();
+  if (stream)   stream.getTracks().forEach(t => t.stop());
+
+  const pill = document.getElementById('status-pill');
+  pill.classList.remove('live');
+  document.getElementById('status-text').textContent = 'Offline';
+  document.getElementById('start-btn').disabled = false;
+  document.getElementById('stop-btn').disabled  = true;
+  document.getElementById('idle-overlay').classList.remove('hidden');
+  document.getElementById('vol-fill').style.width = '0%';
+  document.getElementById('vol-pct').textContent = '0%';
+
+  wCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+}
+
+function draw() {
+  if (!isRunning) return;
+  animFrame = requestAnimationFrame(draw);
+  resizeCanvas();
+
+  const gain   = parseFloat(document.getElementById('gain-slider').value);
+  const zoom   = parseFloat(document.getElementById('zoom-slider').value) / 100;
+  const bufLen = analyser.frequencyBinCount;
+  const data   = new Uint8Array(bufLen);
+  analyser.getByteTimeDomainData(data);
+
+  // Volume meter
+  const rms = Math.sqrt(data.reduce((s, v) => s + ((v - 128) / 128) ** 2, 0) / bufLen);
+  const vol = Math.min(100, Math.round(rms * 300));
+  document.getElementById('vol-fill').style.width = vol + '%';
+  document.getElementById('vol-pct').textContent  = vol + '%';
+
+  drawWaveform(data, gain, zoom);
+}
+
+function drawWaveform(data, gain, zoom) {
+  const W = waveCanvas.width;
+  const H = waveCanvas.height;
+  wCtx.clearRect(0, 0, W, H);
+
+  // Background
+  wCtx.fillStyle = '#f0f5ff';
+  wCtx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  wCtx.strokeStyle = 'rgba(74,127,193,0.08)';
+  wCtx.lineWidth = 1;
+  [0.25, 0.5, 0.75].forEach(p => {
+    wCtx.beginPath(); wCtx.moveTo(0, H * p); wCtx.lineTo(W, H * p); wCtx.stroke();
+  });
+  for (let i = 1; i < 8; i++) {
+    wCtx.beginPath(); wCtx.moveTo(W * i / 8, 0); wCtx.lineTo(W * i / 8, H); wCtx.stroke();
   }
 
-  window.addEventListener('resize', resizeCanvases);
-  resizeCanvases();
+  // Centre axis
+  wCtx.strokeStyle = 'rgba(74,127,193,0.22)';
+  wCtx.lineWidth = 1.5;
+  wCtx.beginPath(); wCtx.moveTo(0, H / 2); wCtx.lineTo(W, H / 2); wCtx.stroke();
 
-  function setWaveMode(mode) {
-    waveMode = mode;
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('mode-' + mode).classList.add('active');
-  }
+  // Axis labels inside canvas
+  wCtx.fillStyle = 'rgba(74,127,193,0.35)';
+  wCtx.font = `${11 * devicePixelRatio}px Nunito, sans-serif`;
+  wCtx.fillText('+', 8 * devicePixelRatio, 18 * devicePixelRatio);
+  wCtx.fillText('0', 8 * devicePixelRatio, H / 2 - 4 * devicePixelRatio);
+  wCtx.fillText('−', 8 * devicePixelRatio, H - 8 * devicePixelRatio);
 
-  async function startAudio() {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = audioCtx.createAnalyser();
+  // How many samples to show (zoom)
+  const sampleCount = Math.floor(data.length * zoom);
+  const sliceW = W / (sampleCount - 1);
 
-      const smooth = parseFloat(document.getElementById('smooth-slider').value);
-      analyser.fftSize = 2048;
-      analyser.smoothingTimeConstant = smooth;
+  const blue = 'rgba(74,127,193,';
 
-      source = audioCtx.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      document.getElementById('stat-sr').textContent = audioCtx.sampleRate.toLocaleString();
-      document.getElementById('stat-fft').textContent = analyser.fftSize;
-      document.getElementById('status-dot').classList.add('live');
-      document.getElementById('status-text').textContent = 'LIVE';
-      document.getElementById('start-btn').disabled = true;
-      document.getElementById('stop-btn').disabled = false;
-      document.getElementById('idle-overlay').classList.add('hidden');
-
-      isRunning = true;
-      draw();
-
-      document.getElementById('smooth-slider').addEventListener('input', () => {
-        if (analyser) analyser.smoothingTimeConstant = parseFloat(document.getElementById('smooth-slider').value);
-      });
-
-    } catch (err) {
-      alert('Microphone access denied or unavailable.\n\n' + err.message);
+  if (waveMode === 'line') {
+    // Outer glow
+    wCtx.save();
+    wCtx.shadowBlur  = 14 * devicePixelRatio;
+    wCtx.shadowColor = 'rgba(74,127,193,0.5)';
+    wCtx.strokeStyle = blue + '0.9)';
+    wCtx.lineWidth   = 2.5 * devicePixelRatio;
+    wCtx.lineJoin    = 'round';
+    wCtx.beginPath();
+    for (let i = 0; i < sampleCount; i++) {
+      const x = i * sliceW;
+      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
     }
-  }
+    wCtx.stroke();
+    wCtx.restore();
 
-  function stopAudio() {
-    isRunning = false;
-    cancelAnimationFrame(animFrame);
-    if (source) source.disconnect();
-    if (audioCtx) audioCtx.close();
-    if (stream) stream.getTracks().forEach(t => t.stop());
-
-    document.getElementById('status-dot').classList.remove('live');
-    document.getElementById('status-text').textContent = 'OFFLINE';
-    document.getElementById('start-btn').disabled = false;
-    document.getElementById('stop-btn').disabled = true;
-    document.getElementById('idle-overlay').classList.remove('hidden');
-    document.getElementById('db-fill').style.width = '0%';
-
-    // Clear canvases
-    wCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
-    fCtx.clearRect(0, 0, freqCanvas.width, freqCanvas.height);
-  }
-
-  // Persistent trail buffer for waveform
-  let trailPhase = 0;
-
-  function draw() {
-    if (!isRunning) return;
-    animFrame = requestAnimationFrame(draw);
-    resizeCanvases();
-
-    const gain = parseFloat(document.getElementById('gain-slider').value);
-    const bufLen = analyser.frequencyBinCount;
-    const timeData = new Uint8Array(bufLen);
-    const freqData = new Uint8Array(bufLen);
-    analyser.getByteTimeDomainData(timeData);
-    analyser.getByteFrequencyData(freqData);
-
-    // Update dB meter
-    const rms = Math.sqrt(timeData.reduce((s, v) => s + ((v - 128) / 128) ** 2, 0) / bufLen);
-    document.getElementById('db-fill').style.width = Math.min(100, rms * 300) + '%';
-
-    drawWaveform(timeData, gain);
-    drawSpectrum(freqData);
-  }
-
-  function drawWaveform(data, gain) {
-    const W = waveCanvas.width;
-    const H = waveCanvas.height;
-    wCtx.clearRect(0, 0, W, H);
-
-    // Grid
-    wCtx.strokeStyle = 'rgba(0,245,255,0.05)';
-    wCtx.lineWidth = 1;
-    for (let i = 1; i < 4; i++) {
-      wCtx.beginPath(); wCtx.moveTo(0, H * i / 4); wCtx.lineTo(W, H * i / 4); wCtx.stroke();
+  } else if (waveMode === 'fill') {
+    // Filled wave
+    wCtx.beginPath();
+    for (let i = 0; i < sampleCount; i++) {
+      const x = i * sliceW;
+      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
     }
-    for (let i = 1; i < 8; i++) {
-      wCtx.beginPath(); wCtx.moveTo(W * i / 8, 0); wCtx.lineTo(W * i / 8, H); wCtx.stroke();
+    wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
+    const grad = wCtx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   'rgba(74,127,193,0.35)');
+    grad.addColorStop(0.5, 'rgba(74,127,193,0.08)');
+    grad.addColorStop(1,   'rgba(58,158,143,0.30)');
+    wCtx.fillStyle = grad;
+    wCtx.fill();
+    wCtx.save();
+    wCtx.shadowBlur  = 10 * devicePixelRatio;
+    wCtx.shadowColor = 'rgba(74,127,193,0.4)';
+    wCtx.strokeStyle = blue + '0.9)';
+    wCtx.lineWidth   = 2 * devicePixelRatio;
+    wCtx.lineJoin    = 'round';
+    wCtx.beginPath();
+    for (let i = 0; i < sampleCount; i++) {
+      const x = i * sliceW;
+      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
     }
-    // Center line
-    wCtx.strokeStyle = 'rgba(0,245,255,0.12)';
-    wCtx.beginPath(); wCtx.moveTo(0, H / 2); wCtx.lineTo(W, H / 2); wCtx.stroke();
+    wCtx.stroke();
+    wCtx.restore();
 
-    const sliceW = W / (data.length - 1);
-    const cx = '#00f5ff';
-
-    if (waveMode === 'line') {
-      // Glow pass
-      wCtx.shadowBlur = 18;
-      wCtx.shadowColor = cx;
-      wCtx.strokeStyle = 'rgba(0,245,255,0.7)';
-      wCtx.lineWidth = 1.5 * devicePixelRatio;
+  } else if (waveMode === 'mirror') {
+    const pairs = [
+      ['rgba(74,127,193,0.5)',  'rgba(74,127,193,0.09)',  1],
+      ['rgba(58,158,143,0.45)', 'rgba(58,158,143,0.07)', -1],
+    ];
+    pairs.forEach(([stroke, fill, dir]) => {
       wCtx.beginPath();
-      data.forEach((v, i) => {
+      for (let i = 0; i < sampleCount; i++) {
         const x = i * sliceW;
-        const y = H / 2 - ((v - 128) / 128) * (H / 2 - 8) * gain;
+        const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+        const y = H / 2 - dir * amp;
         i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-      });
-      wCtx.stroke();
-      wCtx.shadowBlur = 0;
-
-    } else if (waveMode === 'fill') {
-      wCtx.beginPath();
-      data.forEach((v, i) => {
-        const x = i * sliceW;
-        const y = H / 2 - ((v - 128) / 128) * (H / 2 - 8) * gain;
-        i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-      });
-      wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
-      const grad = wCtx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, 'rgba(0,245,255,0.35)');
-      grad.addColorStop(0.5, 'rgba(0,245,255,0.1)');
-      grad.addColorStop(1, 'rgba(0,255,136,0.35)');
-      wCtx.fillStyle = grad;
-      wCtx.fill();
-      wCtx.shadowBlur = 10; wCtx.shadowColor = cx;
-      wCtx.strokeStyle = 'rgba(0,245,255,0.8)';
-      wCtx.lineWidth = 1.5;
-      wCtx.beginPath();
-      data.forEach((v, i) => {
-        const x = i * sliceW;
-        const y = H / 2 - ((v - 128) / 128) * (H / 2 - 8) * gain;
-        i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-      });
-      wCtx.stroke(); wCtx.shadowBlur = 0;
-
-    } else if (waveMode === 'mirror') {
-      const colors = [['rgba(0,245,255,0.5)', 'rgba(0,245,255,0.08)'],
-                      ['rgba(0,255,136,0.4)', 'rgba(0,255,136,0.05)']];
-      [-1, 1].forEach((dir, idx) => {
-        wCtx.beginPath();
-        data.forEach((v, i) => {
-          const x = i * sliceW;
-          const amp = ((v - 128) / 128) * (H / 2 - 8) * gain;
-          const y = H / 2 - dir * amp;
-          i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-        });
-        wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
-        wCtx.fillStyle = colors[idx][1]; wCtx.fill();
-        wCtx.shadowBlur = 12; wCtx.shadowColor = colors[idx][0].replace(/[\d.]+\)$/, '1)');
-        wCtx.strokeStyle = colors[idx][0]; wCtx.lineWidth = 1.5; wCtx.stroke();
-        wCtx.shadowBlur = 0;
-      });
-
-    } else if (waveMode === 'dots') {
-      const step = 3;
-      for (let i = 0; i < data.length; i += step) {
-        const x = i * sliceW;
-        const amp = ((data[i] - 128) / 128) * (H / 2 - 8) * gain;
-        const y = H / 2 - amp;
-        const size = Math.max(1, Math.abs(amp) / (H / 2) * 4);
-        const alpha = 0.4 + Math.abs(amp) / (H / 2) * 0.6;
-        wCtx.shadowBlur = 8; wCtx.shadowColor = cx;
-        wCtx.fillStyle = `rgba(0,245,255,${alpha})`;
-        wCtx.beginPath(); wCtx.arc(x, y, size * devicePixelRatio * 0.5, 0, Math.PI * 2); wCtx.fill();
       }
-      wCtx.shadowBlur = 0;
-    }
-  }
-
-  function drawSpectrum(data) {
-    const W = freqCanvas.width;
-    const H = freqCanvas.height;
-    fCtx.clearRect(0, 0, W, H);
-
-    const barCount = 128;
-    const barW = W / barCount;
-    const step = Math.floor(data.length / barCount);
-
-    for (let i = 0; i < barCount; i++) {
-      let sum = 0;
-      for (let j = 0; j < step; j++) sum += data[i * step + j];
-      const avg = sum / step;
-      const barH = (avg / 255) * H;
-
-      const hue = 180 + (i / barCount) * 80;
-      const alpha = 0.6 + (avg / 255) * 0.4;
-
-      // Bar gradient
-      const grad = fCtx.createLinearGradient(0, H - barH, 0, H);
-      grad.addColorStop(0, `hsla(${hue},100%,65%,${alpha})`);
-      grad.addColorStop(1, `hsla(${hue + 20},100%,45%,${alpha * 0.4})`);
-
-      fCtx.shadowBlur = barH > H * 0.4 ? 12 : 4;
-      fCtx.shadowColor = `hsla(${hue},100%,65%,0.6)`;
-      fCtx.fillStyle = grad;
-      fCtx.fillRect(i * barW + 1, H - barH, barW - 1.5, barH);
-    }
-    fCtx.shadowBlur = 0;
-
-    // Grid
-    fCtx.strokeStyle = 'rgba(0,245,255,0.05)';
-    fCtx.lineWidth = 1;
-    [0.25, 0.5, 0.75].forEach(p => {
-      fCtx.beginPath(); fCtx.moveTo(0, H * p); fCtx.lineTo(W, H * p); fCtx.stroke();
+      wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
+      wCtx.fillStyle = fill; wCtx.fill();
+      wCtx.save();
+      wCtx.shadowBlur  = 10 * devicePixelRatio;
+      wCtx.shadowColor = stroke;
+      wCtx.strokeStyle = stroke;
+      wCtx.lineWidth   = 2 * devicePixelRatio;
+      wCtx.lineJoin    = 'round';
+      wCtx.beginPath();
+      for (let i = 0; i < sampleCount; i++) {
+        const x = i * sliceW;
+        const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+        const y = H / 2 - dir * amp;
+        i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+      }
+      wCtx.stroke();
+      wCtx.restore();
     });
 
-    // Frequency labels
-    const labels = ['0', '2k', '4k', '8k', '16k'];
-    fCtx.fillStyle = 'rgba(0,245,255,0.2)';
-    fCtx.font = `${10 * devicePixelRatio}px 'Share Tech Mono', monospace`;
-    labels.forEach((l, i) => {
-      fCtx.fillText(l, (i / (labels.length - 1)) * (W - 20), H - 4);
-    });
+  } else if (waveMode === 'dots') {
+    const step = Math.max(1, Math.floor(sampleCount / 300));
+    for (let i = 0; i < sampleCount; i += step) {
+      const x   = i * sliceW;
+      const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
+      const y   = H / 2 - amp;
+      const t   = Math.abs(amp) / (H / 2);
+      const r   = (1.5 + t * 4) * devicePixelRatio;
+      wCtx.save();
+      wCtx.shadowBlur  = 8 * devicePixelRatio;
+      wCtx.shadowColor = blue + '0.6)';
+      wCtx.fillStyle   = `rgba(74,127,193,${0.35 + t * 0.65})`;
+      wCtx.beginPath();
+      wCtx.arc(x, y, r, 0, Math.PI * 2);
+      wCtx.fill();
+      wCtx.restore();
+    }
   }
+}
+
+function toggleFullscreen() {
+  document.body.classList.toggle('fullscreen');
+  setTimeout(resizeCanvas, 50);
+}
+
+/* Floating deco */
+(function () {
+  const icons = ['🎵','🎶','🎸','🎺','🎻','🥁','🎹','🎤','🎼','🎧','🔊','〰️','📻','🎷'];
+  for (let i = 0; i < 12; i++) {
+    const el = document.createElement('div');
+    el.className = 'deco';
+    el.textContent = icons[Math.floor(Math.random() * icons.length)];
+    el.style.fontSize = (20 + Math.random() * 18) + 'px';
+    document.body.appendChild(el);
+    const s = {
+      el,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.7,
+      vy: (Math.random() - 0.5) * 0.7,
+    };
+    (function tick() {
+      const W = window.innerWidth, H = window.innerHeight;
+      s.x += s.vx; s.y += s.vy;
+      if (s.x < 0) { s.x = 0; s.vx *= -1; }
+      if (s.x > W) { s.x = W; s.vx *= -1; }
+      if (s.y < 0) { s.y = 0; s.vy *= -1; }
+      if (s.y > H) { s.y = H; s.vy *= -1; }
+      s.el.style.left = s.x + 'px';
+      s.el.style.top  = s.y + 'px';
+      requestAnimationFrame(tick);
+    })();
+  }
+})();
 </script>
 </body>
 </html>
