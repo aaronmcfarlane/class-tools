@@ -111,6 +111,7 @@ button:active {
 .member {
     padding:4px;
     border-radius:8px;
+    cursor:pointer;
 }
 .member.dragging {
     opacity:0.5;
@@ -192,9 +193,18 @@ button:active {
 </div>
 </div>
 
+<!-- CONSTRAINTS -->
 <div id="constraintsTab" class="hidden card">
 <h3>Constraints</h3>
-<p style="opacity:0.6;">(Hidden from students)</p>
+
+<div style="display:flex;gap:5px;margin-bottom:10px;">
+<input id="pairA" placeholder="Student A">
+<input id="pairB" placeholder="Student B">
+<button onclick="addConstraint('must')">Must Pair</button>
+<button onclick="addConstraint('avoid')">Do Not Pair</button>
+</div>
+
+<ul id="constraintList"></ul>
 </div>
 
 <div class="groups-card card">
@@ -205,37 +215,32 @@ button:active {
 </div>
 
 <script>
+const groupsEl = document.getElementById("groups");
+const studentList = document.getElementById("studentList");
+const mainTab = document.getElementById("mainTab");
+const constraintsTab = document.getElementById("constraintsTab");
+
 const monsters=["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
 
 let mode="size";
 let allStudents=[], present=new Set(), groups=[];
 let dragItem=null, selected=null;
+let constraints=[];
 
-/* bouncing monsters */
-function spawnMonsters(){
-for(let i=0;i<12;i++){
-let m=document.createElement("div");
-m.className="monster";
-m.textContent=monsters[Math.floor(Math.random()*monsters.length)];
-m.x=Math.random()*window.innerWidth;
-m.y=Math.random()*window.innerHeight;
-m.dx=1+Math.random();
-m.dy=1+Math.random();
-document.body.appendChild(m);
-
-function move(){
-m.x+=m.dx;
-m.y+=m.dy;
-if(m.x<0||m.x>window.innerWidth-30) m.dx*=-1;
-if(m.y<0||m.y>window.innerHeight-30) m.dy*=-1;
-m.style.left=m.x+"px";
-m.style.top=m.y+"px";
-requestAnimationFrame(move);
+/* persistence */
+function save(){
+localStorage.setItem("groupMaker",JSON.stringify({
+names:names.value,
+constraints
+}));
 }
-move();
+function load(){
+let data=JSON.parse(localStorage.getItem("groupMaker")||"{}");
+if(data.names) names.value=data.names;
+if(data.constraints) constraints=data.constraints;
+renderConstraints();
 }
-}
-spawnMonsters();
+load();
 
 /* UI */
 function showTab(e,t){
@@ -249,7 +254,7 @@ function setMode(m){
 mode=m;
 modeSize.classList.toggle("active",m==="size");
 modeCount.classList.toggle("active",m==="count");
-modeValue.value = (m==="size")?3:6;
+modeValue.value=(m==="size")?3:6;
 }
 
 function loadPreset(v){
@@ -280,13 +285,19 @@ function generate(e){
 let btn=e.target;
 btn.textContent="Generating...";
 
-setTimeout(()=>{
+try{
 allStudents=names.value.split("\n").map(x=>x.trim()).filter(x=>x);
 present=new Set(allStudents);
+
 renderStudents();
 buildGroups();
+save();
+}catch(err){
+console.error(err);
+alert("Error generating groups");
+}
+
 btn.textContent="Generate";
-},150);
 }
 
 /* students */
@@ -304,34 +315,84 @@ studentList.appendChild(d);
 });
 }
 
-/* groups */
+/* SMART GROUPING */
 function buildGroups(){
 let list=[...present];
-list.sort(()=>Math.random()-0.5);
+
+if(list.length===0){
+groupsEl.innerHTML="<p>No students selected</p>";
+return;
+}
 
 let value=parseInt(modeValue.value)||3;
-groups=[];
+
+for(let attempt=0;attempt<50;attempt++){
+
+let shuffled=[...list].sort(()=>Math.random()-0.5);
+
+/* apply must-pairs (merge) */
+let merged=[];
+let used=new Set();
+
+constraints.filter(c=>c.type==="must").forEach(c=>{
+if(!used.has(c.a)&&!used.has(c.b)){
+merged.push([c.a,c.b]);
+used.add(c.a);used.add(c.b);
+}
+});
+
+shuffled.forEach(s=>{
+if(!used.has(s)) merged.push([s]);
+});
+
+/* create groups */
+let tempGroups=[];
 
 if(mode==="size"){
-for(let i=0;i<list.length;i+=value){
-groups.push(list.slice(i,i+value));
+let current=[];
+merged.forEach(chunk=>{
+if(current.length+chunk.length>value){
+tempGroups.push(current);
+current=[];
 }
+current=current.concat(chunk);
+});
+if(current.length) tempGroups.push(current);
 }else{
 let count=value;
-groups=Array.from({length:count},()=>[]);
-list.forEach((n,i)=>groups[i%count].push(n));
+tempGroups=Array.from({length:count},()=>[]);
+merged.forEach((chunk,i)=>{
+tempGroups[i%count]=tempGroups[i%count].concat(chunk);
+});
 }
 
+/* check avoid constraints */
+let bad=false;
+constraints.filter(c=>c.type==="avoid").forEach(c=>{
+tempGroups.forEach(g=>{
+if(g.includes(c.a)&&g.includes(c.b)) bad=true;
+});
+});
+
+if(!bad){
+groups=tempGroups;
+renderGroups();
+return;
+}
+}
+
+/* fallback */
+groups=[list];
 renderGroups();
 }
 
+/* render groups */
 function renderGroups(){
 groupsEl.innerHTML="";
 
 groups.forEach((g,i)=>{
 let d=document.createElement("div");
 d.className="group";
-
 d.innerHTML="<h4>Group "+(i+1)+"</h4>";
 
 d.ondragover=e=>e.preventDefault();
@@ -352,17 +413,10 @@ el.className="member";
 el.draggable=true;
 el.textContent=getMonster(n)+" "+n;
 
-el.ondragstart=()=>{
-dragItem=n;
-el.classList.add("dragging");
-};
+el.ondragstart=()=>{dragItem=n;};
+el.ondragend=()=>{dragItem=null;};
 
-el.ondragend=()=>{
-dragItem=null;
-el.classList.remove("dragging");
-};
-
-/* TOUCH SUPPORT */
+/* TOUCH */
 el.onclick=()=>{
 if(!selected){
 selected=n;
@@ -382,6 +436,37 @@ d.appendChild(el);
 });
 
 groupsEl.appendChild(d);
+});
+}
+
+/* constraints */
+function addConstraint(type){
+let a=pairA.value.trim();
+let b=pairB.value.trim();
+if(!a||!b) return;
+
+constraints.push({a,b,type});
+pairA.value="";pairB.value="";
+renderConstraints();
+save();
+}
+
+function renderConstraints(){
+constraintList.innerHTML="";
+constraints.forEach((c,i)=>{
+let li=document.createElement("li");
+li.textContent=`${c.a} ${c.type==="must"?"↔":"✖"} ${c.b}`;
+
+let del=document.createElement("button");
+del.textContent="X";
+del.onclick=()=>{
+constraints.splice(i,1);
+renderConstraints();
+save();
+};
+
+li.appendChild(del);
+constraintList.appendChild(li);
 });
 }
 
