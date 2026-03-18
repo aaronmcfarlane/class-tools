@@ -14,15 +14,15 @@ body {
     background:linear-gradient(135deg,#ff9a9e,#fad0c4);
 }
 
-/* monsters */
+/* MONSTERS */
 .monster {
     position:fixed;
-    font-size:28px;
+    font-size:26px;
     opacity:0.12;
     pointer-events:none;
 }
 
-/* layout */
+/* LAYOUT */
 .container {
     max-width:1200px;
     margin:auto;
@@ -42,7 +42,6 @@ body {
     box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* textarea FIXED */
 textarea {
     width:100%;
     height:300px;
@@ -50,7 +49,7 @@ textarea {
     padding:10px;
 }
 
-/* students */
+/* STUDENTS */
 .students {
     display:flex;
     flex-wrap:wrap;
@@ -66,7 +65,7 @@ textarea {
     align-items:center;
 }
 
-/* buttons */
+/* BUTTONS */
 button {
     background:#ff7eb3;
     border:none;
@@ -74,6 +73,14 @@ button {
     padding:8px 12px;
     border-radius:10px;
     cursor:pointer;
+    transition:0.15s;
+}
+button.active {
+    outline:3px solid #ff4d88;
+    transform:scale(1.05);
+}
+button:active {
+    transform:scale(0.95);
 }
 
 .top-actions {
@@ -84,10 +91,8 @@ button {
     gap:10px;
 }
 
-/* groups */
-.groups-card {
-    margin-top:20px;
-}
+/* GROUPS */
+.groups-card { margin-top:20px; }
 
 .groups {
     display:flex;
@@ -102,7 +107,16 @@ button {
     min-width:200px;
 }
 
-/* tabs */
+/* draggable */
+.member {
+    padding:4px;
+    border-radius:8px;
+}
+.member.dragging {
+    opacity:0.5;
+}
+
+/* TABS */
 .tabs {
     display:flex;
     gap:10px;
@@ -118,23 +132,6 @@ button {
 
 .hidden { display:none; }
 
-/* constraints */
-.constraint-list {
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-}
-.constraint-pill {
-    background:#ffe4ec;
-    padding:6px 10px;
-    border-radius:999px;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    cursor:pointer;
-}
-.constraint-pill.avoid { background:#e0f7fa; }
-
 /* FULLSCREEN */
 .fullscreen .grid,
 .fullscreen .tabs,
@@ -142,7 +139,6 @@ button {
 .fullscreen h2 {
     display:none;
 }
-
 .fullscreen .groups {
     justify-content:center;
     align-items:center;
@@ -181,12 +177,12 @@ button {
 </select>
 
 <div style="display:flex;gap:5px;margin-top:10px;">
-<button onclick="setMode('size')">Size</button>
-<button onclick="setMode('count')">Groups</button>
+<button id="modeSize" class="active" onclick="setMode('size')">Size</button>
+<button id="modeCount" onclick="setMode('count')">Groups</button>
 <input type="number" id="modeValue" value="3" style="width:70px;">
 </div>
 
-<button onclick="generate()" style="margin-top:10px;width:100%;">Generate</button>
+<button onclick="generate(event)" style="margin-top:10px;width:100%;">Generate</button>
 </div>
 
 <div class="card">
@@ -197,23 +193,8 @@ button {
 </div>
 
 <div id="constraintsTab" class="hidden card">
-
 <h3>Constraints</h3>
-
-<select id="studentA"></select>
-<select id="studentB"></select>
-
-<div style="margin-top:10px;">
-<button onclick="addMust()">➕ Must Pair</button>
-<button onclick="addAvoid()">➕ Do Not Pair</button>
-</div>
-
-<h4>Must Pair</h4>
-<div id="mustList" class="constraint-list"></div>
-
-<h4>Do Not Pair</h4>
-<div id="avoidList" class="constraint-list"></div>
-
+<p style="opacity:0.6;">(Hidden from students)</p>
 </div>
 
 <div class="groups-card card">
@@ -227,21 +208,8 @@ button {
 const monsters=["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
 
 let mode="size";
-let allStudents=[], present=new Set();
-let mustPairs=[], avoidPairs=[], groups=[];
-
-/* STORAGE */
-function save(){
-localStorage.setItem("students",names.value);
-localStorage.setItem("must",JSON.stringify(mustPairs));
-localStorage.setItem("avoid",JSON.stringify(avoidPairs));
-}
-
-function load(){
-names.value=localStorage.getItem("students")||"";
-mustPairs=JSON.parse(localStorage.getItem("must")||"[]");
-avoidPairs=JSON.parse(localStorage.getItem("avoid")||"[]");
-}
+let allStudents=[], present=new Set(), groups=[];
+let dragItem=null, selected=null;
 
 /* bouncing monsters */
 function spawnMonsters(){
@@ -277,7 +245,12 @@ document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
 e.target.classList.add("active");
 }
 
-function setMode(m){ mode=m; }
+function setMode(m){
+mode=m;
+modeSize.classList.toggle("active",m==="size");
+modeCount.classList.toggle("active",m==="count");
+modeValue.value = (m==="size")?3:6;
+}
 
 function loadPreset(v){
 if(v==="mcfarlane"){
@@ -302,15 +275,21 @@ Samuel`;
 }
 }
 
-function generate(){
+/* generate */
+function generate(e){
+let btn=e.target;
+btn.textContent="Generating...";
+
+setTimeout(()=>{
 allStudents=names.value.split("\n").map(x=>x.trim()).filter(x=>x);
 present=new Set(allStudents);
 renderStudents();
-populateDropdowns();
 buildGroups();
-save();
+btn.textContent="Generate";
+},150);
 }
 
+/* students */
 function renderStudents(){
 studentList.innerHTML="";
 allStudents.forEach(n=>{
@@ -325,70 +304,83 @@ studentList.appendChild(d);
 });
 }
 
-function populateDropdowns(){
-studentA.innerHTML="";
-studentB.innerHTML="";
-allStudents.forEach(n=>{
-studentA.innerHTML+=`<option>${n}</option>`;
-studentB.innerHTML+=`<option>${n}</option>`;
-});
-}
-
-/* constraints */
-function pairExists(list,a,b){
-return list.some(p => (p[0]===a && p[1]===b)||(p[0]===b && p[1]===a));
-}
-
-function addMust(){
-let a=studentA.value,b=studentB.value;
-if(a!==b && !pairExists(mustPairs,a,b)){
-mustPairs.push([a,b]);
-renderConstraints();
-buildGroups();
-save();
-}
-}
-
-function addAvoid(){
-let a=studentA.value,b=studentB.value;
-if(a!==b && !pairExists(avoidPairs,a,b)){
-avoidPairs.push([a,b]);
-renderConstraints();
-buildGroups();
-save();
-}
-}
-
-function renderConstraints(){
-mustList.innerHTML=mustPairs.map(p=>`${p[0]} + ${p[1]}`).join("<br>");
-avoidList.innerHTML=avoidPairs.map(p=>`${p[0]} × ${p[1]}`).join("<br>");
-}
-
-/* solver (with fallback) */
+/* groups */
 function buildGroups(){
-let list=[...present].sort(()=>Math.random()-0.5);
+let list=[...present];
+list.sort(()=>Math.random()-0.5);
 
-let size=parseInt(modeValue.value)||3;
+let value=parseInt(modeValue.value)||3;
 groups=[];
-for(let i=0;i<list.length;i+=size){
-groups.push(list.slice(i,i+size));
+
+if(mode==="size"){
+for(let i=0;i<list.length;i+=value){
+groups.push(list.slice(i,i+value));
+}
+}else{
+let count=value;
+groups=Array.from({length:count},()=>[]);
+list.forEach((n,i)=>groups[i%count].push(n));
 }
 
 renderGroups();
 }
 
-/* render */
 function renderGroups(){
 groupsEl.innerHTML="";
+
 groups.forEach((g,i)=>{
 let d=document.createElement("div");
 d.className="group";
+
 d.innerHTML="<h4>Group "+(i+1)+"</h4>";
+
+d.ondragover=e=>e.preventDefault();
+d.ondrop=()=>{
+if(dragItem){
+groups.forEach(gr=>{
+let idx=gr.indexOf(dragItem);
+if(idx>-1) gr.splice(idx,1);
+});
+g.push(dragItem);
+renderGroups();
+}
+};
+
 g.forEach(n=>{
 let el=document.createElement("div");
+el.className="member";
+el.draggable=true;
 el.textContent=getMonster(n)+" "+n;
+
+el.ondragstart=()=>{
+dragItem=n;
+el.classList.add("dragging");
+};
+
+el.ondragend=()=>{
+dragItem=null;
+el.classList.remove("dragging");
+};
+
+/* TOUCH SUPPORT */
+el.onclick=()=>{
+if(!selected){
+selected=n;
+el.style.outline="2px solid red";
+}else{
+groups.forEach(gr=>{
+let idx=gr.indexOf(selected);
+if(idx>-1) gr.splice(idx,1);
+});
+g.push(selected);
+selected=null;
+renderGroups();
+}
+};
+
 d.appendChild(el);
 });
+
 groupsEl.appendChild(d);
 });
 }
@@ -399,11 +391,6 @@ return monsters[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%monsters.length];
 
 function shuffleGroups(){ buildGroups(); }
 function toggleFullscreen(){ app.classList.toggle("fullscreen"); }
-
-/* INIT */
-load();
-if(names.value) generate();
-renderConstraints();
 </script>
 
 </body>
