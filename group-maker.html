@@ -10,68 +10,34 @@ body {
     font-family: "Comic Sans MS", "Segoe UI", sans-serif;
     background: linear-gradient(135deg, #ff9a9e, #fad0c4);
 }
-
-/* floating monster background */
 body::before {
-    content: "👾 👻 🐸 🐙 🦄 🐵 👹 🐱 🐼 🐰";
+    content: "👾 👻 🐸 🐙 🦄 🐵 👹 🐱 🐼 🐰 🐯 🐨 🐮 🐷 🐧 🦊 🐻 🐔 🐢 🐍 🦖 🐲 🦕 🐺 🦁 🐗 🐙 🐬 🦈 🐝";
     position: fixed;
     font-size: 40px;
     opacity: 0.08;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 200%;
-    animation: float 60s linear infinite;
-    pointer-events: none; /* FIXED */
+    width: 300%;
+    height: 300%;
+    animation: float 120s linear infinite;
+    pointer-events: none;
 }
-
 @keyframes float {
-    from { transform: translate(0,0); }
-    to { transform: translate(-50%, -50%); }
+    0% { transform: translate(0,0); }
+    100% { transform: translate(-30%, -30%); }
 }
-
 .container {
     background: white;
     border-radius: 20px;
     padding: 20px;
     margin: 20px auto;
-    max-width: 1100px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    max-width: 1200px;
 }
-
-h2 {
-    text-align: center;
-    font-size: 28px;
-}
-
-.layout {
+.top-actions {
+    position: fixed;
+    top: 10px;
+    right: 10px;
     display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+    gap: 10px;
 }
-
-/* LEFT PANEL */
-.left {
-    flex: 0 0 250px;
-}
-
-textarea {
-    width: 100%;
-    height: 420px;
-    border-radius: 15px;
-    border: 2px dashed #ffb6b9;
-    padding: 10px;
-    font-size: 14px;
-}
-
-/* controls */
-.controls {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
 button {
     background: #ff7eb3;
     border: none;
@@ -79,285 +45,267 @@ button {
     padding: 10px;
     border-radius: 12px;
     cursor: pointer;
-    font-size: 14px;
 }
-
-button:hover {
-    background: #ff5c9c;
+.layout { display:flex; gap:20px; flex-wrap:wrap; }
+.left { width:260px; }
+textarea {
+    width:100%;
+    height:420px;
+    border-radius:15px;
+    border:2px dashed #ffb6b9;
+    padding:10px;
 }
-
-/* STUDENT MONSTERS */
-.students {
-    flex: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-content: flex-start;
-}
-
+.mode-toggle { display:flex; gap:6px; margin:10px 0; }
+.mode-toggle button { flex:1; }
+.mode-toggle .active { background:#ff5c9c; }
+.students { flex:1; display:flex; flex-wrap:wrap; gap:8px; }
 .student {
-    background: #fff5f7;
-    border-radius: 14px;
-    padding: 8px 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 2px solid transparent;
+    background:#fff5f7;
+    padding:6px 10px;
+    border-radius:12px;
+    display:flex;
+    gap:6px;
+    align-items:center;
 }
-
-.student.off {
-    opacity: 0.4;
-}
-
-.monster {
-    font-size: 20px;
-}
-
-.student input {
-    transform: scale(1.2);
-}
-
-/* GROUPS */
-.groups {
-    margin-top: 20px;
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-
+.student.off { opacity:0.4; }
+.groups { margin-top:20px; display:flex; flex-wrap:wrap; gap:15px; }
 .group {
-    background: #f0f9ff;
-    border-radius: 16px;
-    padding: 10px;
-    flex: 1;
-    min-width: 160px;
-    border: 3px solid #a0e7e5;
+    background:#f0f9ff;
+    border-radius:16px;
+    padding:10px;
+    flex:1;
+    min-width:180px;
 }
-
-.group h4 {
-    margin: 0 0 6px 0;
-}
-
-.group li {
-    list-style: none;
-    background: white;
-    margin: 5px 0;
-    padding: 6px;
-    border-radius: 8px;
-    cursor: grab;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* FULLSCREEN */
-.fullscreen .layout,
-.fullscreen textarea,
-.fullscreen .controls,
-.fullscreen .students {
-    display: none;
-}
-
-.topbar {
-    display: none;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.fullscreen .topbar {
-    display: flex;
-    justify-content: center;
-}
+.fullscreen { font-size:1.6em; }
+.fullscreen .layout, .fullscreen textarea { display:none; }
 </style>
 </head>
 <body>
 
+<div class="top-actions">
+<button onclick="toggleFullscreen()">🖥</button>
+<button onclick="shuffleGroups()">🔀</button>
+</div>
+
 <div class="container" id="app">
 <h2>👾 Monster Group Maker 👾</h2>
 
+<select onchange="loadPreset(this.value)">
+<option value="">Load Class List</option>
+<option value="mcfarlane">Mr. McFarlane Grade 4</option>
+</select>
+
 <div class="layout">
-    <div class="left">
-        <textarea id="names" placeholder="One name per line"></textarea>
+<div class="left">
+<textarea id="names"></textarea>
 
-        <div class="controls">
-            <label><input type="radio" name="mode" value="size" checked> Group size</label>
-            <input type="number" id="groupSize" placeholder="3">
-
-            <label><input type="radio" name="mode" value="count"> # of groups</label>
-            <input type="number" id="groupCount" placeholder="5">
-
-            <button onclick="generate()">Generate</button>
-        </div>
-    </div>
-
-    <div id="studentList" class="students"></div>
+<div class="mode-toggle">
+<button id="modeSize" class="active" onclick="setMode('size')">Size</button>
+<button id="modeCount" onclick="setMode('count')">Groups</button>
 </div>
 
-<div class="topbar">
-<button onclick="shuffleGroups()">🔀 Shuffle</button>
-<button onclick="toggleFullscreen()">🖥 Exit</button>
+<input type="number" id="modeValue" value="3">
+
+<button onclick="generate()">Generate</button>
 </div>
+
+<div id="studentList" class="students"></div>
+</div>
+
+<h3>🚫 Do Not Pair</h3>
+<div id="avoidList"></div>
+
+<h3>❤️ Must Pair</h3>
+<div id="mustList"></div>
 
 <div id="groups" class="groups"></div>
 
-<div style="margin-top:10px; text-align:center;">
-<button onclick="toggleFullscreen()">🖥 Full Screen</button>
-<button onclick="shuffleGroups()">🔀 Shuffle</button>
+<div style="text-align:center;margin-top:10px;">
+<button onclick="toggleFullscreen()">Full Screen</button>
+<button onclick="shuffleGroups()">Shuffle</button>
 </div>
 
 </div>
 
 <script>
-let allStudents = [];
-let present = new Set();
-let groups = [];
-const monsters = ["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰"];
+const monsters=["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
 
-const textarea = document.getElementById("names");
-const app = document.getElementById("app");
+let mode="size";
+let allStudents=[], present=new Set(), groups=[];
+let avoidPairs=[], mustPairs=[];
 
-window.onload = () => {
-    const saved = localStorage.getItem("names");
-    if (saved) textarea.value = saved;
+function setMode(m){
+mode=m;
+modeSize.classList.toggle("active",m==="size");
+modeCount.classList.toggle("active",m==="count");
+modeValue.value = m==="size"?3:6;
+buildGroups();
+}
+
+function getMonster(n){
+return monsters[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%monsters.length];
+}
+
+function loadPreset(v){
+if(v==="mcfarlane"){
+names.value=`Adam
+Alec
+Aliyah
+Alyssa
+Anika
+Anna
+Ayden
+Clyde
+Émylie-Maude
+Jonathan
+Joshua
+Julian
+Junior
+Maejor
+Max
+Niaganii
+Phoenix
+Samuel`;
+}
+}
+
+function generate(){
+allStudents=names.value.split("\n").map(x=>x.trim()).filter(x=>x);
+present=new Set(allStudents);
+renderStudents();
+renderConstraints();
+buildGroups();
+}
+
+function renderStudents(){
+studentList.innerHTML="";
+allStudents.forEach(n=>{
+let d=document.createElement("div");
+d.className="student";
+d.innerHTML=`${getMonster(n)} ${n} <input type="checkbox" checked>`;
+d.querySelector("input").onchange=e=>{
+e.target.checked?present.add(n):present.delete(n);
+buildGroups();
+};
+studentList.appendChild(d);
+});
+}
+
+function renderConstraints(){
+avoidList.innerHTML="";
+mustList.innerHTML="";
+avoidPairs=[]; mustPairs=[];
+
+allStudents.forEach((a,i)=>{
+for(let j=i+1;j<allStudents.length;j++){
+let b=allStudents[j];
+
+let cb1=document.createElement("input");
+cb1.type="checkbox";
+cb1.onchange=e=>{
+if(e.target.checked) avoidPairs.push([a,b]);
+else avoidPairs=avoidPairs.filter(p=>!(p[0]===a&&p[1]===b));
+buildGroups();
 };
 
-textarea.addEventListener("input", () => {
-    localStorage.setItem("names", textarea.value);
+let cb2=document.createElement("input");
+cb2.type="checkbox";
+cb2.onchange=e=>{
+if(e.target.checked) mustPairs.push([a,b]);
+else mustPairs=mustPairs.filter(p=>!(p[0]===a&&p[1]===b));
+buildGroups();
+};
+
+avoidList.append(`${a}-${b} `,cb1,document.createElement("br"));
+mustList.append(`${a}-${b} `,cb2,document.createElement("br"));
+}
 });
-
-function shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
 }
 
-function getMonster(name) {
-    let sum = 0;
-    for (let c of name) sum += c.charCodeAt(0);
-    return monsters[sum % monsters.length];
+/* SMART SOLVER */
+function violates(group, student){
+return avoidPairs.some(([a,b]) =>
+(group.includes(a)&&student===b)||(group.includes(b)&&student===a)
+);
 }
 
-function generate() {
-    allStudents = textarea.value.split("\n").map(x => x.trim()).filter(x => x);
-    present = new Set(allStudents);
-    renderStudentList();
-    buildGroups();
+function satisfiesMust(groups){
+return mustPairs.every(([a,b]) =>
+groups.some(g=>g.includes(a)&&g.includes(b))
+);
 }
 
-function renderStudentList() {
-    const div = document.getElementById("studentList");
-    div.innerHTML = "";
-
-    allStudents.forEach(name => {
-        const el = document.createElement("div");
-        el.className = "student";
-
-        const monster = document.createElement("span");
-        monster.className = "monster";
-        monster.textContent = getMonster(name);
-
-        const label = document.createElement("span");
-        label.textContent = name;
-
-        const cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = true;
-
-        cb.onchange = () => {
-            if (cb.checked) {
-                present.add(name);
-                el.classList.remove("off");
-            } else {
-                present.delete(name);
-                el.classList.add("off");
-            }
-            buildGroups();
-        };
-
-        el.appendChild(monster);
-        el.appendChild(label);
-        el.appendChild(cb);
-
-        div.appendChild(el);
-    });
+function backtrack(list, groups, sizes){
+if(list.length===0){
+return satisfiesMust(groups) ? groups : null;
 }
 
-function buildGroups() {
-    let list = Array.from(present);
-    shuffle(list);
+let student=list[0];
+for(let i=0;i<groups.length;i++){
+if(groups[i].length>=sizes[i]) continue;
+if(violates(groups[i], student)) continue;
 
-    const mode = document.querySelector('input[name="mode"]:checked').value;
-    groups = [];
-
-    if (mode === "size") {
-        const size = parseInt(document.getElementById("groupSize").value) || 1;
-        for (let i = 0; i < list.length; i += size) {
-            groups.push(list.slice(i, i + size));
-        }
-    } else {
-        const count = parseInt(document.getElementById("groupCount").value) || 1;
-        groups = Array.from({length: count}, () => []);
-        list.forEach((s, i) => groups[i % count].push(s));
-    }
-
-    renderGroups();
+groups[i].push(student);
+let res=backtrack(list.slice(1), groups, sizes);
+if(res) return res;
+groups[i].pop();
+}
+return null;
 }
 
-function renderGroups() {
-    const container = document.getElementById("groups");
-    container.innerHTML = "";
+function buildGroups(){
+let list=[...present];
+list.sort(()=>Math.random()-0.5);
 
-    groups.forEach((group, gi) => {
-        const div = document.createElement("div");
-        div.className = "group";
-
-        const title = document.createElement("h4");
-        title.textContent = "Group " + (gi + 1);
-
-        const ul = document.createElement("ul");
-
-        ul.ondragover = e => e.preventDefault();
-        ul.ondrop = e => {
-            e.preventDefault();
-            const name = e.dataTransfer.getData("text");
-            moveStudent(name, gi);
-        };
-
-        group.forEach(name => {
-            const li = document.createElement("li");
-            li.draggable = true;
-
-            li.ondragstart = e => {
-                e.dataTransfer.setData("text", name);
-            };
-
-            li.textContent = getMonster(name) + " " + name;
-            ul.appendChild(li);
-        });
-
-        div.appendChild(title);
-        div.appendChild(ul);
-        container.appendChild(div);
-    });
+let sizes=[];
+if(mode==="size"){
+let s=parseInt(modeValue.value)||1;
+for(let i=0;i<Math.ceil(list.length/s);i++) sizes.push(s);
+}else{
+let c=parseInt(modeValue.value)||1;
+sizes=Array(c).fill(Math.ceil(list.length/c));
 }
 
-function moveStudent(name, newGroupIndex) {
-    groups.forEach(g => {
-        const i = g.indexOf(name);
-        if (i !== -1) g.splice(i, 1);
-    });
-    groups[newGroupIndex].push(name);
-    renderGroups();
+let attempt=0, solution=null;
+while(attempt<20 && !solution){
+attempt++;
+let gs=sizes.map(()=>[]);
+solution=backtrack(list, gs, sizes);
 }
 
-function shuffleGroups() {
-    buildGroups();
+groups=solution || sizes.map(()=>[]);
+if(!solution) console.warn("No perfect solution found");
+
+renderGroups();
 }
 
-function toggleFullscreen() {
-    app.classList.toggle("fullscreen");
+function renderGroups(){
+groupsEl.innerHTML="";
+groups.forEach((g,i)=>{
+let d=document.createElement("div");
+d.className="group";
+d.innerHTML="<h4>Group "+(i+1)+"</h4>";
+g.forEach(n=>{
+let li=document.createElement("div");
+li.textContent=getMonster(n)+" "+n;
+li.onclick=()=>moveTap(n,i);
+d.appendChild(li);
+});
+groupsEl.appendChild(d);
+});
 }
+
+let selected=null;
+function moveTap(n,i){
+if(!selected){selected=n;return;}
+groups.forEach(g=>{let idx=g.indexOf(selected);if(idx>-1)g.splice(idx,1);});
+groups[i].push(selected);
+selected=null;
+renderGroups();
+}
+
+function shuffleGroups(){buildGroups();}
+function toggleFullscreen(){app.classList.toggle("fullscreen");}
 </script>
 
 </body>
