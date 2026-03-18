@@ -421,16 +421,16 @@ body.fullscreen .group-card {
 
 <!-- Fullscreen toolbar (shown only in fullscreen) -->
 <div id="fullscreenToolbar">
-  <button id="fsGenScenario" onclick="generateScenario()">🎲 New Scenario</button>
-  <button id="fsReshuffle" onclick="generateGroups()" class="hidden">🔀 Re-shuffle Groups</button>
-  <button onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+  <button id="fsGenScenario" onclick="generateScenario()">🎲 <span id="t-fsGen">New Scenario</span></button>
+  <button id="fsReshuffle" onclick="generateGroups()" class="hidden">🔀 <span id="t-fsReshuffle">Re-shuffle Groups</span></button>
+  <button onclick="toggleFullscreen()">✕ <span id="t-fsExit">Exit Fullscreen</span></button>
 </div>
 
 <header>
-  <h1>🎭 Drama Scenario Generator</h1>
+  <h1>🎭 <span id="t-appTitle">Drama Scenario Generator</span></h1>
   <div class="header-actions">
     <button class="btn-ghost" id="langBtn" onclick="toggleLanguage()">EN / FR</button>
-    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 Fullscreen</button>
+    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 <span id="t-fullscreen">Fullscreen</span></button>
   </div>
 </header>
 
@@ -440,14 +440,14 @@ body.fullscreen .group-card {
   <aside class="sidebar">
 
     <div class="tabs">
-      <div class="tab active" onclick="showTab(event,'carousel')">Scenario</div>
-      <div class="tab" onclick="showTab(event,'groups')">Groups</div>
+      <div class="tab active" onclick="showTab(event,'carousel')" id="t-tabScenario">Scenario</div>
+      <div class="tab" onclick="showTab(event,'groups')" id="t-tabGroups">Groups</div>
     </div>
 
     <!-- CAROUSEL CONTROLS -->
     <div id="carouselControls">
       <div class="card">
-        <div class="card-title">Grade</div>
+        <div class="card-title" id="t-gradeLabel1">Grade</div>
         <select id="gradeSelect" onchange="updateGrade()" style="width:100%;">
           <option value="1">Grade 1</option>
           <option value="2">Grade 2</option>
@@ -456,14 +456,14 @@ body.fullscreen .group-card {
           <option value="5">Grade 5</option>
           <option value="6">Grade 6</option>
         </select>
-        <button class="btn-primary" style="margin-top:12px;" onclick="generateScenario()">🎲 Generate Scenario</button>
+        <button class="btn-primary" style="margin-top:12px;" onclick="generateScenario()">🎲 <span id="t-genScenario">Generate Scenario</span></button>
       </div>
     </div>
 
     <!-- GROUPS CONTROLS -->
     <div id="groupsControls" class="hidden">
       <div class="card">
-        <div class="card-title">Grade</div>
+        <div class="card-title" id="t-gradeLabel2">Grade</div>
         <select id="gradeSelectGroups" onchange="updateGradeGroups()" style="width:100%;">
           <option value="1">Grade 1</option>
           <option value="2">Grade 2</option>
@@ -472,9 +472,9 @@ body.fullscreen .group-card {
           <option value="5">Grade 5</option>
           <option value="6">Grade 6</option>
         </select>
-        <div class="card-title" style="margin-top:14px;">Number of Groups</div>
+        <div class="card-title" style="margin-top:14px;" id="t-numGroups">Number of Groups</div>
         <input type="number" id="groupCount" value="4" min="1" max="20" style="width:100%;">
-        <button class="btn-primary" style="margin-top:12px;" onclick="generateGroups()">🎲 Generate Groups</button>
+        <button class="btn-primary" style="margin-top:12px;" onclick="generateGroups()">🎲 <span id="t-genGroups">Generate Groups</span></button>
       </div>
     </div>
 
@@ -502,7 +502,7 @@ body.fullscreen .group-card {
       <div class="card groups-card">
         <div class="groups-header">
           <h2 id="groupsTitle">Groups</h2>
-          <button class="btn-ghost" onclick="generateGroups()" style="font-size:0.82rem;">🔀 Re-shuffle</button>
+          <button class="btn-ghost" onclick="generateGroups()" style="font-size:0.82rem;" id="t-reshuffle">🔀 Re-shuffle</button>
         </div>
         <div id="groupGrid" class="groups-grid">
           <div class="empty-state">Generate groups to see them here 👆</div>
@@ -660,10 +660,45 @@ function toggleLanguage() {
 }
 
 function updateLabels() {
-  const isEn = lang === "en";
-  document.getElementById("settingLabel").textContent  = isEn ? "Setting"  : "Lieu";
-  document.getElementById("conflictLabel").textContent = isEn ? "Conflict" : "Problème";
-  document.getElementById("groupsTitle").textContent   = isEn ? "Groups"   : "Groupes";
+  const en = lang === "en";
+
+  // Header & title
+  document.getElementById("t-appTitle").textContent   = en ? "Drama Scenario Generator" : "Générateur de scénarios";
+  document.getElementById("t-fullscreen").textContent = en ? "Fullscreen" : "Plein écran";
+
+  // Tabs
+  document.getElementById("t-tabScenario").textContent = en ? "Scenario" : "Scénario";
+  document.getElementById("t-tabGroups").textContent   = en ? "Groups"   : "Groupes";
+
+  // Carousel sidebar
+  document.getElementById("t-gradeLabel1").textContent = en ? "Grade"             : "Niveau";
+  document.getElementById("t-genScenario").textContent = en ? "Generate Scenario" : "Générer un scénario";
+
+  // Groups sidebar
+  document.getElementById("t-gradeLabel2").textContent = en ? "Grade"            : "Niveau";
+  document.getElementById("t-numGroups").textContent   = en ? "Number of Groups" : "Nombre de groupes";
+  document.getElementById("t-genGroups").textContent   = en ? "Generate Groups"  : "Générer les groupes";
+
+  // Scenario labels
+  document.getElementById("settingLabel").textContent  = en ? "Setting"  : "Lieu";
+  document.getElementById("conflictLabel").textContent = en ? "Conflict" : "Problème";
+
+  // Groups header
+  document.getElementById("groupsTitle").textContent  = en ? "Groups"     : "Groupes";
+  document.getElementById("t-reshuffle").textContent  = en ? "🔀 Re-shuffle" : "🔀 Rebattre";
+
+  // Fullscreen toolbar
+  document.getElementById("t-fsGen").textContent      = en ? "New Scenario"    : "Nouveau scénario";
+  document.getElementById("t-fsReshuffle").textContent= en ? "Re-shuffle Groups": "Rebattre les groupes";
+  document.getElementById("t-fsExit").textContent     = en ? "Exit Fullscreen"  : "Quitter le plein écran";
+
+  // Grade select options
+  ["gradeSelect","gradeSelectGroups"].forEach(id => {
+    const sel = document.getElementById(id);
+    [...sel.options].forEach(opt => {
+      opt.textContent = `${en ? "Grade" : "Niveau"} ${opt.value}`;
+    });
+  });
 }
 
 /* ── GRADE ── */
