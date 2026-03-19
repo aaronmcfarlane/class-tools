@@ -972,7 +972,10 @@ function freqToNote(freq) {
 
 /* ── DRAW SNAPSHOT (clean synthesized sine wave) ── */
 function drawSnapshot({ freq, rms }) {
+  console.log('drawSnapshot called', { freq, rms });
+  console.log('canvas size:', waveCanvas.width, waveCanvas.height);
   resizeCanvas();
+  console.log('canvas size after resize:', waveCanvas.width, waveCanvas.height);
   const W = waveCanvas.width;
   const H = waveCanvas.height;
 
