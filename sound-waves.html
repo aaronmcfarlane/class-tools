@@ -462,6 +462,118 @@ body.fullscreen canvas {
   to   { transform: scale(1);    opacity: 1; }
 }
 .card, .canvas-card { animation: popIn 0.25s ease both; }
+
+/* MODE TABS (Live vs Snapshot) */
+.view-tabs {
+  display: flex;
+  gap: 6px;
+  background: #ede7e1;
+  padding: 5px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+.view-tab {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-weight: 800;
+  font-size: 0.83rem;
+  cursor: pointer;
+  color: var(--muted);
+  text-align: center;
+  transition: all 0.18s;
+  user-select: none;
+}
+.view-tab.active {
+  background: white;
+  color: var(--blue);
+  box-shadow: 0 2px 8px rgba(40,60,100,0.10);
+}
+
+/* SNAPSHOT BUTTON */
+.btn-snapshot {
+  background: var(--teal);
+  color: white;
+  font-weight: 800;
+  width: 100%;
+  padding: 11px;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+}
+.btn-snapshot:hover:not(:disabled) { background: #2d8070; }
+.btn-snapshot:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-snapshot:active:not(:disabled) { transform: scale(0.96); }
+
+/* SNAPSHOT RESULT CHIPS */
+.snapshot-result {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+.snapshot-result.visible { display: flex; }
+
+.result-chip {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 2px solid #e8e0d8;
+}
+.result-chip .rc-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.result-chip .rc-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.result-chip .rc-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* COUNTDOWN RING */
+.countdown-wrap {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+.countdown-wrap.visible { display: flex; }
+.countdown-bar-track {
+  flex: 1;
+  height: 6px;
+  background: #e8e0d8;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.countdown-bar-fill {
+  height: 100%;
+  background: var(--teal);
+  border-radius: 4px;
+  width: 100%;
+  transition: width 0.05s linear;
+}
+.countdown-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--teal);
+  white-space: nowrap;
+  min-width: 40px;
+  text-align: right;
+}
 </style>
 </head>
 <body>
@@ -491,41 +603,88 @@ body.fullscreen canvas {
       <button class="btn-danger" id="stop-btn" onclick="stopAudio()" disabled>■ Stop</button>
     </div>
 
-    <div class="card">
-      <div class="card-title">Display Mode</div>
-      <div class="mode-grid">
-        <button class="mode-btn active" id="mode-line"   onclick="setMode('line')">〰 Line</button>
-        <button class="mode-btn"        id="mode-fill"   onclick="setMode('fill')">▨ Fill</button>
-        <button class="mode-btn"        id="mode-mirror" onclick="setMode('mirror')">⇅ Mirror</button>
-        <button class="mode-btn"        id="mode-dots"   onclick="setMode('dots')">· · Dots</button>
+    <!-- VIEW MODE TABS -->
+    <div class="view-tabs">
+      <div class="view-tab active" id="vtab-live"     onclick="setViewMode('live')">📡 Live</div>
+      <div class="view-tab"       id="vtab-snapshot"  onclick="setViewMode('snapshot')">📸 Snapshot</div>
+    </div>
+
+    <!-- LIVE CONTROLS -->
+    <div id="live-controls">
+      <div class="card">
+        <div class="card-title">Display Mode</div>
+        <div class="mode-grid">
+          <button class="mode-btn active" id="mode-line"   onclick="setMode('line')">〰 Line</button>
+          <button class="mode-btn"        id="mode-fill"   onclick="setMode('fill')">▨ Fill</button>
+          <button class="mode-btn"        id="mode-mirror" onclick="setMode('mirror')">⇅ Mirror</button>
+          <button class="mode-btn"        id="mode-dots"   onclick="setMode('dots')">· · Dots</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Settings</div>
+        <div class="control-row">
+          <div class="control-item">
+            <div class="control-label">Amplitude (Gain) <span id="gain-val">3.0×</span></div>
+            <input type="range" id="gain-slider" min="0.5" max="12" step="0.1" value="3"
+              oninput="document.getElementById('gain-val').textContent = parseFloat(this.value).toFixed(1)+'×'">
+          </div>
+          <div class="control-item">
+            <div class="control-label">Smoothing <span id="smooth-val">70%</span></div>
+            <input type="range" id="smooth-slider" min="0" max="0.95" step="0.05" value="0.7"
+              oninput="
+                document.getElementById('smooth-val').textContent = Math.round(this.value*100)+'%';
+                if(analyser) analyser.smoothingTimeConstant = parseFloat(this.value);
+              ">
+          </div>
+          <div class="control-item">
+            <div class="control-label">Zoom (Time Window) <span id="zoom-val">100%</span></div>
+            <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100"
+              oninput="document.getElementById('zoom-val').textContent = this.value+'%'">
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">Settings</div>
-      <div class="control-row">
-
-        <div class="control-item">
-          <div class="control-label">Amplitude (Gain) <span id="gain-val">3.0×</span></div>
-          <input type="range" id="gain-slider" min="0.5" max="12" step="0.1" value="3"
-            oninput="document.getElementById('gain-val').textContent = parseFloat(this.value).toFixed(1)+'×'">
+    <!-- SNAPSHOT CONTROLS -->
+    <div id="snapshot-controls" class="hidden">
+      <div class="card">
+        <div class="card-title">Capture Duration</div>
+        <div class="control-item" style="margin-bottom:12px;">
+          <div class="control-label">Duration <span id="dur-val">2s</span></div>
+          <input type="range" id="dur-slider" min="1" max="5" step="0.5" value="2"
+            oninput="document.getElementById('dur-val').textContent = this.value+'s'">
         </div>
 
-        <div class="control-item">
-          <div class="control-label">Smoothing <span id="smooth-val">70%</span></div>
-          <input type="range" id="smooth-slider" min="0" max="0.95" step="0.05" value="0.7"
-            oninput="
-              document.getElementById('smooth-val').textContent = Math.round(this.value*100)+'%';
-              if(analyser) analyser.smoothingTimeConstant = parseFloat(this.value);
-            ">
-        </div>
+        <button class="btn-snapshot" id="snap-btn" onclick="takeSnapshot()" disabled>
+          🎙 Listen &amp; Capture
+        </button>
 
-        <div class="control-item">
-          <div class="control-label">Zoom (Time Window) <span id="zoom-val">100%</span></div>
-          <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100"
-            oninput="document.getElementById('zoom-val').textContent = this.value+'%'">
+        <div class="countdown-wrap" id="countdown-wrap">
+          <div class="countdown-bar-track">
+            <div class="countdown-bar-fill" id="countdown-fill"></div>
+          </div>
+          <div class="countdown-label" id="countdown-label">2.0s</div>
         </div>
+      </div>
 
+      <div class="card">
+        <div class="card-title">Result</div>
+        <div class="snapshot-result" id="snapshot-result">
+          <div class="result-chip">
+            <div class="rc-label">Frequency</div>
+            <div class="rc-value" id="res-freq">—</div>
+            <div class="rc-sub" id="res-note">Make a sound to begin</div>
+          </div>
+          <div class="result-chip">
+            <div class="rc-label">Amplitude (Volume)</div>
+            <div class="rc-value" id="res-amp">—</div>
+            <div class="rc-sub" id="res-amp-sub">—</div>
+          </div>
+        </div>
+        <div id="snapshot-empty" style="color:var(--muted);font-size:0.82rem;font-weight:600;">
+          Press Listen &amp; Capture after starting your microphone.
+        </div>
       </div>
     </div>
 
@@ -537,7 +696,7 @@ body.fullscreen canvas {
       <div class="canvas-header">
         <div>
           <div class="canvas-title">Oscilloscope</div>
-          <div class="canvas-subtitle">Time Domain — Amplitude vs. Time</div>
+          <div class="canvas-subtitle" id="canvas-subtitle">Time Domain — Amplitude vs. Time</div>
         </div>
       </div>
 
@@ -576,6 +735,9 @@ let audioCtx, analyser, source, stream;
 let animFrame;
 let waveMode = 'line';
 let isRunning = false;
+let viewMode  = 'live';    // 'live' | 'snapshot'
+let snapping  = false;
+let snapshotData = null;   // { freq, amp, wavePoints }
 
 const waveCanvas = document.getElementById('wave-canvas');
 const wCtx = waveCanvas.getContext('2d');
@@ -583,10 +745,35 @@ const wCtx = waveCanvas.getContext('2d');
 function resizeCanvas() {
   waveCanvas.width  = waveCanvas.offsetWidth  * devicePixelRatio;
   waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
+  if (snapshotData && viewMode === 'snapshot') drawSnapshot(snapshotData);
 }
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+/* ── VIEW MODE ── */
+function setViewMode(v) {
+  viewMode = v;
+  document.getElementById('vtab-live').classList.toggle('active',     v === 'live');
+  document.getElementById('vtab-snapshot').classList.toggle('active', v === 'snapshot');
+  document.getElementById('live-controls').classList.toggle('hidden',     v !== 'live');
+  document.getElementById('snapshot-controls').classList.toggle('hidden', v !== 'snapshot');
+
+  if (v === 'live') {
+    document.getElementById('canvas-subtitle').textContent = 'Time Domain — Amplitude vs. Time';
+    // Resume live drawing if running
+    if (isRunning && !animFrame) draw();
+  } else {
+    document.getElementById('canvas-subtitle').textContent = 'Snapshot — Synthesized Clean Waveform';
+    // Pause live drawing
+    cancelAnimationFrame(animFrame);
+    animFrame = null;
+    // Show snapshot if we have one, else clear
+    if (snapshotData) drawSnapshot(snapshotData);
+    else { wCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height); drawGrid(); }
+  }
+}
+
+/* ── DISPLAY MODE (live) ── */
 function setMode(mode) {
   waveMode = mode;
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -594,13 +781,12 @@ function setMode(mode) {
   document.getElementById('stat-mode').textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
 }
 
+/* ── AUDIO ── */
 async function startAudio() {
   try {
     stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioCtx.createAnalyser();
-
-    // Large FFT = more samples = smoother, more stable wave — great for teaching
     analyser.fftSize = 8192;
     analyser.smoothingTimeConstant = parseFloat(document.getElementById('smooth-slider').value);
 
@@ -613,13 +799,13 @@ async function startAudio() {
     const pill = document.getElementById('status-pill');
     pill.classList.add('live');
     document.getElementById('status-text').textContent = 'Live';
-
     document.getElementById('start-btn').disabled = true;
     document.getElementById('stop-btn').disabled  = false;
+    document.getElementById('snap-btn').disabled  = false;
     document.getElementById('idle-overlay').classList.add('hidden');
 
     isRunning = true;
-    draw();
+    if (viewMode === 'live') draw();
 
   } catch (err) {
     alert('Microphone access denied or unavailable.\n\n' + err.message);
@@ -628,36 +814,36 @@ async function startAudio() {
 
 function stopAudio() {
   isRunning = false;
+  snapping  = false;
   cancelAnimationFrame(animFrame);
+  animFrame = null;
   if (source)   source.disconnect();
   if (audioCtx) audioCtx.close();
   if (stream)   stream.getTracks().forEach(t => t.stop());
 
-  const pill = document.getElementById('status-pill');
-  pill.classList.remove('live');
+  document.getElementById('status-pill').classList.remove('live');
   document.getElementById('status-text').textContent = 'Offline';
   document.getElementById('start-btn').disabled = false;
   document.getElementById('stop-btn').disabled  = true;
-  document.getElementById('idle-overlay').classList.remove('hidden');
+  document.getElementById('snap-btn').disabled  = true;
   document.getElementById('vol-fill').style.width = '0%';
   document.getElementById('vol-pct').textContent = '0%';
-
+  document.getElementById('idle-overlay').classList.remove('hidden');
   wCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
 }
 
+/* ── LIVE DRAW LOOP ── */
 function draw() {
-  if (!isRunning) return;
+  if (!isRunning || viewMode !== 'live') return;
   animFrame = requestAnimationFrame(draw);
   resizeCanvas();
 
-  const gain   = parseFloat(document.getElementById('gain-slider').value);
-  const zoom   = parseFloat(document.getElementById('zoom-slider').value) / 100;
-  const bufLen = analyser.frequencyBinCount;
-  const data   = new Uint8Array(bufLen);
+  const gain = parseFloat(document.getElementById('gain-slider').value);
+  const zoom = parseFloat(document.getElementById('zoom-slider').value) / 100;
+  const data = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteTimeDomainData(data);
 
-  // Volume meter
-  const rms = Math.sqrt(data.reduce((s, v) => s + ((v - 128) / 128) ** 2, 0) / bufLen);
+  const rms = Math.sqrt(data.reduce((s, v) => s + ((v - 128) / 128) ** 2, 0) / data.length);
   const vol = Math.min(100, Math.round(rms * 300));
   document.getElementById('vol-fill').style.width = vol + '%';
   document.getElementById('vol-pct').textContent  = vol + '%';
@@ -665,138 +851,322 @@ function draw() {
   drawWaveform(data, gain, zoom);
 }
 
-function drawWaveform(data, gain, zoom) {
+/* ── SNAPSHOT CAPTURE ── */
+async function takeSnapshot() {
+  if (!isRunning || snapping) return;
+  snapping = true;
+  const dur = parseFloat(document.getElementById('dur-slider').value);
+  const btn = document.getElementById('snap-btn');
+  btn.disabled = true;
+
+  // Show countdown
+  const cw   = document.getElementById('countdown-wrap');
+  const fill = document.getElementById('countdown-fill');
+  const lbl  = document.getElementById('countdown-label');
+  cw.classList.add('visible');
+
+  // Use ScriptProcessorNode to collect raw float samples
+  const bufSize   = 4096;
+  const processor = audioCtx.createScriptProcessor(bufSize, 1, 1);
+  const collected = [];
+  const target    = Math.ceil(audioCtx.sampleRate * dur);
+
+  processor.onaudioprocess = e => {
+    const ch = e.inputBuffer.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) collected.push(ch[i]);
+  };
+  source.connect(processor);
+  processor.connect(audioCtx.destination);
+
+  // Animate countdown
+  const start = performance.now();
+  await new Promise(resolve => {
+    function tick() {
+      const elapsed = (performance.now() - start) / 1000;
+      const pct     = Math.max(0, 1 - elapsed / dur);
+      fill.style.width = (pct * 100) + '%';
+      lbl.textContent  = Math.max(0, dur - elapsed).toFixed(1) + 's';
+      if (elapsed < dur) requestAnimationFrame(tick);
+      else resolve();
+    }
+    requestAnimationFrame(tick);
+  });
+
+  // Disconnect and clean up
+  source.disconnect(processor);
+  processor.disconnect();
+  cw.classList.remove('visible');
+  fill.style.width = '100%';
+
+  // Analyse collected buffer
+  const samples = new Float32Array(collected.slice(0, target));
+  const freq    = detectPitch(samples, audioCtx.sampleRate);
+  const rms     = Math.sqrt(samples.reduce((s, v) => s + v * v, 0) / samples.length);
+
+  snapshotData = { freq, rms };
+
+  // Update result chips
+  const resultEl = document.getElementById('snapshot-result');
+  const emptyEl  = document.getElementById('snapshot-empty');
+  resultEl.classList.add('visible');
+  emptyEl.style.display = 'none';
+
+  if (freq) {
+    document.getElementById('res-freq').textContent = freq.toFixed(1) + ' Hz';
+    document.getElementById('res-note').textContent = freqToNote(freq);
+  } else {
+    document.getElementById('res-freq').textContent = '— Hz';
+    document.getElementById('res-note').textContent = 'No clear pitch detected';
+  }
+
+  const db = rms > 0 ? (20 * Math.log10(rms)).toFixed(1) : '—';
+  document.getElementById('res-amp').textContent   = db + ' dB';
+  document.getElementById('res-amp-sub').textContent =
+    rms < 0.01 ? 'Very quiet' :
+    rms < 0.05 ? 'Quiet' :
+    rms < 0.15 ? 'Moderate' :
+    rms < 0.35 ? 'Loud' : 'Very loud';
+
+  // Draw the clean synthesized wave
+  drawSnapshot({ freq, rms });
+
+  snapping = false;
+  btn.disabled = false;
+}
+
+/* ── PITCH DETECTION via Autocorrelation ── */
+function detectPitch(buf, sampleRate) {
+  const n = buf.length;
+
+  // Check there's enough signal
+  const rms = Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / n);
+  if (rms < 0.005) return null;
+
+  // Autocorrelation
+  const corr = new Float32Array(n);
+  for (let lag = 0; lag < n; lag++) {
+    let sum = 0;
+    for (let i = 0; i < n - lag; i++) sum += buf[i] * buf[i + lag];
+    corr[lag] = sum;
+  }
+
+  // Find the first dip below zero then the next peak
+  const minLag = Math.floor(sampleRate / 1200); // ~1200 Hz max
+  const maxLag = Math.floor(sampleRate / 50);   // ~50 Hz min
+
+  let dipped = false;
+  let bestLag = -1, bestVal = -Infinity;
+  for (let lag = minLag; lag < maxLag; lag++) {
+    if (!dipped && corr[lag] < 0) dipped = true;
+    if (dipped && corr[lag] > bestVal) {
+      bestVal = corr[lag];
+      bestLag = lag;
+    }
+  }
+
+  if (bestLag === -1 || bestVal < corr[0] * 0.4) return null;
+
+  // Parabolic interpolation for sub-sample precision
+  const a = corr[bestLag - 1] || 0;
+  const b = corr[bestLag];
+  const c = corr[bestLag + 1] || 0;
+  const refined = bestLag - (c - a) / (2 * (2 * b - a - c) || 1);
+
+  return sampleRate / refined;
+}
+
+/* ── NOTE NAME from frequency ── */
+function freqToNote(freq) {
+  const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const midi  = Math.round(12 * Math.log2(freq / 440) + 69);
+  const note  = notes[midi % 12];
+  const oct   = Math.floor(midi / 12) - 1;
+  const descriptions = {
+    1:'Very low bass', 2:'Low bass', 3:'Bass', 4:'Low-mid',
+    5:'Mid-range', 6:'Upper-mid', 7:'High', 8:'Very high', 9:'Extremely high'
+  };
+  const range = Math.min(9, Math.max(1, oct));
+  return `${note}${oct} — ${descriptions[range] || ''}`;
+}
+
+/* ── DRAW SNAPSHOT (clean synthesized sine wave) ── */
+function drawSnapshot({ freq, rms }) {
+  resizeCanvas();
+  const W = waveCanvas.width;
+  const H = waveCanvas.height;
+
+  drawGrid();
+
+  if (!freq) {
+    // No pitch — draw flat line with label
+    wCtx.strokeStyle = 'rgba(74,127,193,0.3)';
+    wCtx.lineWidth   = 2 * devicePixelRatio;
+    wCtx.beginPath(); wCtx.moveTo(0, H/2); wCtx.lineTo(W, H/2); wCtx.stroke();
+    wCtx.fillStyle = 'rgba(74,127,193,0.5)';
+    wCtx.font = `${13 * devicePixelRatio}px Nunito, sans-serif`;
+    wCtx.textAlign = 'center';
+    wCtx.fillText('No clear pitch detected — try a whistle or sustained note', W/2, H/2 - 16 * devicePixelRatio);
+    wCtx.textAlign = 'left';
+    return;
+  }
+
+  // Show exactly 3 full cycles (good pedagogical view)
+  const cycles   = 3;
+  const amp      = Math.min(0.9, rms * 8); // normalise amplitude, cap at 90%
+  const halfH    = (H / 2 - 16) * amp;
+
+  // Draw filled area under the wave
+  wCtx.beginPath();
+  for (let px = 0; px <= W; px++) {
+    const t = (px / W) * cycles;
+    const y = H / 2 - Math.sin(2 * Math.PI * t) * halfH;
+    px === 0 ? wCtx.moveTo(px, y) : wCtx.lineTo(px, y);
+  }
+  wCtx.lineTo(W, H/2); wCtx.lineTo(0, H/2); wCtx.closePath();
+  const grad = wCtx.createLinearGradient(0, H/2 - halfH, 0, H/2 + halfH);
+  grad.addColorStop(0,   'rgba(74,127,193,0.25)');
+  grad.addColorStop(0.5, 'rgba(74,127,193,0.06)');
+  grad.addColorStop(1,   'rgba(58,158,143,0.22)');
+  wCtx.fillStyle = grad;
+  wCtx.fill();
+
+  // Draw the clean sine line
+  wCtx.save();
+  wCtx.shadowBlur  = 16 * devicePixelRatio;
+  wCtx.shadowColor = 'rgba(74,127,193,0.55)';
+  wCtx.strokeStyle = 'rgba(74,127,193,0.95)';
+  wCtx.lineWidth   = 3 * devicePixelRatio;
+  wCtx.lineJoin    = 'round';
+  wCtx.beginPath();
+  for (let px = 0; px <= W; px++) {
+    const t = (px / W) * cycles;
+    const y = H / 2 - Math.sin(2 * Math.PI * t) * halfH;
+    px === 0 ? wCtx.moveTo(px, y) : wCtx.lineTo(px, y);
+  }
+  wCtx.stroke();
+  wCtx.restore();
+
+  // Annotation: wavelength bracket
+  const cycleW = W / cycles;
+  const bracketY = H / 2 + halfH + 22 * devicePixelRatio;
+  wCtx.strokeStyle = 'rgba(212,168,67,0.7)';
+  wCtx.lineWidth   = 1.5 * devicePixelRatio;
+  wCtx.beginPath();
+  wCtx.moveTo(0, bracketY); wCtx.lineTo(cycleW, bracketY);
+  wCtx.moveTo(0, bracketY - 6 * devicePixelRatio); wCtx.lineTo(0, bracketY + 6 * devicePixelRatio);
+  wCtx.moveTo(cycleW, bracketY - 6 * devicePixelRatio); wCtx.lineTo(cycleW, bracketY + 6 * devicePixelRatio);
+  wCtx.stroke();
+  wCtx.fillStyle = 'rgba(180,130,30,0.85)';
+  wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
+  wCtx.textAlign = 'center';
+  wCtx.fillText('1 cycle  (' + (1000 / freq).toFixed(1) + ' ms)', cycleW / 2, bracketY + 16 * devicePixelRatio);
+
+  // Annotation: amplitude bracket
+  const ampX = W - 18 * devicePixelRatio;
+  wCtx.strokeStyle = 'rgba(58,158,143,0.7)';
+  wCtx.lineWidth   = 1.5 * devicePixelRatio;
+  wCtx.beginPath();
+  wCtx.moveTo(ampX, H/2); wCtx.lineTo(ampX, H/2 - halfH);
+  wCtx.moveTo(ampX - 5 * devicePixelRatio, H/2); wCtx.lineTo(ampX + 5 * devicePixelRatio, H/2);
+  wCtx.moveTo(ampX - 5 * devicePixelRatio, H/2 - halfH); wCtx.lineTo(ampX + 5 * devicePixelRatio, H/2 - halfH);
+  wCtx.stroke();
+  wCtx.fillStyle = 'rgba(30,120,100,0.85)';
+  wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
+  wCtx.textAlign = 'right';
+  wCtx.fillText('amplitude', ampX - 8 * devicePixelRatio, H/2 - halfH / 2);
+
+  // Freq label
+  wCtx.fillStyle = 'rgba(74,127,193,0.75)';
+  wCtx.font      = `bold ${11 * devicePixelRatio}px Nunito, sans-serif`;
+  wCtx.textAlign = 'left';
+  wCtx.fillText(freq.toFixed(1) + ' Hz  ·  ' + freqToNote(freq), 12 * devicePixelRatio, 18 * devicePixelRatio);
+
+  wCtx.textAlign = 'left';
+}
+
+/* ── SHARED GRID DRAW ── */
+function drawGrid() {
   const W = waveCanvas.width;
   const H = waveCanvas.height;
   wCtx.clearRect(0, 0, W, H);
-
-  // Background
   wCtx.fillStyle = '#f0f5ff';
   wCtx.fillRect(0, 0, W, H);
 
-  // Grid lines
   wCtx.strokeStyle = 'rgba(74,127,193,0.08)';
   wCtx.lineWidth = 1;
   [0.25, 0.5, 0.75].forEach(p => {
-    wCtx.beginPath(); wCtx.moveTo(0, H * p); wCtx.lineTo(W, H * p); wCtx.stroke();
+    wCtx.beginPath(); wCtx.moveTo(0, H*p); wCtx.lineTo(W, H*p); wCtx.stroke();
   });
   for (let i = 1; i < 8; i++) {
-    wCtx.beginPath(); wCtx.moveTo(W * i / 8, 0); wCtx.lineTo(W * i / 8, H); wCtx.stroke();
+    wCtx.beginPath(); wCtx.moveTo(W*i/8, 0); wCtx.lineTo(W*i/8, H); wCtx.stroke();
   }
-
-  // Centre axis
   wCtx.strokeStyle = 'rgba(74,127,193,0.22)';
   wCtx.lineWidth = 1.5;
-  wCtx.beginPath(); wCtx.moveTo(0, H / 2); wCtx.lineTo(W, H / 2); wCtx.stroke();
+  wCtx.beginPath(); wCtx.moveTo(0, H/2); wCtx.lineTo(W, H/2); wCtx.stroke();
 
-  // Axis labels inside canvas
-  wCtx.fillStyle = 'rgba(74,127,193,0.35)';
+  wCtx.fillStyle = 'rgba(74,127,193,0.3)';
   wCtx.font = `${11 * devicePixelRatio}px Nunito, sans-serif`;
-  wCtx.fillText('+', 8 * devicePixelRatio, 18 * devicePixelRatio);
-  wCtx.fillText('0', 8 * devicePixelRatio, H / 2 - 4 * devicePixelRatio);
-  wCtx.fillText('−', 8 * devicePixelRatio, H - 8 * devicePixelRatio);
+  wCtx.fillText('+', 8*devicePixelRatio, 18*devicePixelRatio);
+  wCtx.fillText('0', 8*devicePixelRatio, H/2 - 4*devicePixelRatio);
+  wCtx.fillText('−', 8*devicePixelRatio, H - 8*devicePixelRatio);
+}
 
-  // How many samples to show (zoom)
+function drawWaveform(data, gain, zoom) {
+  const W = waveCanvas.width;
+  const H = waveCanvas.height;
+  drawGrid();
+
   const sampleCount = Math.floor(data.length * zoom);
   const sliceW = W / (sampleCount - 1);
-
   const blue = 'rgba(74,127,193,';
 
   if (waveMode === 'line') {
-    // Outer glow
     wCtx.save();
-    wCtx.shadowBlur  = 14 * devicePixelRatio;
-    wCtx.shadowColor = 'rgba(74,127,193,0.5)';
-    wCtx.strokeStyle = blue + '0.9)';
-    wCtx.lineWidth   = 2.5 * devicePixelRatio;
-    wCtx.lineJoin    = 'round';
+    wCtx.shadowBlur = 14*devicePixelRatio; wCtx.shadowColor = 'rgba(74,127,193,0.5)';
+    wCtx.strokeStyle = blue+'0.9)'; wCtx.lineWidth = 2.5*devicePixelRatio; wCtx.lineJoin = 'round';
     wCtx.beginPath();
     for (let i = 0; i < sampleCount; i++) {
       const x = i * sliceW;
-      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+      const y = H/2 - ((data[i]-128)/128) * (H/2-12) * gain;
+      i === 0 ? wCtx.moveTo(x,y) : wCtx.lineTo(x,y);
     }
-    wCtx.stroke();
-    wCtx.restore();
+    wCtx.stroke(); wCtx.restore();
 
   } else if (waveMode === 'fill') {
-    // Filled wave
     wCtx.beginPath();
     for (let i = 0; i < sampleCount; i++) {
-      const x = i * sliceW;
-      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
+      const x = i*sliceW, y = H/2 - ((data[i]-128)/128)*(H/2-12)*gain;
+      i===0 ? wCtx.moveTo(x,y) : wCtx.lineTo(x,y);
     }
-    wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
-    const grad = wCtx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0,   'rgba(74,127,193,0.35)');
-    grad.addColorStop(0.5, 'rgba(74,127,193,0.08)');
-    grad.addColorStop(1,   'rgba(58,158,143,0.30)');
-    wCtx.fillStyle = grad;
-    wCtx.fill();
-    wCtx.save();
-    wCtx.shadowBlur  = 10 * devicePixelRatio;
-    wCtx.shadowColor = 'rgba(74,127,193,0.4)';
-    wCtx.strokeStyle = blue + '0.9)';
-    wCtx.lineWidth   = 2 * devicePixelRatio;
-    wCtx.lineJoin    = 'round';
+    wCtx.lineTo(W,H/2); wCtx.lineTo(0,H/2); wCtx.closePath();
+    const grad = wCtx.createLinearGradient(0,0,0,H);
+    grad.addColorStop(0,'rgba(74,127,193,0.35)'); grad.addColorStop(0.5,'rgba(74,127,193,0.08)'); grad.addColorStop(1,'rgba(58,158,143,0.30)');
+    wCtx.fillStyle=grad; wCtx.fill();
+    wCtx.save(); wCtx.shadowBlur=10*devicePixelRatio; wCtx.shadowColor='rgba(74,127,193,0.4)';
+    wCtx.strokeStyle=blue+'0.9)'; wCtx.lineWidth=2*devicePixelRatio; wCtx.lineJoin='round';
     wCtx.beginPath();
-    for (let i = 0; i < sampleCount; i++) {
-      const x = i * sliceW;
-      const y = H / 2 - ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-      i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-    }
-    wCtx.stroke();
-    wCtx.restore();
+    for (let i=0;i<sampleCount;i++){const x=i*sliceW,y=H/2-((data[i]-128)/128)*(H/2-12)*gain; i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+    wCtx.stroke(); wCtx.restore();
 
   } else if (waveMode === 'mirror') {
-    const pairs = [
-      ['rgba(74,127,193,0.5)',  'rgba(74,127,193,0.09)',  1],
-      ['rgba(58,158,143,0.45)', 'rgba(58,158,143,0.07)', -1],
-    ];
-    pairs.forEach(([stroke, fill, dir]) => {
+    [['rgba(74,127,193,0.5)','rgba(74,127,193,0.09)',1],['rgba(58,158,143,0.45)','rgba(58,158,143,0.07)',-1]].forEach(([stroke,fill,dir])=>{
       wCtx.beginPath();
-      for (let i = 0; i < sampleCount; i++) {
-        const x = i * sliceW;
-        const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-        const y = H / 2 - dir * amp;
-        i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-      }
-      wCtx.lineTo(W, H / 2); wCtx.lineTo(0, H / 2); wCtx.closePath();
-      wCtx.fillStyle = fill; wCtx.fill();
-      wCtx.save();
-      wCtx.shadowBlur  = 10 * devicePixelRatio;
-      wCtx.shadowColor = stroke;
-      wCtx.strokeStyle = stroke;
-      wCtx.lineWidth   = 2 * devicePixelRatio;
-      wCtx.lineJoin    = 'round';
+      for(let i=0;i<sampleCount;i++){const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-dir*amp; i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+      wCtx.lineTo(W,H/2);wCtx.lineTo(0,H/2);wCtx.closePath();wCtx.fillStyle=fill;wCtx.fill();
+      wCtx.save();wCtx.shadowBlur=10*devicePixelRatio;wCtx.shadowColor=stroke;wCtx.strokeStyle=stroke;wCtx.lineWidth=2*devicePixelRatio;wCtx.lineJoin='round';
       wCtx.beginPath();
-      for (let i = 0; i < sampleCount; i++) {
-        const x = i * sliceW;
-        const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-        const y = H / 2 - dir * amp;
-        i === 0 ? wCtx.moveTo(x, y) : wCtx.lineTo(x, y);
-      }
-      wCtx.stroke();
-      wCtx.restore();
+      for(let i=0;i<sampleCount;i++){const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-dir*amp; i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+      wCtx.stroke();wCtx.restore();
     });
 
   } else if (waveMode === 'dots') {
-    const step = Math.max(1, Math.floor(sampleCount / 300));
-    for (let i = 0; i < sampleCount; i += step) {
-      const x   = i * sliceW;
-      const amp = ((data[i] - 128) / 128) * (H / 2 - 12) * gain;
-      const y   = H / 2 - amp;
-      const t   = Math.abs(amp) / (H / 2);
-      const r   = (1.5 + t * 4) * devicePixelRatio;
-      wCtx.save();
-      wCtx.shadowBlur  = 8 * devicePixelRatio;
-      wCtx.shadowColor = blue + '0.6)';
-      wCtx.fillStyle   = `rgba(74,127,193,${0.35 + t * 0.65})`;
-      wCtx.beginPath();
-      wCtx.arc(x, y, r, 0, Math.PI * 2);
-      wCtx.fill();
-      wCtx.restore();
+    const step = Math.max(1, Math.floor(sampleCount/300));
+    for(let i=0;i<sampleCount;i+=step){
+      const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-amp,t=Math.abs(amp)/(H/2);
+      const r=(1.5+t*4)*devicePixelRatio;
+      wCtx.save();wCtx.shadowBlur=8*devicePixelRatio;wCtx.shadowColor=blue+'0.6)';
+      wCtx.fillStyle=`rgba(74,127,193,${0.35+t*0.65})`;
+      wCtx.beginPath();wCtx.arc(x,y,r,0,Math.PI*2);wCtx.fill();wCtx.restore();
     }
   }
 }
@@ -815,26 +1185,18 @@ function toggleFullscreen() {
     el.textContent = icons[Math.floor(Math.random() * icons.length)];
     el.style.fontSize = (20 + Math.random() * 18) + 'px';
     document.body.appendChild(el);
-    const s = {
-      el,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      vx: (Math.random() - 0.5) * 0.7,
-      vy: (Math.random() - 0.5) * 0.7,
-    };
+    const s = { el, x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight, vx:(Math.random()-0.5)*0.7, vy:(Math.random()-0.5)*0.7 };
     (function tick() {
-      const W = window.innerWidth, H = window.innerHeight;
-      s.x += s.vx; s.y += s.vy;
-      if (s.x < 0) { s.x = 0; s.vx *= -1; }
-      if (s.x > W) { s.x = W; s.vx *= -1; }
-      if (s.y < 0) { s.y = 0; s.vy *= -1; }
-      if (s.y > H) { s.y = H; s.vy *= -1; }
-      s.el.style.left = s.x + 'px';
-      s.el.style.top  = s.y + 'px';
+      const W=window.innerWidth,H=window.innerHeight;
+      s.x+=s.vx;s.y+=s.vy;
+      if(s.x<0){s.x=0;s.vx*=-1;}if(s.x>W){s.x=W;s.vx*=-1;}
+      if(s.y<0){s.y=0;s.vy*=-1;}if(s.y>H){s.y=H;s.vy*=-1;}
+      s.el.style.left=s.x+'px';s.el.style.top=s.y+'px';
       requestAnimationFrame(tick);
     })();
   }
 })();
 </script>
+
 </body>
 </html>
