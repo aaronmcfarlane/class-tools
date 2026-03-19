@@ -457,6 +457,7 @@ body.fullscreen .group-card {
           <select onchange="loadPreset(this.value)" style="width:100%;">
             <option value="">— Load a class —</option>
             <option value="mcfarlane">Mr. McFarlane Grade 4</option>
+            <option value="courtney">Ms. Courtney Grade 5</option>
           </select>
         </div>
 
@@ -565,6 +566,9 @@ function setMode(m) {
 function loadPreset(v) {
   if (v === "mcfarlane") {
     document.getElementById("names").value = `Adam\nAlec\nAliyah\nAlyssa\nAnika\nAnna\nAyden\nClyde\nÉmylie-Maude\nJonathan\nJoshua\nJulian\nJunior\nMaejor\nMax\nNiaganii\nPhoenix\nSamuel`;
+  }
+  if (v === "courtney") {
+    document.getElementById("names").value = `Aria\nCole\nDom\nEv\nFaith\nFelicia\nGabriel\nGavin\nJaven\nJaxsen\nJordyn\nKara\nKrystal\nLuca\nMakayla\nMavrick\nMia\nOlivia\nTim\nVince`;
   }
 }
 
