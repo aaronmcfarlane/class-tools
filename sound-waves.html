@@ -989,24 +989,30 @@ function drawSnapshot({ freq, rms }) {
   drawGrid();
 
   if (!freq) {
-    // No pitch — draw flat line with label
     wCtx.strokeStyle = 'rgba(74,127,193,0.3)';
     wCtx.lineWidth   = 2 * devicePixelRatio;
     wCtx.beginPath(); wCtx.moveTo(0, H/2); wCtx.lineTo(W, H/2); wCtx.stroke();
-    wCtx.fillStyle = 'rgba(74,127,193,0.5)';
-    wCtx.font = `${13 * devicePixelRatio}px Nunito, sans-serif`;
-    wCtx.textAlign = 'center';
+    wCtx.fillStyle  = 'rgba(74,127,193,0.5)';
+    wCtx.font       = `${13 * devicePixelRatio}px Nunito, sans-serif`;
+    wCtx.textAlign  = 'center';
     wCtx.fillText('No clear pitch detected — try a whistle or sustained note', W/2, H/2 - 16 * devicePixelRatio);
-    wCtx.textAlign = 'left';
+    wCtx.textAlign  = 'left';
     return;
   }
 
-  // Show exactly 3 full cycles (good pedagogical view)
-  const cycles   = 3;
-  const amp      = Math.min(0.9, rms * 8); // normalise amplitude, cap at 90%
-  const halfH    = (H / 2 - 16) * amp;
+  // Fixed time window: always show 50ms of signal.
+  // A 100 Hz note → 5 cycles. A 1000 Hz note → 50 cycles.
+  // This makes frequency differences immediately visible.
+  const windowMs  = 50;
+  const cycles    = freq * (windowMs / 1000); // how many full cycles fit in 50ms
 
-  // Draw filled area under the wave
+  // Amplitude: map RMS directly to wave height with no artificial boosting.
+  // RMS of 0 = flat line, RMS of ~0.5+ = nearly full height.
+  // Students will clearly see a whisper vs a shout.
+  const amp   = Math.min(1.0, rms * 2.5);
+  const halfH = (H / 2 - 20) * amp;
+
+  // Filled area
   wCtx.beginPath();
   for (let px = 0; px <= W; px++) {
     const t = (px / W) * cycles;
@@ -1021,7 +1027,7 @@ function drawSnapshot({ freq, rms }) {
   wCtx.fillStyle = grad;
   wCtx.fill();
 
-  // Draw the clean sine line
+  // Clean sine line
   wCtx.save();
   wCtx.shadowBlur  = 16 * devicePixelRatio;
   wCtx.shadowColor = 'rgba(74,127,193,0.55)';
@@ -1037,40 +1043,48 @@ function drawSnapshot({ freq, rms }) {
   wCtx.stroke();
   wCtx.restore();
 
-  // Annotation: wavelength bracket
-  const cycleW = W / cycles;
+  // Annotation: one-cycle bracket (gold)
+  const cycleW   = W / cycles;
   const bracketY = H / 2 + halfH + 22 * devicePixelRatio;
-  wCtx.strokeStyle = 'rgba(212,168,67,0.7)';
-  wCtx.lineWidth   = 1.5 * devicePixelRatio;
-  wCtx.beginPath();
-  wCtx.moveTo(0, bracketY); wCtx.lineTo(cycleW, bracketY);
-  wCtx.moveTo(0, bracketY - 6 * devicePixelRatio); wCtx.lineTo(0, bracketY + 6 * devicePixelRatio);
-  wCtx.moveTo(cycleW, bracketY - 6 * devicePixelRatio); wCtx.lineTo(cycleW, bracketY + 6 * devicePixelRatio);
-  wCtx.stroke();
-  wCtx.fillStyle = 'rgba(180,130,30,0.85)';
-  wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
-  wCtx.textAlign = 'center';
-  wCtx.fillText('1 cycle  (' + (1000 / freq).toFixed(1) + ' ms)', cycleW / 2, bracketY + 16 * devicePixelRatio);
+  if (cycleW > 20) { // only draw if cycles aren't too squished
+    wCtx.strokeStyle = 'rgba(212,168,67,0.7)';
+    wCtx.lineWidth   = 1.5 * devicePixelRatio;
+    wCtx.beginPath();
+    wCtx.moveTo(0, bracketY);        wCtx.lineTo(cycleW, bracketY);
+    wCtx.moveTo(0, bracketY - 6 * devicePixelRatio); wCtx.lineTo(0, bracketY + 6 * devicePixelRatio);
+    wCtx.moveTo(cycleW, bracketY - 6 * devicePixelRatio); wCtx.lineTo(cycleW, bracketY + 6 * devicePixelRatio);
+    wCtx.stroke();
+    wCtx.fillStyle = 'rgba(160,115,20,0.85)';
+    wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
+    wCtx.textAlign = 'center';
+    wCtx.fillText('1 cycle (' + (1000 / freq).toFixed(1) + ' ms)', cycleW / 2, bracketY + 16 * devicePixelRatio);
+  }
 
-  // Annotation: amplitude bracket
+  // Annotation: amplitude bracket (teal)
   const ampX = W - 18 * devicePixelRatio;
-  wCtx.strokeStyle = 'rgba(58,158,143,0.7)';
-  wCtx.lineWidth   = 1.5 * devicePixelRatio;
-  wCtx.beginPath();
-  wCtx.moveTo(ampX, H/2); wCtx.lineTo(ampX, H/2 - halfH);
-  wCtx.moveTo(ampX - 5 * devicePixelRatio, H/2); wCtx.lineTo(ampX + 5 * devicePixelRatio, H/2);
-  wCtx.moveTo(ampX - 5 * devicePixelRatio, H/2 - halfH); wCtx.lineTo(ampX + 5 * devicePixelRatio, H/2 - halfH);
-  wCtx.stroke();
-  wCtx.fillStyle = 'rgba(30,120,100,0.85)';
-  wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
-  wCtx.textAlign = 'right';
-  wCtx.fillText('amplitude', ampX - 8 * devicePixelRatio, H/2 - halfH / 2);
+  if (halfH > 10) {
+    wCtx.strokeStyle = 'rgba(58,158,143,0.7)';
+    wCtx.lineWidth   = 1.5 * devicePixelRatio;
+    wCtx.beginPath();
+    wCtx.moveTo(ampX, H/2);          wCtx.lineTo(ampX, H/2 - halfH);
+    wCtx.moveTo(ampX - 5*devicePixelRatio, H/2);        wCtx.lineTo(ampX + 5*devicePixelRatio, H/2);
+    wCtx.moveTo(ampX - 5*devicePixelRatio, H/2-halfH);  wCtx.lineTo(ampX + 5*devicePixelRatio, H/2-halfH);
+    wCtx.stroke();
+    wCtx.fillStyle = 'rgba(30,120,100,0.85)';
+    wCtx.font      = `bold ${10 * devicePixelRatio}px Nunito, sans-serif`;
+    wCtx.textAlign = 'right';
+    wCtx.fillText('amplitude', ampX - 8 * devicePixelRatio, H/2 - halfH / 2);
+  }
 
-  // Freq label
-  wCtx.fillStyle = 'rgba(74,127,193,0.75)';
+  // Labels
+  wCtx.fillStyle = 'rgba(74,127,193,0.8)';
   wCtx.font      = `bold ${11 * devicePixelRatio}px Nunito, sans-serif`;
   wCtx.textAlign = 'left';
   wCtx.fillText(freq.toFixed(1) + ' Hz  ·  ' + freqToNote(freq), 12 * devicePixelRatio, 18 * devicePixelRatio);
+
+  wCtx.fillStyle = 'rgba(150,130,100,0.6)';
+  wCtx.font      = `${10 * devicePixelRatio}px Nunito, sans-serif`;
+  wCtx.fillText('window: ' + windowMs + ' ms', 12 * devicePixelRatio, 32 * devicePixelRatio);
 
   wCtx.textAlign = 'left';
 }
