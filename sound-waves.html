@@ -747,12 +747,22 @@ let snapshotData = null;   // { freq, amp, wavePoints }
 const waveCanvas = document.getElementById('wave-canvas');
 const wCtx = waveCanvas.getContext('2d');
 
+let resizing = false;
 function resizeCanvas() {
+  if (resizing) return;
+  resizing = true;
   waveCanvas.width  = waveCanvas.offsetWidth  * devicePixelRatio;
   waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
-  if (snapshotData && viewMode === 'snapshot') drawSnapshot(snapshotData);
+  resizing = false;
 }
-window.addEventListener('resize', resizeCanvas);
+
+// Use ResizeObserver instead of window resize — it only fires when the
+// element's layout size changes, NOT when we set canvas.width/height
+const ro = new ResizeObserver(() => {
+  resizeCanvas();
+  if (snapshotData && viewMode === 'snapshot') drawSnapshot(snapshotData);
+});
+ro.observe(waveCanvas);
 resizeCanvas();
 
 /* ── VIEW MODE ── */
@@ -915,7 +925,8 @@ async function takeSnapshot() {
     rms < 0.35 ? 'Loud' : 'Very loud';
 
   document.getElementById('idle-overlay').classList.add('hidden');
-  requestAnimationFrame(() => { resizeCanvas(); drawSnapshot({ freq, rms }); });
+  resizeCanvas();
+  requestAnimationFrame(() => drawSnapshot({ freq, rms }));
 
   snapping = false;
   btn.disabled = false;
@@ -972,10 +983,6 @@ function freqToNote(freq) {
 
 /* ── DRAW SNAPSHOT (clean synthesized sine wave) ── */
 function drawSnapshot({ freq, rms }) {
-  console.log('drawSnapshot called', { freq, rms });
-  console.log('canvas size:', waveCanvas.width, waveCanvas.height);
-  resizeCanvas();
-  console.log('canvas size after resize:', waveCanvas.width, waveCanvas.height);
   const W = waveCanvas.width;
   const H = waveCanvas.height;
 
