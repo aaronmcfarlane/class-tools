@@ -870,25 +870,22 @@ async function takeSnapshot() {
   const lbl  = document.getElementById('countdown-label');
   cw.classList.add('visible');
 
-  // Use ScriptProcessorNode to collect raw float samples
-  const bufSize   = 4096;
-  const processor = audioCtx.createScriptProcessor(bufSize, 1, 1);
-  const collected = [];
-  const target    = Math.ceil(audioCtx.sampleRate * dur);
-
-  processor.onaudioprocess = e => {
-    const ch = e.inputBuffer.getChannelData(0);
-    for (let i = 0; i < ch.length; i++) collected.push(ch[i]);
-  };
-  source.connect(processor);
-  processor.connect(audioCtx.destination);
+  // Collect float32 snapshots from the analyser every ~50ms during the countdown
+  // This avoids ScriptProcessorNode (deprecated/blocked) entirely
+  const snapshots = [];
+  const bufLen = analyser.fftSize; // full buffer, not frequencyBinCount
+  const snapInterval = setInterval(() => {
+    const buf = new Float32Array(bufLen);
+    analyser.getFloatTimeDomainData(buf);
+    snapshots.push(buf);
+  }, 50);
 
   // Animate countdown
   const start = performance.now();
   await new Promise(resolve => {
     function tick() {
       const elapsed = (performance.now() - start) / 1000;
-      const pct     = Math.max(0, 1 - elapsed / dur);
+      const pct = Math.max(0, 1 - elapsed / dur);
       fill.style.width = (pct * 100) + '%';
       lbl.textContent  = Math.max(0, dur - elapsed).toFixed(1) + 's';
       if (elapsed < dur) requestAnimationFrame(tick);
@@ -897,24 +894,24 @@ async function takeSnapshot() {
     requestAnimationFrame(tick);
   });
 
-  // Disconnect and clean up
-  source.disconnect(processor);
-  processor.disconnect();
+  clearInterval(snapInterval);
   cw.classList.remove('visible');
-  fill.style.width = '100%';
 
-  // Analyse collected buffer
-  const samples = new Float32Array(collected.slice(0, target));
-  const freq    = detectPitch(samples, audioCtx.sampleRate);
-  const rms     = Math.sqrt(samples.reduce((s, v) => s + v * v, 0) / samples.length);
+  // Flatten all snapshots into one big buffer
+  const total   = snapshots.reduce((s, b) => s + b.length, 0);
+  const samples = new Float32Array(total);
+  let offset = 0;
+  for (const b of snapshots) { samples.set(b, offset); offset += b.length; }
+
+  // Analyse
+  const freq = detectPitch(samples, audioCtx.sampleRate);
+  const rms  = Math.sqrt(samples.reduce((s, v) => s + v * v, 0) / samples.length);
 
   snapshotData = { freq, rms };
 
   // Update result chips
-  const resultEl = document.getElementById('snapshot-result');
-  const emptyEl  = document.getElementById('snapshot-empty');
-  resultEl.classList.add('visible');
-  emptyEl.style.display = 'none';
+  document.getElementById('snapshot-result').classList.add('visible');
+  document.getElementById('snapshot-empty').style.display = 'none';
 
   if (freq) {
     document.getElementById('res-freq').textContent = freq.toFixed(1) + ' Hz';
@@ -925,19 +922,16 @@ async function takeSnapshot() {
   }
 
   const db = rms > 0 ? (20 * Math.log10(rms)).toFixed(1) : '—';
-  document.getElementById('res-amp').textContent   = db + ' dB';
+  document.getElementById('res-amp').textContent = db + ' dB';
   document.getElementById('res-amp-sub').textContent =
     rms < 0.01 ? 'Very quiet' :
     rms < 0.05 ? 'Quiet' :
     rms < 0.15 ? 'Moderate' :
     rms < 0.35 ? 'Loud' : 'Very loud';
 
-  // Draw the clean synthesized wave
+  // Draw waveform
   document.getElementById('idle-overlay').classList.add('hidden');
-  requestAnimationFrame(() => {
-    resizeCanvas();
-    drawSnapshot({ freq, rms });
-  });
+  requestAnimationFrame(() => { resizeCanvas(); drawSnapshot({ freq, rms }); });
 
   snapping = false;
   btn.disabled = false;
