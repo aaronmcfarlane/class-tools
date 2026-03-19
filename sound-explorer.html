@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🔊 Sound Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #f7f2ee;
+  --card:        #ffffff;
+  --text:        #2a2420;
+  --muted:       #9e8e80;
+  --blue:        #4a7fc1;
+  --blue-light:  #e6eefa;
+  --teal:        #3a9e8f;
+  --teal-light:  #e0f5f2;
+  --gold:        #d4a843;
+  --gold-light:  #fdf5e0;
+  --red:         #c94040;
+  --red-light:   #fdeaea;
+  --green:       #4a9e6a;
+  --green-light: #e4f5ec;
+  --purple:      #8056c7;
+  --purple-light:#f0eaff;
+  --navy:        #1a3a5c;
+  --shadow:      0 4px 20px rgba(40,60,100,0.10);
+  --radius:      18px;
+}
+
+body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; }
+
+.deco { position:fixed; opacity:0.08; pointer-events:none; z-index:0; user-select:none; }
+
+/* HEADER */
+header { background:var(--card); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 2px 12px rgba(40,60,100,0.10); position:sticky; top:0; z-index:100; flex-shrink:0; }
+header h1 { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:900; color:var(--blue); }
+
+/* MAIN APP TABS */
+.app-tabs { display:flex; gap:0; background:var(--card); border-bottom:2px solid #e8e0d8; padding:0 24px; position:sticky; top:62px; z-index:99; }
+.app-tab { padding:12px 20px; font-weight:800; font-size:0.9rem; cursor:pointer; color:var(--muted); border-bottom:3px solid transparent; margin-bottom:-2px; transition:all 0.18s; white-space:nowrap; }
+.app-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.app-tab:hover:not(.active) { color:var(--text); }
+
+/* TAB CONTENT */
+.tab-content { display:none; flex:1; }
+.tab-content.active { display:flex; flex-direction:column; }
+
+/* ── SHARED CARD STYLES ── */
+.page { max-width:1100px; width:100%; margin:0 auto; padding:24px 20px; display:flex; flex-direction:column; gap:16px; position:relative; z-index:1; }
+.card { background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+.card-title { font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:10px; }
+
+/* BUTTONS */
+button { font-family:'Nunito',sans-serif; font-weight:700; font-size:0.88rem; border:none; border-radius:10px; padding:8px 16px; cursor:pointer; transition:transform 0.12s, background 0.15s; }
+button:active { transform:scale(0.95); }
+button:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+.btn-primary { background:var(--blue); color:white; font-weight:800; }
+.btn-primary:hover:not(:disabled) { background:#3a6aaa; }
+.btn-danger { background:var(--red-light); color:var(--red); font-weight:800; border:2px solid transparent; }
+.btn-danger:hover:not(:disabled) { background:var(--red); color:white; }
+.btn-ghost { background:transparent; color:var(--muted); border:2px solid #e8e0d8; font-size:0.82rem; }
+.btn-ghost:hover { border-color:var(--blue); color:var(--blue); }
+.btn-mode { background:#f0ebe6; color:var(--muted); flex:1; font-weight:700; border:2px solid transparent; }
+.btn-mode.active { background:var(--blue-light); border-color:var(--blue); color:var(--blue); }
+
+/* SELECT / RANGE */
+select, input[type=number] { font-family:'Nunito',sans-serif; font-size:0.9rem; border:2px solid #e8e0d8; border-radius:10px; padding:7px 10px; outline:none; background:white; color:var(--text); transition:border 0.2s; }
+select:focus, input:focus { border-color:var(--blue); }
+input[type=range] { -webkit-appearance:none; width:100%; height:4px; background:#e8e0d8; border-radius:4px; outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; background:var(--blue); border-radius:50%; box-shadow:0 2px 6px rgba(74,127,193,0.4); }
+
+/* SUB-TABS */
+.sub-tabs { display:flex; gap:6px; background:#ede7e1; padding:5px; border-radius:12px; margin-bottom:14px; }
+.sub-tab { flex:1; text-align:center; padding:7px 10px; border-radius:9px; font-weight:800; font-size:0.82rem; cursor:pointer; color:var(--muted); transition:all 0.18s; user-select:none; }
+.sub-tab.active { background:white; color:var(--blue); box-shadow:0 2px 8px rgba(40,60,100,0.10); }
+
+/* STATUS PILL */
+.status-pill { display:flex; align-items:center; gap:7px; background:var(--bg); border-radius:20px; padding:5px 12px; font-size:0.75rem; font-weight:800; color:var(--muted); border:2px solid #e8e0d8; }
+.status-pill.live { background:var(--teal-light); border-color:var(--teal); color:var(--teal); }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--muted); flex-shrink:0; }
+.status-pill.live .status-dot { background:var(--teal); box-shadow:0 0 6px var(--teal); animation:pulse-dot 1.2s ease-in-out infinite; }
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* WAVE CANVAS */
+.wave-wrap { position:relative; width:100%; border-radius:12px; overflow:hidden; background:#f0f5ff; border:2px solid #dde8f8; }
+canvas { display:block; width:100%; height:280px; }
+#idle-overlay { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; pointer-events:none; transition:opacity 0.4s; background:rgba(240,245,255,0.88); border-radius:12px; z-index:2; }
+#idle-overlay.hidden { opacity:0; visibility:hidden; }
+.idle-icon { font-size:2.5rem; animation:float 3s ease-in-out infinite; }
+.idle-text { font-size:0.82rem; font-weight:700; color:var(--muted); text-align:center; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+
+/* AXIS */
+.axis-labels { display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding:0 4px; }
+.axis-label { font-size:0.7rem; font-weight:700; color:var(--muted); }
+
+/* STAT CHIPS */
+.stat-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.stat-chip { background:var(--bg); border-radius:8px; padding:5px 10px; font-size:0.72rem; font-weight:700; color:var(--muted); border:2px solid #e8e0d8; }
+.stat-chip b { color:var(--text); }
+
+/* VOL METER */
+.vol-row { display:flex; align-items:center; gap:10px; margin-top:12px; }
+.vol-label { font-size:0.72rem; font-weight:800; color:var(--muted); white-space:nowrap; }
+.vol-track { flex:1; height:6px; background:#e8e0d8; border-radius:4px; overflow:hidden; }
+.vol-fill { height:100%; width:0%; border-radius:4px; background:linear-gradient(90deg,var(--teal),var(--gold),var(--red)); transition:width 0.05s; }
+
+/* RESULT CHIPS */
+.result-chip { background:var(--bg); border-radius:12px; padding:10px 14px; border:2px solid #e8e0d8; }
+.rc-label { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:2px; }
+.rc-value { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text); }
+.rc-sub { font-size:0.72rem; font-weight:700; color:var(--muted); margin-top:1px; }
+
+/* COUNTDOWN */
+.countdown-wrap { display:none; align-items:center; gap:10px; padding:4px 0; }
+.countdown-wrap.visible { display:flex; }
+.countdown-bar-track { flex:1; height:6px; background:#e8e0d8; border-radius:4px; overflow:hidden; }
+.countdown-bar-fill { height:100%; background:var(--teal); border-radius:4px; width:100%; transition:width 0.05s linear; }
+.countdown-label { font-size:0.72rem; font-weight:800; color:var(--teal); white-space:nowrap; min-width:40px; text-align:right; }
+
+/* VIZ MODE BUTTONS */
+.viz-mode-row { display:flex; gap:8px; }
+.viz-mode-btn { flex:1; padding:10px 8px; border-radius:12px; background:#f0ebe6; color:var(--muted); font-size:0.78rem; font-weight:800; border:2px solid transparent; text-align:center; cursor:pointer; transition:all 0.15s; }
+.viz-mode-btn .vmode-icon { font-size:1.2rem; display:block; margin-bottom:3px; }
+.viz-mode-btn.active { background:var(--blue-light); border-color:var(--blue); color:var(--blue); }
+.viz-mode-btn:hover:not(.active) { border-color:#ccc; }
+
+/* ── WAVEFORM LAYOUT ── */
+.waveform-layout { display:grid; grid-template-columns:240px 1fr; gap:16px; }
+.waveform-sidebar { display:flex; flex-direction:column; gap:12px; }
+.waveform-main { display:flex; flex-direction:column; gap:12px; }
+.snap-result-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ── FULLSCREEN ── */
+#fullscreenToolbar { display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:999; background:rgba(74,127,193,0.92); backdrop-filter:blur(6px); border-radius:14px; padding:8px 12px; gap:10px; align-items:center; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+#fullscreenToolbar button { background:rgba(255,255,255,0.2); color:white; font-weight:800; font-size:0.88rem; border-radius:10px; padding:8px 14px; border:none; }
+#fullscreenToolbar button:hover { background:rgba(255,255,255,0.35); }
+body.fullscreen header, body.fullscreen .app-tabs, body.fullscreen .waveform-sidebar { display:none; }
+body.fullscreen #fullscreenToolbar { display:flex; }
+body.fullscreen .tab-content.active { height:100vh; }
+body.fullscreen .page { height:100vh; padding:16px 16px 70px; max-width:100%; }
+body.fullscreen .waveform-layout { grid-template-columns:1fr; height:100%; }
+body.fullscreen .waveform-main { height:100%; }
+body.fullscreen .wave-wrap { flex:1; }
+body.fullscreen canvas { height:100%; }
+
+/* ── DECIBEL SCALE ── */
+.db-scale-wrap { position:relative; padding:20px 0 40px; }
+.db-track { position:relative; height:28px; border-radius:14px; background:linear-gradient(90deg,#4a9e6a 0%,#7fc75a 20%,#d4c843 40%,#d4a843 60%,#c97040 75%,#c94040 100%); box-shadow:0 2px 12px rgba(0,0,0,0.15); }
+.db-tick { position:absolute; top:34px; transform:translateX(-50%); font-size:0.72rem; font-weight:800; color:var(--muted); }
+.db-tick-line { position:absolute; top:-6px; width:2px; height:10px; background:rgba(0,0,0,0.2); transform:translateX(-50%); }
+.db-example { position:absolute; display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform 0.15s; }
+.db-example:hover { transform:translateY(-3px) !important; }
+.db-example .ex-icon { font-size:1.5rem; }
+.db-example .ex-label { font-size:0.65rem; font-weight:800; color:var(--text); white-space:nowrap; margin-top:2px; text-align:center; }
+.db-example .ex-db { font-size:0.6rem; font-weight:700; color:var(--muted); }
+.db-needle { position:absolute; top:-8px; width:4px; height:44px; background:var(--navy); border-radius:2px; transform:translateX(-50%); box-shadow:0 2px 8px rgba(0,0,0,0.3); transition:left 0.3s ease; pointer-events:none; }
+.db-needle::before { content:''; position:absolute; top:-6px; left:50%; transform:translateX(-50%); width:12px; height:12px; background:var(--navy); border-radius:50%; }
+.db-info-box { background:var(--card); border-radius:var(--radius); padding:20px 24px; box-shadow:var(--shadow); display:flex; align-items:center; gap:20px; }
+.db-big-num { font-family:'Playfair Display',serif; font-size:3.5rem; font-weight:900; color:var(--navy); line-height:1; }
+.db-big-unit { font-size:1rem; font-weight:800; color:var(--muted); margin-top:4px; }
+.db-desc { flex:1; }
+.db-desc-name { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--text); margin-bottom:4px; }
+.db-desc-text { font-size:0.85rem; font-weight:600; color:var(--muted); line-height:1.5; }
+.db-danger { margin-top:6px; font-size:0.75rem; font-weight:800; border-radius:8px; padding:4px 10px; display:inline-block; }
+.db-danger.safe { background:var(--green-light); color:#2d8a50; }
+.db-danger.caution { background:var(--gold-light); color:#8a6010; }
+.db-danger.danger { background:var(--red-light); color:var(--red); }
+.db-slider-row { display:flex; align-items:center; gap:14px; margin-top:16px; }
+.db-slider-label { font-size:0.78rem; font-weight:800; color:var(--muted); white-space:nowrap; }
+#db-slider { accent-color:var(--blue); }
+.db-examples-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+.db-ex-btn { background:var(--bg); border:2px solid #e8e0d8; border-radius:12px; padding:10px 14px; cursor:pointer; text-align:center; transition:all 0.15s; min-width:80px; }
+.db-ex-btn:hover { border-color:var(--blue); background:var(--blue-light); }
+.db-ex-btn.active { border-color:var(--blue); background:var(--blue-light); }
+.db-ex-btn .ex-emoji { font-size:1.4rem; display:block; }
+.db-ex-btn .ex-name { font-size:0.68rem; font-weight:800; color:var(--text); margin-top:3px; }
+.db-ex-btn .ex-val  { font-size:0.62rem; font-weight:700; color:var(--muted); }
+
+/* ── EAR & LARYNX ── */
+.anatomy-layout { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.anatomy-panel { display:flex; flex-direction:column; gap:12px; }
+.diagram-card { background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); }
+.diagram-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:900; color:var(--navy); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+.anatomy-svg { width:100%; height:auto; display:block; }
+.part { cursor:pointer; transition:opacity 0.2s; }
+.part:hover { opacity:0.75; }
+.part.highlighted { filter:drop-shadow(0 0 7px rgba(200,149,42,0.9)); }
+.part-btns { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.part-btn { background:#f0ebe6; color:var(--text); border:2px solid transparent; border-radius:8px; padding:5px 10px; font-size:0.74rem; font-weight:800; cursor:pointer; transition:all 0.15s; }
+.part-btn:hover { border-color:var(--gold); background:var(--gold-light); }
+.part-btn.active { background:var(--gold-light); border-color:var(--gold); color:var(--navy); }
+.info-card { background:var(--gold-light); border-radius:12px; padding:14px 16px; border-left:4px solid var(--gold); min-height:80px; transition:all 0.3s; }
+.info-card.teal { background:var(--teal-light); border-color:var(--teal); }
+.info-card.blue { background:var(--blue-light); border-color:var(--blue); }
+.info-card.red  { background:var(--red-light);  border-color:var(--red); }
+.info-card.purple { background:var(--purple-light); border-color:var(--purple); }
+.info-tag { font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:3px; }
+.info-name { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:4px; }
+.info-text { font-size:0.82rem; font-weight:600; color:#4a3a20; line-height:1.5; }
+
+/* JOURNEY STRIP */
+.journey-strip { background:var(--card); border-radius:var(--radius); padding:14px 20px; box-shadow:var(--shadow); display:flex; align-items:center; gap:0; overflow-x:auto; }
+.j-step { display:flex; align-items:center; gap:8px; flex-shrink:0; opacity:0.35; transition:opacity 0.4s; }
+.j-step.active { opacity:1; }
+.j-icon { width:32px; height:32px; border-radius:50%; background:#f0e8d8; display:flex; align-items:center; justify-content:center; font-size:0.95rem; border:2px solid transparent; transition:all 0.3s; flex-shrink:0; }
+.j-step.active .j-icon { background:var(--gold-light); border-color:var(--gold); }
+.j-label { font-size:0.72rem; font-weight:800; color:var(--text); line-height:1.2; }
+.j-arrow { color:#c8b898; font-size:1rem; padding:0 6px; flex-shrink:0; }
+.narrative { background:var(--navy); color:white; border-radius:var(--radius); padding:14px 20px; font-size:0.88rem; font-weight:700; line-height:1.5; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow); min-height:56px; }
+.narr-icon { font-size:1.3rem; flex-shrink:0; }
+.narr-text { flex:1; }
+.narr-step { font-size:0.68rem; font-weight:900; opacity:0.5; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+.btn-play { background:var(--gold); color:white; font-weight:900; font-size:0.95rem; padding:10px 22px; border-radius:12px; box-shadow:0 3px 12px rgba(200,149,42,0.35); }
+.btn-play:hover:not(:disabled) { background:#b07820; }
+.btn-play.playing { background:var(--red); }
+
+/* PART PULSE */
+@keyframes part-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.part.pulsing { animation:part-pulse 0.7s ease-in-out infinite; }
+
+/* RESPONSIVE */
+@media (max-width:780px) {
+  .waveform-layout, .anatomy-layout { grid-template-columns:1fr; }
+  .app-tab { padding:10px 12px; font-size:0.8rem; }
+}
+@keyframes popIn { from{transform:scale(0.96);opacity:0} to{transform:scale(1);opacity:1} }
+.card, .diagram-card { animation:popIn 0.22s ease both; }
+</style>
+</head>
+<body>
+
+<div id="fullscreenToolbar">
+  <button onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+</div>
+
+<header>
+  <h1>🔊 Sound Explorer</h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <div class="status-pill" id="status-pill"><div class="status-dot"></div><span id="status-text">Offline</span></div>
+    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 Fullscreen</button>
+  </div>
+</header>
+
+<div class="app-tabs">
+  <div class="app-tab active" onclick="switchTab('waveform',this)">〰 Waveform</div>
+  <div class="app-tab" onclick="switchTab('decibel',this)">📊 Decibel Scale</div>
+  <div class="app-tab" onclick="switchTab('anatomy',this)">👂 Ear &amp; Larynx</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 1 — WAVEFORM
+════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-waveform">
+<div class="page">
+
+  <div class="waveform-layout">
+
+    <!-- SIDEBAR -->
+    <div class="waveform-sidebar">
+
+      <!-- Sub-tabs -->
+      <div class="card" style="padding:12px;">
+        <div class="sub-tabs" style="margin-bottom:0;">
+          <div class="sub-tab active" id="stab-snap" onclick="setWaveSubTab('snapshot')">📸 Snapshot</div>
+          <div class="sub-tab" id="stab-live" onclick="setWaveSubTab('live')">📡 Live</div>
+        </div>
+      </div>
+
+      <!-- Mic controls -->
+      <div class="card">
+        <div class="card-title">Microphone</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn-primary" id="start-btn" onclick="startAudio()" style="width:100%;padding:11px;">▶ Start Microphone</button>
+          <button class="btn-danger" id="stop-btn" onclick="stopAudio()" disabled style="width:100%;padding:11px;">■ Stop</button>
+        </div>
+      </div>
+
+      <!-- SNAPSHOT CONTROLS -->
+      <div class="card" id="snap-controls">
+        <div class="card-title">Capture Sound</div>
+        <div class="control-item" style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;color:var(--muted);margin-bottom:4px;">Duration <span id="dur-val">2s</span></div>
+          <input type="range" id="dur-slider" min="1" max="5" step="0.5" value="2" oninput="document.getElementById('dur-val').textContent=this.value+'s'">
+        </div>
+        <button class="btn-primary" id="snap-btn" onclick="takeSnapshot()" disabled style="width:100%;padding:11px;background:var(--teal);">🎙 Listen &amp; Capture</button>
+        <div class="countdown-wrap" id="countdown-wrap" style="margin-top:8px;">
+          <div class="countdown-bar-track"><div class="countdown-bar-fill" id="countdown-fill"></div></div>
+          <div class="countdown-label" id="countdown-label">2.0s</div>
+        </div>
+      </div>
+
+      <!-- LIVE CONTROLS -->
+      <div class="card hidden" id="live-controls">
+        <div class="card-title">Live Settings</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;color:var(--muted);margin-bottom:4px;">Gain <span id="gain-val">3.0×</span></div>
+            <input type="range" id="gain-slider" min="0.5" max="12" step="0.1" value="3" oninput="document.getElementById('gain-val').textContent=parseFloat(this.value).toFixed(1)+'×'">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;color:var(--muted);margin-bottom:4px;">Smoothing <span id="smooth-val">70%</span></div>
+            <input type="range" id="smooth-slider" min="0" max="0.95" step="0.05" value="0.7" oninput="document.getElementById('smooth-val').textContent=Math.round(this.value*100)+'%';if(analyser)analyser.smoothingTimeConstant=parseFloat(this.value);">
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:0.75rem;font-weight:800;color:var(--muted);margin-bottom:4px;">Zoom <span id="zoom-val">100%</span></div>
+            <input type="range" id="zoom-slider" min="10" max="100" step="5" value="100" oninput="document.getElementById('zoom-val').textContent=this.value+'%'">
+          </div>
+        </div>
+        <div class="card-title" style="margin-top:14px;">Display Mode</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <button class="btn-mode active" id="mode-line"   onclick="setLiveMode('line')"  >〰 Line</button>
+          <button class="btn-mode"        id="mode-fill"   onclick="setLiveMode('fill')"  >▨ Fill</button>
+          <button class="btn-mode"        id="mode-mirror" onclick="setLiveMode('mirror')">⇅ Mirror</button>
+          <button class="btn-mode"        id="mode-dots"   onclick="setLiveMode('dots')"  >· Dots</button>
+        </div>
+      </div>
+
+      <!-- SNAPSHOT RESULT -->
+      <div class="card hidden" id="snap-result-card">
+        <div class="card-title">Result</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="result-chip"><div class="rc-label">Frequency</div><div class="rc-value" id="res-freq">—</div><div class="rc-sub" id="res-note">—</div></div>
+          <div class="result-chip"><div class="rc-label">Amplitude</div><div class="rc-value" id="res-amp">—</div><div class="rc-sub" id="res-amp-sub">—</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MAIN CANVAS AREA -->
+    <div class="waveform-main">
+
+      <!-- VIZ MODE (snapshot only) -->
+      <div class="card" id="viz-mode-card" style="display:none;">
+        <div class="card-title">Visualization Mode</div>
+        <div class="viz-mode-row">
+          <div class="viz-mode-btn active" id="vmode-balanced" onclick="setVizMode('balanced')">
+            <span class="vmode-icon">〰</span>Balanced<br><span style="font-size:0.65rem;font-weight:600;color:var(--muted);">Accurate wave</span>
+          </div>
+          <div class="viz-mode-btn" id="vmode-amplitude" onclick="setVizMode('amplitude')">
+            <span class="vmode-icon">↕</span>Amplitude<br><span style="font-size:0.65rem;font-weight:600;color:var(--muted);">Height = volume</span>
+          </div>
+          <div class="viz-mode-btn" id="vmode-frequency" onclick="setVizMode('frequency')">
+            <span class="vmode-icon">↔</span>Frequency<br><span style="font-size:0.65rem;font-weight:600;color:var(--muted);">Width = pitch</span>
+          </div>
+        </div>
+        <div id="viz-mode-hint" style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-top:8px;padding:8px 12px;background:var(--bg);border-radius:8px;">
+          <b>Balanced:</b> Shows both frequency and amplitude accurately — a realistic picture of the sound.
+        </div>
+      </div>
+
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);" id="canvas-title">Oscilloscope</div>
+            <div style="font-size:0.72rem;font-weight:700;color:var(--muted);" id="canvas-subtitle">Amplitude vs. Time</div>
+          </div>
+        </div>
+
+        <div class="wave-wrap">
+          <canvas id="wave-canvas"></canvas>
+          <div id="idle-overlay">
+            <div class="idle-icon">🎵</div>
+            <div class="idle-text">Press ▶ Start Microphone to begin</div>
+          </div>
+        </div>
+
+        <div class="axis-labels" id="axis-labels">
+          <div class="axis-label">← Earlier</div>
+          <div class="axis-label" style="color:var(--blue);font-size:0.68rem;">TIME →</div>
+          <div class="axis-label">Now →</div>
+        </div>
+
+        <div class="vol-row" id="vol-row">
+          <div class="vol-label">AMPLITUDE</div>
+          <div class="vol-track"><div class="vol-fill" id="vol-fill"></div></div>
+          <div class="vol-label" id="vol-pct">0%</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-chip">Sample Rate: <b id="stat-sr">—</b> Hz</div>
+          <div class="stat-chip">Buffer: <b id="stat-buf">—</b></div>
+          <div class="stat-chip" id="stat-mode-chip">Mode: <b>Snapshot</b></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 2 — DECIBEL SCALE
+════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-decibel">
+<div class="page">
+
+  <div class="card">
+    <div style="font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:900;color:var(--navy);margin-bottom:6px;">The Decibel Scale</div>
+    <div style="font-size:0.85rem;font-weight:600;color:var(--muted);line-height:1.5;">Sound is measured in <b style="color:var(--text);">decibels (dB)</b>. Click any example below, or drag the slider, to explore how loud different sounds are — and when they become dangerous to your hearing.</div>
+  </div>
+
+  <!-- LIVE MIC METER -->
+  <div class="card" id="db-mic-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:var(--navy);">🎙 Live Sound Meter</div>
+        <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-top:2px;">Measure the decibel level of sounds in the room</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" id="db-mic-start" onclick="startDbMic()" style="font-size:0.82rem;padding:8px 14px;">▶ Start Mic</button>
+        <button class="btn-danger" id="db-mic-stop" onclick="stopDbMic()" disabled style="font-size:0.82rem;padding:8px 14px;">■ Stop</button>
+      </div>
+    </div>
+
+    <!-- Big live dB readout -->
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div style="text-align:center;min-width:110px;">
+        <div id="db-live-num" style="font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:var(--navy);line-height:1;transition:color 0.2s;">—</div>
+        <div style="font-size:0.9rem;font-weight:800;color:var(--muted);">dB</div>
+      </div>
+      <div style="flex:1;">
+        <!-- Animated bar meter -->
+        <div style="background:#e8e0d8;border-radius:8px;height:32px;overflow:hidden;position:relative;">
+          <div id="db-live-bar" style="height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,#4a9e6a,#d4c843,#c97040,#c94040);transition:width 0.1s ease;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.68rem;font-weight:700;color:var(--muted);">
+          <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span><span>120</span><span>140 dB</span>
+        </div>
+        <!-- Peak indicator -->
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <span style="font-size:0.72rem;font-weight:800;color:var(--muted);">PEAK</span>
+          <span id="db-peak-num" style="font-size:0.85rem;font-weight:900;color:var(--text);">—</span>
+          <span style="font-size:0.72rem;font-weight:700;color:var(--muted);">dB</span>
+          <button onclick="resetDbPeak()" style="background:var(--bg);border:2px solid #e8e0d8;color:var(--muted);font-size:0.68rem;padding:3px 8px;border-radius:6px;font-weight:800;">Reset peak</button>
+          <span id="db-live-label" style="margin-left:auto;font-size:0.78rem;font-weight:800;color:var(--muted);"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Idle hint -->
+    <div id="db-mic-hint" style="text-align:center;color:var(--muted);font-size:0.82rem;font-weight:700;padding:8px 0 2px;">Press ▶ Start Mic and make a sound — clap, whisper, or shout!</div>
+  </div>
+
+  <!-- INTERACTIVE SCALE -->
+  <div class="card">
+    <div class="db-scale-wrap">
+      <div class="db-track" id="db-track">
+        <div class="db-needle" id="db-needle" style="left:0%"></div>
+      </div>
+      <!-- Ticks -->
+      <div class="db-tick" style="left:0%">0</div>
+      <div class="db-tick" style="left:14.3%">20</div>
+      <div class="db-tick" style="left:28.6%">40</div>
+      <div class="db-tick" style="left:42.9%">60</div>
+      <div class="db-tick" style="left:57.1%">80</div>
+      <div class="db-tick" style="left:71.4%">100</div>
+      <div class="db-tick" style="left:85.7%">120</div>
+      <div class="db-tick" style="left:100%">140</div>
+    </div>
+
+    <div class="db-slider-row">
+      <div class="db-slider-label">0 dB</div>
+      <input type="range" id="db-slider" min="0" max="140" step="1" value="60" oninput="updateDbDisplay(parseInt(this.value))" style="flex:1;">
+      <div class="db-slider-label">140 dB</div>
+    </div>
+  </div>
+
+  <!-- INFO DISPLAY -->
+  <div class="db-info-box card" id="db-info-box">
+    <div style="text-align:center;flex-shrink:0;">
+      <div class="db-big-num" id="db-big-num">60</div>
+      <div class="db-big-unit">dB</div>
+    </div>
+    <div class="db-desc">
+      <div class="db-desc-name" id="db-desc-name">Normal Conversation</div>
+      <div class="db-desc-text" id="db-desc-text">Two people talking at a normal volume.</div>
+      <div class="db-danger safe" id="db-danger">✓ Safe for your hearing</div>
+    </div>
+    <div style="font-size:2.5rem;" id="db-emoji">🗣️</div>
+  </div>
+
+  <!-- EXAMPLE BUTTONS -->
+  <div class="card">
+    <div class="card-title">Tap an example</div>
+    <div class="db-examples-grid" id="db-examples-grid"></div>
+  </div>
+
+  <!-- HEARING DAMAGE EXPLAINER -->
+  <div class="card" style="background:var(--red-light);border-left:5px solid var(--red);">
+    <div style="font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:var(--red);margin-bottom:6px;">⚠️ Protecting Your Hearing</div>
+    <div style="font-size:0.82rem;font-weight:600;color:#5a2020;line-height:1.55;">Sounds above <b>85 dB</b> can damage your hearing if you're exposed for too long. Sounds above <b>130 dB</b> can damage it instantly. You can protect yourself by wearing earplugs or earmuffs, and by keeping the volume on your headphones below 60%.</div>
+  </div>
+
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     TAB 3 — EAR & LARYNX
+════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-anatomy">
+<div class="page">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <button class="btn-play" id="play-btn" onclick="startAnatAnimation()">▶ Play the Full Journey</button>
+    <button class="btn-ghost" onclick="resetAnatomy()">↺ Reset</button>
+  </div>
+
+  <!-- Journey strip -->
+  <div class="journey-strip">
+    <div class="j-step active" id="jstep-0"><div class="j-icon">🫁</div><div><div class="j-label">Lungs</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-1"><div class="j-icon">🎵</div><div><div class="j-label">Larynx</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-2"><div class="j-icon">〰</div><div><div class="j-label">Sound Waves</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-3"><div class="j-icon">👂</div><div><div class="j-label">Outer Ear</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-4"><div class="j-icon">🥁</div><div><div class="j-label">Eardrum</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-5"><div class="j-icon">🐚</div><div><div class="j-label">Cochlea</div></div></div>
+    <div class="j-arrow">→</div>
+    <div class="j-step" id="jstep-6"><div class="j-icon">🧠</div><div><div class="j-label">Brain</div></div></div>
+  </div>
+
+  <div class="narrative" id="narrative">
+    <div class="narr-icon" id="narr-icon">👆</div>
+    <div class="narr-text" id="narr-text">Click any labelled part to learn about it, or press <b>Play the Full Journey</b> to see how sound travels from the voice box to the brain.</div>
+    <div class="narr-step" id="narr-step"></div>
+  </div>
+
+  <div class="anatomy-layout">
+
+    <!-- LARYNX PANEL -->
+    <div class="anatomy-panel">
+      <div class="diagram-card">
+        <div class="diagram-title"><span>🎵</span> The Larynx (Voice Box)</div>
+
+        <!-- Larynx cross-section diagram -->
+        <svg viewBox="0 0 680 500" class="anatomy-svg" id="larynx-svg" width="100%">
+          <defs><marker id="arwL" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#4878A8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+          <!-- head + neck silhouette, right-facing profile -->
+          <path d="M390,18 C440,20 490,58 506,110 C520,158 514,210 496,250 C480,285 458,305 440,318 C432,324 426,330 424,340 L424,490 L250,490 L250,340 C248,330 242,324 234,318 C216,305 194,285 178,250 C160,210 154,158 168,110 C184,58 234,20 284,18 C284,18 300,6 337,6 C374,6 390,18 390,18 Z"
+            fill="#EFCBA0" stroke="#C8996A" stroke-width="2"/>
+
+          <!-- ear (bump on right side of head) -->
+          <path d="M435,160 C458,158 470,172 470,188 C470,204 458,218 442,220 C438,214 440,202 438,188 C436,172 432,162 435,160 Z" fill="#E8C090" stroke="#C8996A" stroke-width="1.5"/>
+          <path d="M442,170 C456,172 462,182 462,190 C462,200 454,210 446,212 C444,206 445,198 444,190 C443,180 440,172 442,170 Z" fill="#DAAC78"/>
+
+          <!-- hair (thick rounded strokes) -->
+          <path d="M284,18 C260,16 234,28 210,52 C190,72 178,100 174,130" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M337,6 C300,4 284,18 284,18" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M337,6 C374,4 390,18 390,18 C430,18 468,36 494,68" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M494,68 C514,100 520,140 516,178" fill="none" stroke="#5A3010" stroke-width="16" stroke-linecap="round"/>
+
+          <!-- eye -->
+          <ellipse cx="230" cy="145" rx="20" ry="13" fill="white" stroke="#333" stroke-width="1.5"/>
+          <circle cx="234" cy="145" r="8" fill="#5A3820"/>
+          <circle cx="237" cy="141" r="3" fill="white"/>
+          <path d="M212,137 C224,130 248,131 252,137" fill="none" stroke="#5A3820" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- nose -->
+          <path d="M186,175 C176,190 174,208 184,218 C191,224 202,224 208,218" fill="none" stroke="#C8906A" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- mouth -->
+          <path d="M196,252 C212,264 238,265 252,260" fill="none" stroke="#B07060" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- red throat / oral cavity interior -->
+          <path d="M248,222 C256,234 272,244 294,248 C298,260 300,278 298,295 C296,308 293,320 293,332 L371,332 C371,320 368,308 366,295 C364,278 366,260 370,248 C392,244 408,234 416,222 C408,206 400,186 390,176 C378,164 362,158 337,156 C312,158 296,164 284,176 C274,186 266,206 248,222 Z" fill="#C84040" stroke="#A03030" stroke-width="1.5"/>
+          <!-- inner highlight -->
+          <path d="M302,228 C308,240 320,248 337,250 C354,248 366,240 372,228 C366,216 356,202 337,196 C318,202 308,216 302,228 Z" fill="#E05555"/>
+          <!-- tongue -->
+          <path d="M274,242 C285,256 302,262 320,262 C338,262 355,256 366,242 C358,234 346,230 337,230 C328,230 292,234 274,242 Z" fill="#D04848" stroke="#B03535" stroke-width="1"/>
+
+          <!-- epiglottis -->
+          <g class="part" id="part-epiglottis" onclick="selectAnatPart('epiglottis')">
+            <path d="M328,292 C320,276 316,260 320,248 C324,238 330,233 337,233 C344,233 350,238 354,248 C358,260 354,276 346,292 Z" fill="#E89850" stroke="#C07028" stroke-width="2.5"/>
+          </g>
+
+          <!-- larynx cartilage -->
+          <g class="part" id="part-thyroid" onclick="selectAnatPart('thyroid')">
+            <path d="M300,338 C297,326 296,316 299,306 L375,306 C378,316 377,326 374,338 L370,392 C368,402 361,408 337,409 C313,408 306,402 304,392 Z" fill="rgba(218,200,148,0.88)" stroke="#A09050" stroke-width="2.5"/>
+          </g>
+
+          <!-- vocal cords -->
+          <g class="part" id="part-vocalcords" onclick="selectAnatPart('vocalcords')">
+            <path id="vc-left"  d="M302,356 Q319,364 337,364" stroke="#C03838" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path id="vc-right" d="M372,356 Q355,364 337,364" stroke="#C03838" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M302,356 Q319,347 337,347 Q355,347 372,356 Q355,364 337,364 Q319,364 302,356 Z" fill="rgba(80,10,10,0.15)"/>
+          </g>
+
+          <!-- trachea -->
+          <g class="part" id="part-trachea" onclick="selectAnatPart('trachea')">
+            <rect x="323" y="408" width="28" height="78" rx="4" fill="#90C0E0" stroke="#4878A8" stroke-width="2"/>
+            <line x1="325" y1="420" x2="349" y2="420" stroke="#3870A0" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+            <line x1="325" y1="433" x2="349" y2="433" stroke="#3870A0" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+            <line x1="325" y1="446" x2="349" y2="446" stroke="#3870A0" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+            <line x1="325" y1="459" x2="349" y2="459" stroke="#3870A0" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+            <line x1="325" y1="472" x2="349" y2="472" stroke="#3870A0" stroke-width="1.5" stroke-dasharray="3,2.5"/>
+          </g>
+
+          <!-- air arrow -->
+          <line x1="337" y1="490" x2="337" y2="408" stroke="#4878A8" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arwL)" opacity="0.5"/>
+
+          <!-- sound waves (animated) -->
+          <g id="larynx-waves" opacity="0">
+            <path d="M218,236 C208,224 208,240 208,254 C208,266 218,258" fill="none" stroke="#C8952A" stroke-width="2.5" id="lw1"/>
+            <path d="M205,228 C191,214 191,240 191,262 C191,280 205,270" fill="none" stroke="#C8952A" stroke-width="2" id="lw2"/>
+            <path d="M192,220 C175,204 175,240 175,268 C175,290 192,278" fill="none" stroke="#C8952A" stroke-width="1.5" id="lw3"/>
+          </g>
+
+          <!-- labels -->
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#804010" x="16" y="268">Epiglottis</text>
+          <line x1="96" y1="265" x2="320" y2="288" stroke="#C07028" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#803030" x="16" y="362">Vocal Cords</text>
+          <line x1="108" y1="359" x2="300" y2="359" stroke="#C03838" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#504010" x="16" y="334">Larynx</text>
+          <line x1="62" y1="331" x2="299" y2="340" stroke="#A09050" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#2A5A88" x="16" y="450">Trachea</text>
+          <line x1="78" y1="447" x2="322" y2="443" stroke="#4878A8" stroke-width="1" stroke-dasharray="4,3"/>
+        </svg>
+
+
+        <div class="part-btns">
+          <button class="part-btn" onclick="selectAnatPart('epiglottis')">Epiglottis</button>
+          <button class="part-btn" onclick="selectAnatPart('vocalcords')">Vocal Cords</button>
+          <button class="part-btn" onclick="selectAnatPart('thyroid')">Larynx</button>
+          <button class="part-btn" onclick="selectAnatPart('trachea')">Trachea</button>
+        </div>
+      </div>
+      <div class="info-card" id="larynx-info">
+        <div class="info-tag">Larynx</div>
+        <div class="info-name">The Voice Box</div>
+        <div class="info-text">Click a part above to learn what it does.</div>
+      </div>
+    </div>
+
+    <!-- EAR PANEL -->
+    <div class="anatomy-panel">
+      <div class="diagram-card">
+        <div class="diagram-title"><span>👂</span> The Ear</div>
+
+        <!-- Ear cross-section diagram -->
+        <svg viewBox="0 0 680 500" class="anatomy-svg" id="ear-svg" width="100%">
+          <defs><marker id="arwE" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#9060D0" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+          <!-- head silhouette, left-facing (ear on right, sound comes from right) -->
+          <path d="M290,18 C240,20 190,58 174,110 C160,158 166,210 184,250 C200,285 222,305 240,318 C248,324 254,330 256,340 L256,490 L430,490 L430,340 C432,330 438,324 446,318 C464,305 486,285 502,250 C520,210 526,158 512,110 C496,58 446,20 396,18 C396,18 380,6 343,6 C306,6 290,18 290,18 Z"
+            fill="#EFCBA0" stroke="#C8996A" stroke-width="2"/>
+
+          <!-- ear on left side (where sound comes IN, facing right side of image) -->
+          <path d="M245,162 C222,160 210,174 210,190 C210,206 222,220 238,222 C242,216 240,204 242,190 C244,174 248,164 245,162 Z" fill="#E8C090" stroke="#C8996A" stroke-width="1.5"/>
+          <path d="M238,172 C224,174 218,184 218,192 C218,202 226,212 234,214 C236,208 235,200 236,192 C237,182 240,174 238,172 Z" fill="#DAAC78"/>
+
+          <!-- hair -->
+          <path d="M396,18 C420,16 446,28 470,52 C490,72 502,100 506,130" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M343,6 C380,4 396,18 396,18" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M343,6 C306,4 290,18 290,18 C250,18 212,36 186,68" fill="none" stroke="#5A3010" stroke-width="20" stroke-linecap="round"/>
+          <path d="M186,68 C166,100 160,140 164,178" fill="none" stroke="#5A3010" stroke-width="16" stroke-linecap="round"/>
+
+          <!-- eye -->
+          <ellipse cx="450" cy="145" rx="20" ry="13" fill="white" stroke="#333" stroke-width="1.5"/>
+          <circle cx="446" cy="145" r="8" fill="#5A3820"/>
+          <circle cx="443" cy="141" r="3" fill="white"/>
+          <path d="M468,137 C456,130 432,131 428,137" fill="none" stroke="#5A3820" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- nose -->
+          <path d="M494,175 C504,190 506,208 496,218 C489,224 478,224 472,218" fill="none" stroke="#C8906A" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- mouth -->
+          <path d="M484,252 C468,264 442,265 428,260" fill="none" stroke="#B07060" stroke-width="3" stroke-linecap="round"/>
+
+          <!-- PINNA (outer ear flap) -->
+          <g class="part" id="part-pinna" onclick="selectAnatPart('pinna')">
+            <path d="M252,138 C278,135 295,152 297,172 C299,194 285,214 268,220 C260,216 262,205 260,190 C258,172 252,152 250,140 C250,138 252,138 252,138 Z" fill="#E8C090" stroke="#C09050" stroke-width="2.5"/>
+            <path d="M262,150 C278,152 286,166 286,180 C286,196 276,210 264,214 C262,208 263,198 262,185 C261,170 258,152 262,150 Z" fill="#D4A870" stroke="#B08040" stroke-width="1.5"/>
+            <ellipse cx="262" cy="183" rx="6" ry="10" fill="#C49060" stroke="#A07040" stroke-width="1.5"/>
+          </g>
+
+          <!-- ear canal -->
+          <g class="part" id="part-earcanal" onclick="selectAnatPart('earcanal')">
+            <path d="M266,175 C282,167 300,168 316,172 C326,176 332,182 330,190 C328,198 318,202 304,202 C288,202 274,198 266,190 Z" fill="#D4B880" stroke="#A08040" stroke-width="1.5"/>
+          </g>
+
+          <!-- eardrum -->
+          <g class="part" id="part-eardrum" onclick="selectAnatPart('eardrum')">
+            <ellipse cx="334" cy="185" rx="7" ry="22" fill="#F0C070" stroke="#C07820" stroke-width="2.5" transform="rotate(-5,334,185)"/>
+          </g>
+
+          <!-- middle ear cavity -->
+          <path d="M338,164 C344,158 356,156 366,160 L372,168 L368,204 L360,208 C350,208 340,204 338,196 Z" fill="#FDF0DC" stroke="#D0B070" stroke-width="1"/>
+
+          <!-- ossicles -->
+          <g class="part" id="part-ossicles" onclick="selectAnatPart('ossicles')">
+            <line x1="336" y1="170" x2="348" y2="185" stroke="#8A5820" stroke-width="4" stroke-linecap="round"/>
+            <ellipse cx="335" cy="168" rx="7" ry="8" fill="#C08838" stroke="#8A5820" stroke-width="1.5" transform="rotate(-15,335,168)"/>
+            <line x1="348" y1="185" x2="358" y2="180" stroke="#8A5820" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="358" y1="180" x2="360" y2="192" stroke="#8A5820" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M360,190 C368,180 374,182 374,190 C374,198 366,200 360,196 Z" fill="#C08838" stroke="#8A5820" stroke-width="1.5"/>
+          </g>
+
+          <!-- cochlea -->
+          <g class="part" id="part-cochlea" onclick="selectAnatPart('cochlea')">
+            <path d="M376,162 C400,148 418,156 424,172 C430,190 420,210 404,216 C388,220 374,210 372,196 C370,182 380,172 392,174 C402,176 408,186 404,196 C400,204 390,206 384,200" fill="none" stroke="#2A8070" stroke-width="5" stroke-linecap="round"/>
+            <path d="M376,162 C400,148 418,156 424,172 C430,190 420,210 404,216 C388,220 374,210 372,196 C370,182 380,172 392,174 C402,176 408,186 404,196 C400,204 390,206 384,200" fill="none" stroke="rgba(42,128,112,0.15)" stroke-width="14"/>
+          </g>
+
+          <!-- auditory nerve -->
+          <g class="part" id="part-nerve" onclick="selectAnatPart('nerve')">
+            <path d="M420,190 C440,188 460,186 476,188 C492,190 504,194 516,190" fill="none" stroke="#7048B0" stroke-width="4" stroke-linecap="round"/>
+            <path d="M420,190 C440,188 460,186 476,188 C492,190 504,194 516,190" fill="none" stroke="rgba(112,72,176,0.18)" stroke-width="10"/>
+          </g>
+
+          <!-- brain -->
+          <g class="part" id="part-brain" onclick="selectAnatPart('brain')">
+            <path d="M518,165 C536,158 556,164 562,180 C568,196 558,214 544,218 C530,222 518,212 516,198 C514,184 522,172 534,174 C544,176 550,186 546,196 C542,204 530,206 524,200" fill="none" stroke="#9060D0" stroke-width="3"/>
+            <path d="M518,165 C536,158 556,164 562,180 C568,196 558,214 544,218 C530,222 518,212 516,198 C514,184 522,172 534,174 C544,176 550,186 546,196 C542,204 530,206 524,200" fill="rgba(144,96,208,0.12)" stroke="none"/>
+          </g>
+
+          <!-- nerve signal pulse -->
+          <circle id="nerve-pulse" cx="420" cy="190" r="6" fill="#9060D0" opacity="0"/>
+
+          <!-- incoming sound waves (animated) -->
+          <g id="incoming-waves">
+            <path d="M214,172 C204,160 204,184 204,200 C204,214 214,206" fill="none" stroke="#C8952A" stroke-width="2.5" id="iw1" opacity="0"/>
+            <path d="M200,164 C186,150 186,184 186,208 C186,226 200,216" fill="none" stroke="#C8952A" stroke-width="2" id="iw2" opacity="0"/>
+            <path d="M186,156 C169,140 169,184 169,216 C169,238 186,226" fill="none" stroke="#C8952A" stroke-width="1.5" id="iw3" opacity="0"/>
+          </g>
+
+          <!-- labels (right side) -->
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#A07030" x="220" y="126">Outer Ear</text>
+          <line x1="248" y1="130" x2="258" y2="148" stroke="#A07030" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#806030" x="294" y="252">Ear Canal</text>
+          <line x1="296" y1="248" x2="294" y2="204" stroke="#806030" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#A05810" x="332" y="126">Eardrum</text>
+          <line x1="340" y1="130" x2="336" y2="162" stroke="#C07820" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#705018" x="336" y="104">3 Tiny Bones</text>
+          <line x1="360" y1="108" x2="350" y2="158" stroke="#8A5820" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#1A6A5A" x="396" y="252">Cochlea</text>
+          <line x1="398" y1="248" x2="400" y2="218" stroke="#2A8070" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#503888" x="474" y="252">Auditory Nerve</text>
+          <line x1="480" y1="248" x2="474" y2="192" stroke="#7048B0" stroke-width="1" stroke-dasharray="4,3"/>
+
+          <text font-family="Nunito,sans-serif" font-size="12" font-weight="bold" fill="#6030A8" x="530" y="252">Brain</text>
+          <line x1="540" y1="248" x2="536" y2="220" stroke="#9060D0" stroke-width="1" stroke-dasharray="4,3"/>
+        </svg>
+
+
+        <div class="part-btns">
+          <button class="part-btn" onclick="selectAnatPart('pinna')">Outer Ear</button>
+          <button class="part-btn" onclick="selectAnatPart('earcanal')">Ear Canal</button>
+          <button class="part-btn" onclick="selectAnatPart('eardrum')">Eardrum</button>
+          <button class="part-btn" onclick="selectAnatPart('ossicles')">Three Bones</button>
+          <button class="part-btn" onclick="selectAnatPart('cochlea')">Cochlea</button>
+          <button class="part-btn" onclick="selectAnatPart('nerve')">Auditory Nerve</button>
+          <button class="part-btn" onclick="selectAnatPart('brain')">Brain</button>
+        </div>
+      </div>
+      <div class="info-card teal" id="ear-info">
+        <div class="info-tag">Ear</div>
+        <div class="info-name">The Hearing Organ</div>
+        <div class="info-text">Click a part above to learn what it does.</div>
+      </div>
+    </div>
+
+  </div><!-- end anatomy-layout -->
+</div>
+</div><!-- end tab-anatomy -->
+
+<script>
+/* ════════════════════════════════════
+   TAB SWITCHING
+════════════════════════════════════ */
+function switchTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+  if (id !== 'waveform' && isRunning) { /* keep mic running */ }
+}
+
+/* ════════════════════════════════════
+   WAVEFORM TAB
+════════════════════════════════════ */
+let audioCtx, analyser, source, stream;
+let animFrame, isRunning=false, snapping=false;
+let waveSubTab='snapshot', liveMode='line', vizMode='balanced';
+let snapshotData=null;
+let resizing=false;
+
+const waveCanvas = document.getElementById('wave-canvas');
+const wCtx = waveCanvas.getContext('2d');
+
+const ro = new ResizeObserver(() => {
+  doResize();
+  if (snapshotData && waveSubTab==='snapshot') drawSnapshot(snapshotData);
+});
+ro.observe(waveCanvas);
+doResize();
+
+function doResize() {
+  if (resizing) return; resizing=true;
+  waveCanvas.width  = waveCanvas.offsetWidth  * devicePixelRatio;
+  waveCanvas.height = waveCanvas.offsetHeight * devicePixelRatio;
+  resizing=false;
+}
+
+function setWaveSubTab(t) {
+  waveSubTab = t;
+  document.getElementById('stab-snap').classList.toggle('active', t==='snapshot');
+  document.getElementById('stab-live').classList.toggle('active', t==='live');
+  document.getElementById('snap-controls').classList.toggle('hidden', t!=='snapshot');
+  document.getElementById('live-controls').classList.toggle('hidden', t!=='live');
+  document.getElementById('viz-mode-card').style.display = (t==='snapshot' && snapshotData) ? '' : 'none';
+  document.getElementById('axis-labels').innerHTML = t==='snapshot'
+    ? '<div class="axis-label">← Low pitch</div><div class="axis-label" style="color:var(--blue);font-size:0.68rem;">FREQUENCY / AMPLITUDE</div><div class="axis-label">High pitch →</div>'
+    : '<div class="axis-label">← Earlier</div><div class="axis-label" style="color:var(--blue);font-size:0.68rem;">TIME →</div><div class="axis-label">Now →</div>';
+  document.getElementById('stat-mode-chip').innerHTML = t==='snapshot' ? 'Mode: <b>Snapshot</b>' : 'Mode: <b>Live</b>';
+  if (t==='live' && isRunning && !animFrame) draw();
+  if (t==='snapshot') { cancelAnimationFrame(animFrame); animFrame=null; if(snapshotData) drawSnapshot(snapshotData); else { wCtx.clearRect(0,0,waveCanvas.width,waveCanvas.height); drawGrid(); } }
+}
+
+function setLiveMode(m) {
+  liveMode=m;
+  document.querySelectorAll('[id^=mode-]').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode-'+m).classList.add('active');
+}
+
+function setVizMode(m) {
+  vizMode=m;
+  ['balanced','amplitude','frequency'].forEach(v => document.getElementById('vmode-'+v).classList.toggle('active', v===m));
+  const hints = {
+    balanced: '<b>Balanced:</b> Shows both frequency and amplitude accurately — a realistic picture of the sound.',
+    amplitude: '<b>Amplitude mode:</b> Height shows how loud the sound is. All waves have the same number of cycles so you can compare loudness directly.',
+    frequency: '<b>Frequency mode:</b> The number of waves shows how high or low the pitch is. All waves are the same height so you can compare pitch directly.'
+  };
+  document.getElementById('viz-mode-hint').innerHTML = hints[m];
+  if (snapshotData) drawSnapshot(snapshotData);
+}
+
+async function startAudio() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 8192;
+    analyser.smoothingTimeConstant = parseFloat(document.getElementById('smooth-slider').value);
+    source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    document.getElementById('stat-sr').textContent = audioCtx.sampleRate.toLocaleString();
+    document.getElementById('stat-buf').textContent = analyser.frequencyBinCount.toLocaleString();
+    document.getElementById('status-pill').classList.add('live');
+    document.getElementById('status-text').textContent = 'Live';
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('stop-btn').disabled  = false;
+    document.getElementById('snap-btn').disabled  = false;
+    document.getElementById('idle-overlay').classList.add('hidden');
+    isRunning = true;
+    if (waveSubTab==='live') draw();
+  } catch(err) { alert('Microphone access denied.\n\n'+err.message); }
+}
+
+function stopAudio() {
+  isRunning=false; cancelAnimationFrame(animFrame); animFrame=null;
+  if(source) source.disconnect(); if(audioCtx) audioCtx.close(); if(stream) stream.getTracks().forEach(t=>t.stop());
+  document.getElementById('status-pill').classList.remove('live');
+  document.getElementById('status-text').textContent='Offline';
+  document.getElementById('start-btn').disabled=false;
+  document.getElementById('stop-btn').disabled=true;
+  document.getElementById('snap-btn').disabled=true;
+  document.getElementById('vol-fill').style.width='0%';
+  document.getElementById('vol-pct').textContent='0%';
+  document.getElementById('idle-overlay').classList.remove('hidden');
+  wCtx.clearRect(0,0,waveCanvas.width,waveCanvas.height);
+}
+
+function draw() {
+  if(!isRunning || waveSubTab!=='live') return;
+  animFrame = requestAnimationFrame(draw);
+  doResize();
+  const gain=parseFloat(document.getElementById('gain-slider').value);
+  const zoom=parseFloat(document.getElementById('zoom-slider').value)/100;
+  const data=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteTimeDomainData(data);
+  const rms=Math.sqrt(data.reduce((s,v)=>s+((v-128)/128)**2,0)/data.length);
+  const vol=Math.min(100,Math.round(rms*300));
+  document.getElementById('vol-fill').style.width=vol+'%';
+  document.getElementById('vol-pct').textContent=vol+'%';
+  drawWaveform(data,gain,zoom);
+}
+
+async function takeSnapshot() {
+  if(!isRunning||snapping) return;
+  snapping=true;
+  const dur=parseFloat(document.getElementById('dur-slider').value);
+  document.getElementById('snap-btn').disabled=true;
+  const cw=document.getElementById('countdown-wrap');
+  const fill=document.getElementById('countdown-fill');
+  const lbl=document.getElementById('countdown-label');
+  cw.classList.add('visible');
+  const start=performance.now();
+  await new Promise(resolve => {
+    function tick() {
+      const elapsed=(performance.now()-start)/1000;
+      fill.style.width=(Math.max(0,1-elapsed/dur)*100)+'%';
+      lbl.textContent=Math.max(0,dur-elapsed).toFixed(1)+'s';
+      if(elapsed<dur) requestAnimationFrame(tick); else resolve();
+    }
+    requestAnimationFrame(tick);
+  });
+  cw.classList.remove('visible');
+  const samples=new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(samples);
+  const freq=detectPitch(samples,audioCtx.sampleRate);
+  const rms=Math.sqrt(samples.reduce((s,v)=>s+v*v,0)/samples.length);
+  snapshotData={freq,rms};
+  document.getElementById('snap-result-card').classList.remove('hidden');
+  document.getElementById('viz-mode-card').style.display='';
+  if(freq) {
+    document.getElementById('res-freq').textContent=freq.toFixed(1)+' Hz';
+    document.getElementById('res-note').textContent=freqToNote(freq);
+  } else {
+    document.getElementById('res-freq').textContent='— Hz';
+    document.getElementById('res-note').textContent='No clear pitch detected';
+  }
+  const db=rms>0?(20*Math.log10(rms)).toFixed(1):'—';
+  document.getElementById('res-amp').textContent=db+' dB';
+  document.getElementById('res-amp-sub').textContent=rms<0.01?'Very quiet':rms<0.05?'Quiet':rms<0.15?'Moderate':rms<0.35?'Loud':'Very loud';
+  document.getElementById('idle-overlay').classList.add('hidden');
+  doResize();
+  requestAnimationFrame(()=>drawSnapshot(snapshotData));
+  snapping=false;
+  document.getElementById('snap-btn').disabled=false;
+}
+
+function detectPitch(buf,sampleRate) {
+  const n=Math.min(buf.length,2048);
+  const slice=buf.subarray(0,n);
+  const rms=Math.sqrt(slice.reduce((s,v)=>s+v*v,0)/n);
+  if(rms<0.005) return null;
+  const corr=new Float32Array(n);
+  for(let lag=0;lag<n;lag++){let s=0;for(let i=0;i<n-lag;i++) s+=slice[i]*slice[i+lag];corr[lag]=s;}
+  const minLag=Math.floor(sampleRate/1200), maxLag=Math.floor(sampleRate/50);
+  let dipped=false,bestLag=-1,bestVal=-Infinity;
+  for(let lag=minLag;lag<Math.min(maxLag,n-1);lag++){
+    if(!dipped&&corr[lag]<0) dipped=true;
+    if(dipped&&corr[lag]>bestVal){bestVal=corr[lag];bestLag=lag;}
+  }
+  if(bestLag===-1||bestVal<corr[0]*0.4) return null;
+  const a=corr[bestLag-1]||0,b=corr[bestLag],c=corr[bestLag+1]||0;
+  const refined=bestLag-(c-a)/(2*(2*b-a-c)||1);
+  return sampleRate/refined;
+}
+
+function freqToNote(freq) {
+  const notes=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const midi=Math.round(12*Math.log2(freq/440)+69);
+  const note=notes[midi%12], oct=Math.floor(midi/12)-1;
+  const descs={1:'Very low',2:'Low bass',3:'Bass',4:'Low-mid',5:'Mid-range',6:'Upper-mid',7:'High',8:'Very high',9:'Extremely high'};
+  return `${note}${oct} — ${descs[Math.min(9,Math.max(1,oct))]||''}`;
+}
+
+function drawSnapshot({freq,rms}) {
+  doResize();
+  const W=waveCanvas.width, H=waveCanvas.height;
+  drawGrid();
+  if(!freq){
+    wCtx.fillStyle='rgba(74,127,193,0.5)';
+    wCtx.font=`${13*devicePixelRatio}px Nunito,sans-serif`;
+    wCtx.textAlign='center';
+    wCtx.fillText('No clear pitch detected — try a whistle or sustained note',W/2,H/2-16*devicePixelRatio);
+    wCtx.textAlign='left'; return;
+  }
+
+  let cycles, halfH;
+  const windowMs=50;
+
+  if (vizMode==='balanced') {
+    cycles = freq*(windowMs/1000);
+    halfH  = (H/2-20)*Math.min(1.0,rms*2.5);
+  } else if (vizMode==='amplitude') {
+    // Fixed frequency (show ~5 cycles), variable amplitude
+    cycles = 5;
+    halfH  = (H/2-20)*Math.min(1.0,rms*2.5);
+  } else { // frequency
+    // Variable frequency, fixed amplitude at 60%
+    cycles = freq*(windowMs/1000);
+    halfH  = (H/2-20)*0.60;
+  }
+
+  // Filled area
+  wCtx.beginPath();
+  for(let px=0;px<=W;px++){const t=(px/W)*cycles;const y=H/2-Math.sin(2*Math.PI*t)*halfH;px===0?wCtx.moveTo(px,y):wCtx.lineTo(px,y);}
+  wCtx.lineTo(W,H/2);wCtx.lineTo(0,H/2);wCtx.closePath();
+  const grad=wCtx.createLinearGradient(0,H/2-halfH,0,H/2+halfH);
+  grad.addColorStop(0,'rgba(74,127,193,0.25)');grad.addColorStop(0.5,'rgba(74,127,193,0.06)');grad.addColorStop(1,'rgba(58,158,143,0.22)');
+  wCtx.fillStyle=grad;wCtx.fill();
+
+  // Sine line
+  wCtx.save();
+  wCtx.shadowBlur=16*devicePixelRatio;wCtx.shadowColor='rgba(74,127,193,0.55)';
+  wCtx.strokeStyle='rgba(74,127,193,0.95)';wCtx.lineWidth=3*devicePixelRatio;wCtx.lineJoin='round';
+  wCtx.beginPath();
+  for(let px=0;px<=W;px++){const t=(px/W)*cycles;const y=H/2-Math.sin(2*Math.PI*t)*halfH;px===0?wCtx.moveTo(px,y):wCtx.lineTo(px,y);}
+  wCtx.stroke();wCtx.restore();
+
+  // Cycle bracket (gold) — skip in amplitude mode
+  if (vizMode!=='amplitude') {
+    const cycleW=W/cycles;
+    const bracketY=H/2+halfH+22*devicePixelRatio;
+    if(cycleW>16){
+      wCtx.strokeStyle='rgba(212,168,67,0.7)';wCtx.lineWidth=1.5*devicePixelRatio;
+      wCtx.beginPath();
+      wCtx.moveTo(0,bracketY);wCtx.lineTo(cycleW,bracketY);
+      wCtx.moveTo(0,bracketY-6*devicePixelRatio);wCtx.lineTo(0,bracketY+6*devicePixelRatio);
+      wCtx.moveTo(cycleW,bracketY-6*devicePixelRatio);wCtx.lineTo(cycleW,bracketY+6*devicePixelRatio);
+      wCtx.stroke();
+      wCtx.fillStyle='rgba(160,115,20,0.85)';
+      wCtx.font=`bold ${10*devicePixelRatio}px Nunito,sans-serif`;
+      wCtx.textAlign='center';
+      wCtx.fillText('1 cycle ('+(1000/freq).toFixed(1)+' ms)',cycleW/2,bracketY+16*devicePixelRatio);
+    }
+  }
+
+  // Amplitude bracket (teal) — skip in frequency mode
+  if (vizMode!=='frequency' && halfH>10) {
+    const ampX=W-18*devicePixelRatio;
+    wCtx.strokeStyle='rgba(58,158,143,0.7)';wCtx.lineWidth=1.5*devicePixelRatio;
+    wCtx.beginPath();
+    wCtx.moveTo(ampX,H/2);wCtx.lineTo(ampX,H/2-halfH);
+    wCtx.moveTo(ampX-5*devicePixelRatio,H/2);wCtx.lineTo(ampX+5*devicePixelRatio,H/2);
+    wCtx.moveTo(ampX-5*devicePixelRatio,H/2-halfH);wCtx.lineTo(ampX+5*devicePixelRatio,H/2-halfH);
+    wCtx.stroke();
+    wCtx.fillStyle='rgba(30,120,100,0.85)';
+    wCtx.font=`bold ${10*devicePixelRatio}px Nunito,sans-serif`;
+    wCtx.textAlign='right';
+    wCtx.fillText('amplitude',ampX-8*devicePixelRatio,H/2-halfH/2);
+  }
+
+  // Labels
+  wCtx.fillStyle='rgba(74,127,193,0.8)';
+  wCtx.font=`bold ${11*devicePixelRatio}px Nunito,sans-serif`;
+  wCtx.textAlign='left';
+  wCtx.fillText(freq.toFixed(1)+' Hz  ·  '+freqToNote(freq),12*devicePixelRatio,18*devicePixelRatio);
+  if(vizMode!=='amplitude'){
+    wCtx.fillStyle='rgba(150,130,100,0.6)';
+    wCtx.font=`${10*devicePixelRatio}px Nunito,sans-serif`;
+    wCtx.fillText('window: '+windowMs+' ms',12*devicePixelRatio,32*devicePixelRatio);
+  }
+  wCtx.textAlign='left';
+}
+
+/* ── LIVE WAVEFORM ── */
+function drawGrid() {
+  const W=waveCanvas.width,H=waveCanvas.height;
+  wCtx.clearRect(0,0,W,H);
+  wCtx.fillStyle='#f0f5ff';wCtx.fillRect(0,0,W,H);
+  wCtx.strokeStyle='rgba(74,127,193,0.08)';wCtx.lineWidth=1;
+  [0.25,0.5,0.75].forEach(p=>{wCtx.beginPath();wCtx.moveTo(0,H*p);wCtx.lineTo(W,H*p);wCtx.stroke();});
+  for(let i=1;i<8;i++){wCtx.beginPath();wCtx.moveTo(W*i/8,0);wCtx.lineTo(W*i/8,H);wCtx.stroke();}
+  wCtx.strokeStyle='rgba(74,127,193,0.22)';wCtx.lineWidth=1.5;
+  wCtx.beginPath();wCtx.moveTo(0,H/2);wCtx.lineTo(W,H/2);wCtx.stroke();
+  wCtx.fillStyle='rgba(74,127,193,0.3)';wCtx.font=`${11*devicePixelRatio}px Nunito,sans-serif`;
+  wCtx.fillText('+',8*devicePixelRatio,18*devicePixelRatio);
+  wCtx.fillText('0',8*devicePixelRatio,H/2-4*devicePixelRatio);
+  wCtx.fillText('−',8*devicePixelRatio,H-8*devicePixelRatio);
+}
+
+function drawWaveform(data,gain,zoom){
+  const W=waveCanvas.width,H=waveCanvas.height;
+  drawGrid();
+  const sampleCount=Math.floor(data.length*zoom);
+  const sliceW=W/(sampleCount-1);
+  const blue='rgba(74,127,193,';
+  if(liveMode==='line'){
+    wCtx.save();wCtx.shadowBlur=14*devicePixelRatio;wCtx.shadowColor='rgba(74,127,193,0.5)';
+    wCtx.strokeStyle=blue+'0.9)';wCtx.lineWidth=2.5*devicePixelRatio;wCtx.lineJoin='round';
+    wCtx.beginPath();
+    for(let i=0;i<sampleCount;i++){const x=i*sliceW,y=H/2-((data[i]-128)/128)*(H/2-12)*gain;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+    wCtx.stroke();wCtx.restore();
+  } else if(liveMode==='fill'){
+    wCtx.beginPath();
+    for(let i=0;i<sampleCount;i++){const x=i*sliceW,y=H/2-((data[i]-128)/128)*(H/2-12)*gain;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+    wCtx.lineTo(W,H/2);wCtx.lineTo(0,H/2);wCtx.closePath();
+    const g2=wCtx.createLinearGradient(0,0,0,H);g2.addColorStop(0,'rgba(74,127,193,0.35)');g2.addColorStop(0.5,'rgba(74,127,193,0.08)');g2.addColorStop(1,'rgba(58,158,143,0.30)');
+    wCtx.fillStyle=g2;wCtx.fill();
+    wCtx.save();wCtx.shadowBlur=10*devicePixelRatio;wCtx.shadowColor='rgba(74,127,193,0.4)';
+    wCtx.strokeStyle=blue+'0.9)';wCtx.lineWidth=2*devicePixelRatio;wCtx.lineJoin='round';
+    wCtx.beginPath();
+    for(let i=0;i<sampleCount;i++){const x=i*sliceW,y=H/2-((data[i]-128)/128)*(H/2-12)*gain;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+    wCtx.stroke();wCtx.restore();
+  } else if(liveMode==='mirror'){
+    [['rgba(74,127,193,0.5)','rgba(74,127,193,0.09)',1],['rgba(58,158,143,0.45)','rgba(58,158,143,0.07)',-1]].forEach(([stroke,fill,dir])=>{
+      wCtx.beginPath();
+      for(let i=0;i<sampleCount;i++){const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-dir*amp;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+      wCtx.lineTo(W,H/2);wCtx.lineTo(0,H/2);wCtx.closePath();wCtx.fillStyle=fill;wCtx.fill();
+      wCtx.save();wCtx.shadowBlur=10*devicePixelRatio;wCtx.shadowColor=stroke;wCtx.strokeStyle=stroke;wCtx.lineWidth=2*devicePixelRatio;wCtx.lineJoin='round';
+      wCtx.beginPath();
+      for(let i=0;i<sampleCount;i++){const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-dir*amp;i===0?wCtx.moveTo(x,y):wCtx.lineTo(x,y);}
+      wCtx.stroke();wCtx.restore();
+    });
+  } else {
+    const step=Math.max(1,Math.floor(sampleCount/300));
+    for(let i=0;i<sampleCount;i+=step){
+      const x=i*sliceW,amp=((data[i]-128)/128)*(H/2-12)*gain,y=H/2-amp,t=Math.abs(amp)/(H/2),r=(1.5+t*4)*devicePixelRatio;
+      wCtx.save();wCtx.shadowBlur=8*devicePixelRatio;wCtx.shadowColor=blue+'0.6)';
+      wCtx.fillStyle=`rgba(74,127,193,${0.35+t*0.65})`;wCtx.beginPath();wCtx.arc(x,y,r,0,Math.PI*2);wCtx.fill();wCtx.restore();
+    }
+  }
+}
+
+function toggleFullscreen(){
+  document.body.classList.toggle('fullscreen');
+  setTimeout(doResize,50);
+}
+
+/* ════════════════════════════════════
+   DECIBEL TAB
+════════════════════════════════════ */
+const dbExamples=[
+  {db:10,  name:'Near Silence',      desc:'The quietest sound most humans can hear.',                emoji:'🤫', danger:'safe'},
+  {db:30,  name:'Whisper',           desc:'A quiet whisper from a few metres away.',                 emoji:'🔇', danger:'safe'},
+  {db:50,  name:'Quiet Classroom',   desc:'Background noise in a quiet room.',                       emoji:'📚', danger:'safe'},
+  {db:60,  name:'Normal Conversation',desc:'Two people talking at a normal volume.',                 emoji:'🗣️', danger:'safe'},
+  {db:70,  name:'Vacuum Cleaner',    desc:'Household appliances running nearby.',                    emoji:'🧹', danger:'safe'},
+  {db:85,  name:'Heavy Traffic',     desc:'Busy road or loud restaurant. Damage possible with long exposure.', emoji:'🚗', danger:'caution'},
+  {db:100, name:'Lawnmower',         desc:'Power tools or a lawnmower. Hearing protection recommended.', emoji:'🌿', danger:'danger'},
+  {db:110, name:'Concert / Club',    desc:'Loud music venue. Can cause damage in under 2 minutes.', emoji:'🎸', danger:'danger'},
+  {db:120, name:'Sports Stadium',    desc:'Loud crowd at a sports event. Painful for most people.',  emoji:'🏟️', danger:'danger'},
+  {db:130, name:'Jet Engine (nearby)',desc:'Standing near a jet engine. Immediate hearing damage.',  emoji:'✈️', danger:'danger'},
+  {db:140, name:'Gunshot / Fireworks',desc:'Extremely loud — can cause instant, permanent damage.',  emoji:'🎆', danger:'danger'},
+];
+
+function buildDbExamples(){
+  const grid=document.getElementById('db-examples-grid');
+  dbExamples.forEach(ex=>{
+    const btn=document.createElement('div');
+    btn.className='db-ex-btn';btn.dataset.db=ex.db;
+    btn.innerHTML=`<span class="ex-emoji">${ex.emoji}</span><div class="ex-name">${ex.name}</div><div class="ex-val">${ex.db} dB</div>`;
+    btn.onclick=()=>{
+      document.getElementById('db-slider').value=ex.db;
+      updateDbDisplay(ex.db,btn);
+    };
+    grid.appendChild(btn);
+  });
+}
+buildDbExamples();
+
+function updateDbDisplay(val, sourceBtn=null){
+  document.getElementById('db-slider').value=val;
+  const pct=val/140;
+  document.getElementById('db-needle').style.left=(pct*100)+'%';
+  document.getElementById('db-big-num').textContent=val;
+  // Find closest example
+  const closest=dbExamples.reduce((a,b)=>Math.abs(b.db-val)<Math.abs(a.db-val)?b:a);
+  document.getElementById('db-desc-name').textContent=closest.name;
+  document.getElementById('db-desc-text').textContent=closest.desc;
+  document.getElementById('db-emoji').textContent=closest.emoji;
+  const dangerEl=document.getElementById('db-danger');
+  if(val<=84){dangerEl.className='db-danger safe';dangerEl.textContent='✓ Safe for your hearing';}
+  else if(val<=99){dangerEl.className='db-danger caution';dangerEl.textContent='⚠ Use caution with prolonged exposure';}
+  else{dangerEl.className='db-danger danger';dangerEl.textContent='✗ Damaging to your hearing';}
+  document.querySelectorAll('.db-ex-btn').forEach(b=>b.classList.remove('active'));
+  if(sourceBtn) sourceBtn.classList.add('active');
+}
+updateDbDisplay(60);
+
+/* ── LIVE DB MIC ── */
+let dbMicCtx, dbMicAnalyser, dbMicSource, dbMicStream, dbMicFrame;
+let dbPeak = -Infinity;
+let dbMicRunning = false;
+
+async function startDbMic() {
+  try {
+    dbMicStream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    dbMicCtx    = new (window.AudioContext||window.webkitAudioContext)();
+    dbMicAnalyser = dbMicCtx.createAnalyser();
+    dbMicAnalyser.fftSize = 2048;
+    dbMicAnalyser.smoothingTimeConstant = 0.4;
+    dbMicSource = dbMicCtx.createMediaStreamSource(dbMicStream);
+    dbMicSource.connect(dbMicAnalyser);
+    dbMicRunning = true;
+    dbPeak = -Infinity;
+    document.getElementById('db-mic-start').disabled = true;
+    document.getElementById('db-mic-stop').disabled  = false;
+    document.getElementById('db-mic-hint').style.display = 'none';
+    drawDbMeter();
+  } catch(err) {
+    alert('Microphone access denied.\n\n' + err.message);
+  }
+}
+
+function stopDbMic() {
+  dbMicRunning = false;
+  cancelAnimationFrame(dbMicFrame);
+  if (dbMicSource)   dbMicSource.disconnect();
+  if (dbMicCtx)      dbMicCtx.close();
+  if (dbMicStream)   dbMicStream.getTracks().forEach(t => t.stop());
+  document.getElementById('db-mic-start').disabled = false;
+  document.getElementById('db-mic-stop').disabled  = true;
+  document.getElementById('db-mic-hint').style.display = '';
+  document.getElementById('db-live-num').textContent = '—';
+  document.getElementById('db-live-num').style.color = '';
+  document.getElementById('db-live-bar').style.width = '0%';
+  document.getElementById('db-live-label').textContent = '';
+}
+
+function resetDbPeak() {
+  dbPeak = -Infinity;
+  document.getElementById('db-peak-num').textContent = '—';
+}
+
+function drawDbMeter() {
+  if (!dbMicRunning) return;
+  dbMicFrame = requestAnimationFrame(drawDbMeter);
+
+  const buf = new Float32Array(dbMicAnalyser.fftSize);
+  dbMicAnalyser.getFloatTimeDomainData(buf);
+
+  // Calculate RMS then convert to dB SPL (calibrated so normal speech ≈ 60 dB)
+  const rms = Math.sqrt(buf.reduce((s,v) => s + v*v, 0) / buf.length);
+  // Web Audio API gives normalised float; map to approximate dB SPL
+  // rms of 1.0 ≈ 120 dB (loud); rms of 0.001 ≈ 60 dB; floor at 0
+  let db = rms > 0 ? Math.round(20 * Math.log10(rms) + 90) : 0;
+  db = Math.max(0, Math.min(140, db));
+
+  // Update peak
+  if (db > dbPeak) {
+    dbPeak = db;
+    document.getElementById('db-peak-num').textContent = db;
+  }
+
+  // Update big number
+  const liveNumEl = document.getElementById('db-live-num');
+  liveNumEl.textContent = db;
+  liveNumEl.style.color = db <= 84 ? 'var(--green)' : db <= 99 ? 'var(--gold)' : 'var(--red)';
+
+  // Update bar
+  document.getElementById('db-live-bar').style.width = (db / 140 * 100) + '%';
+
+  // Label
+  const closest = dbExamples.reduce((a,b) => Math.abs(b.db-db) < Math.abs(a.db-db) ? b : a);
+  document.getElementById('db-live-label').textContent = closest.name;
+
+  // Move the scale needle too so students can see where they are on the scale
+  updateDbDisplay(db);
+}
+
+
+const anatParts={
+  epiglottis:{ panel:'larynx', color:'gold',   title:'Epiglottis',
+    text:'A flap that acts like a lid. When you swallow, it folds down to stop food going into your airway. When you breathe or speak, it stays open so air can pass through.' },
+  thyroid:{    panel:'larynx', color:'gold',   title:'Larynx (Voice Box)',
+    text:'The larynx, or voice box, is a structure in your throat made of cartilage. It protects your vocal cords and is the organ that creates your voice. You can feel it at the front of your throat — it\'s sometimes called the "Adam\'s apple."' },
+  vocalcords:{ panel:'larynx', color:'red',    title:'Vocal Cords (Vocal Folds)',
+    text:'Two folds of tissue stretched across the larynx. When you breathe, they stay apart. When you speak or sing, muscles pull them together — air from your lungs pushes through, making them vibrate. Faster vibrations = higher pitch!' },
+  trachea:{    panel:'larynx', color:'blue',   title:'Trachea (Windpipe)',
+    text:'The tube that connects your larynx to your lungs. Air from your lungs travels up through the trachea and past the vocal cords to create sound. The C-shaped rings of cartilage keep it open so you can always breathe.' },
+  pinna:{      panel:'ear',    color:'gold',   title:'Outer Ear (Pinna)',
+    text:'The visible, curved part of your ear. Its shape works like a funnel — it collects sound waves from the air around you and channels them into the ear canal, toward the eardrum.' },
+  earcanal:{   panel:'ear',    color:'gold',   title:'Ear Canal',
+    text:'A short tube that carries sound waves from the outer ear to the eardrum. It also makes earwax, which traps dust and dirt to protect the delicate eardrum inside.' },
+  eardrum:{    panel:'ear',    color:'red',    title:'Eardrum (Tympanic Membrane)',
+    text:'A thin, tight membrane that vibrates when sound waves hit it — just like the skin of a drum. Louder sounds make it vibrate more (higher amplitude). Higher-pitched sounds make it vibrate faster (higher frequency).' },
+  ossicles:{   panel:'ear',    color:'gold',   title:'Three Tiny Bones (Ossicles)',
+    text:'Three of the smallest bones in the human body: the malleus (hammer), incus (anvil), and stapes (stirrup). They pass vibrations from the eardrum to the inner ear, amplifying the signal about 22 times along the way.' },
+  cochlea:{    panel:'ear',    color:'teal',   title:'Cochlea',
+    text:'A snail-shaped, fluid-filled structure in the inner ear. When the tiny bones send vibrations into it, the fluid moves and thousands of tiny hair cells bend. Different hair cells respond to different pitches, converting vibrations into electrical signals.' },
+  nerve:{      panel:'ear',    color:'purple', title:'Auditory Nerve',
+    text:'A bundle of nerve fibres that carries electrical signals from the cochlea to the brain. It transmits thousands of pieces of information at once, travelling at incredible speed.' },
+  brain:{      panel:'ear',    color:'purple', title:'Brain (Auditory Cortex)',
+    text:'The part of the brain that processes sound signals. When the auditory nerve delivers its signals, the brain interprets them as sounds — recognising pitch, volume, and meaning. All of this happens in less than a second!' },
+};
+
+const animSteps=[
+  {jstep:0,icon:'🫁',step:'Step 1 of 7',text:'Air from the <b>lungs</b> travels up through the trachea.',parts:['trachea'],panel:'larynx'},
+  {jstep:1,icon:'🎵',step:'Step 2 of 7',text:'Muscles pull the <b>vocal cords</b> together. Air pushes through, making them <b>vibrate</b> — this creates sound waves!',parts:['vocalcords','thyroid'],panel:'larynx',vibrateVC:true},
+  {jstep:2,icon:'〰',step:'Step 3 of 7',text:'The vibrations create <b>sound waves</b> that travel outward through the air at 343 metres per second.',parts:[],panel:'larynx',showWaves:true},
+  {jstep:3,icon:'👂',step:'Step 4 of 7',text:'The curved shape of the <b>outer ear</b> funnels sound waves into the <b>ear canal</b>.',parts:['pinna','earcanal'],panel:'ear',showIncoming:true},
+  {jstep:4,icon:'🥁',step:'Step 5 of 7',text:'Sound waves make the <b>eardrum</b> vibrate. The <b>three tiny bones</b> pass and amplify the vibration into the inner ear.',parts:['eardrum','ossicles'],panel:'ear'},
+  {jstep:5,icon:'🐚',step:'Step 6 of 7',text:'Vibrations travel into the fluid-filled <b>cochlea</b>. Tiny hair cells convert the vibrations into electrical signals.',parts:['cochlea'],panel:'ear'},
+  {jstep:6,icon:'🧠',step:'Step 7 of 7',text:'The <b>auditory nerve</b> carries signals to the <b>brain</b>, which interprets them as sound. <b>You hear!</b>',parts:['nerve','brain'],panel:'ear',showPulse:true},
+];
+
+let anatPlaying=false, anatTimer=null, anatStep=0;
+
+function selectAnatPart(id){
+  if(!anatParts[id]) return;
+  const d=anatParts[id];
+  document.querySelectorAll('.part').forEach(p=>p.classList.remove('highlighted'));
+  document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('part-'+id);
+  if(el) el.classList.add('highlighted');
+  document.querySelectorAll('.part-btn').forEach(b=>{if(b.textContent.toLowerCase().includes(id.replace('vocalcords','vocal').replace('earcanal','ear canal').replace('ossicles','bone').replace('pinna','outer').toLowerCase().split(' ')[0])||id.toLowerCase().includes(b.textContent.toLowerCase().split(' ')[0].replace('(','').replace(')',''))){b.classList.add('active');}});
+  const box=document.getElementById(d.panel+'-info');
+  box.className='info-card '+(d.color||'');
+  box.innerHTML=`<div class="info-tag">${d.panel==='larynx'?'Larynx':'Ear'}</div><div class="info-name">${d.title}</div><div class="info-text">${d.text}</div>`;
+  setNarr('🔍',`<b>${d.title}:</b> ${d.text}`,'');
+}
+
+function setNarr(icon,text,step){
+  document.getElementById('narr-icon').textContent=icon;
+  document.getElementById('narr-text').innerHTML=text;
+  document.getElementById('narr-step').textContent=step;
+}
+
+function setJourneyStep(n){
+  document.querySelectorAll('.j-step').forEach((s,i)=>s.classList.toggle('active',i<=n));
+}
+
+function clearAnatAnimations(){
+  document.querySelectorAll('.part').forEach(p=>p.classList.remove('highlighted','pulsing'));
+  document.querySelectorAll('.part-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('larynx-waves').style.opacity='0';
+  ['iw1','iw2','iw3'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity='0';});
+  const np=document.getElementById('nerve-pulse');if(np)np.style.opacity='0';
+  document.getElementById('vc-left').setAttribute('d','M302,356 Q319,364 337,364');
+  document.getElementById('vc-right').setAttribute('d','M372,356 Q355,364 337,364');
+}
+
+function animateAnatStep(s){
+  clearAnatAnimations();
+  setJourneyStep(s.jstep);
+  setNarr(s.icon,s.text,s.step);
+  s.parts.forEach(id=>{
+    const el=document.getElementById('part-'+id);
+    if(el) el.classList.add('highlighted','pulsing');
+  });
+  if(s.vibrateVC) animateVC();
+  if(s.showWaves) animateWaves();
+  if(s.showIncoming) animateIncoming();
+  if(s.showPulse) animateNervePulse();
+}
+
+let vcFrame;
+function animateVC(){
+  let t=0;
+  function tick(){
+    t+=0.3;
+    const o=Math.sin(t)*5;
+    document.getElementById('vc-left').setAttribute('d',`M302,${356+o} Q319,${364+o*0.5} 337,${364+o*0.5}`);
+    document.getElementById('vc-right').setAttribute('d',`M372,${356+o} Q355,${364+o*0.5} 337,${364+o*0.5}`);
+    vcFrame=requestAnimationFrame(tick);
+  }
+  tick();
+  setTimeout(()=>{cancelAnimationFrame(vcFrame);document.getElementById('vc-left').setAttribute('d','M302,356 Q319,364 337,364');document.getElementById('vc-right').setAttribute('d','M372,356 Q355,364 337,364');},2500);
+}
+
+let waveExpandFrame;
+function animateWaves(){
+  const waves=document.getElementById('larynx-waves');
+  waves.style.opacity='1';
+  let scale=1;
+  function tick(){
+    scale+=0.018;
+    ['lw1','lw2','lw3'].forEach((id,i)=>{
+      const el=document.getElementById(id);
+      const s=scale-i*0.12;
+      if(s>0){el.setAttribute('transform',`translate(${(1-s)*140},${(1-s)*195}) scale(${s})`);el.style.opacity=Math.max(0,1-(scale-1-i*0.12)).toString();}
+    });
+    if(scale<2.8) waveExpandFrame=requestAnimationFrame(tick);
+    else{scale=1;['lw1','lw2','lw3'].forEach(id=>{const el=document.getElementById(id);el.setAttribute('transform','');el.style.opacity='1';});waveExpandFrame=requestAnimationFrame(tick);}
+  }
+  tick();
+  setTimeout(()=>{cancelAnimationFrame(waveExpandFrame);waves.style.opacity='0';},3000);
+}
+
+let incomingFrame;
+function animateIncoming(){
+  let t=0;
+  const els=['iw1','iw2','iw3'].map(id=>document.getElementById(id));
+  function tick(){t+=0.06;els.forEach((el,i)=>{if(el)el.style.opacity=(0.3+0.4*Math.sin(t*3-i*0.4)).toString();});incomingFrame=requestAnimationFrame(tick);}
+  tick();
+  setTimeout(()=>{cancelAnimationFrame(incomingFrame);els.forEach(el=>{if(el)el.style.opacity='0';});},3000);
+}
+
+let nerveFrame;
+function animateNervePulse(){
+  const pulse=document.getElementById('nerve-pulse');
+  const path=[[420,190],[440,188],[460,186],[476,188],[492,190],[510,190]];
+  let idx=0;
+  function step(){pulse.setAttribute('cx',path[idx][0]);pulse.setAttribute('cy',path[idx][1]);pulse.style.opacity='0.9';idx=(idx+1)%path.length;nerveFrame=setTimeout(()=>{nerveFrame=requestAnimationFrame(step);},80);}
+  step();
+  setTimeout(()=>{clearTimeout(nerveFrame);cancelAnimationFrame(nerveFrame);pulse.style.opacity='0';},3000);
+}
+
+function startAnatAnimation(){
+  if(anatPlaying){stopAnatAnimation();return;}
+  anatPlaying=true;
+  document.getElementById('play-btn').textContent='■ Stop';
+  document.getElementById('play-btn').classList.add('playing');
+  anatStep=0;runAnatStep();
+}
+function runAnatStep(){
+  if(!anatPlaying||anatStep>=animSteps.length){stopAnatAnimation();return;}
+  animateAnatStep(animSteps[anatStep++]);
+  anatTimer=setTimeout(runAnatStep,3200);
+}
+function stopAnatAnimation(){
+  anatPlaying=false;clearTimeout(anatTimer);
+  document.getElementById('play-btn').textContent='▶ Play the Full Journey';
+  document.getElementById('play-btn').classList.remove('playing');
+}
+function resetAnatomy(){
+  stopAnatAnimation();clearAnatAnimations();
+  setJourneyStep(-1);document.getElementById('jstep-0').classList.add('active');
+  setNarr('👆','Click any labelled part to learn about it, or press <b>Play the Full Journey</b> to see how sound travels from the voice box to the brain.','');
+  document.getElementById('larynx-info').className='info-card';
+  document.getElementById('larynx-info').innerHTML='<div class="info-tag">Larynx</div><div class="info-name">The Voice Box</div><div class="info-text">Click a part above to learn what it does.</div>';
+  document.getElementById('ear-info').className='info-card teal';
+  document.getElementById('ear-info').innerHTML='<div class="info-tag">Ear</div><div class="info-name">The Hearing Organ</div><div class="info-text">Click a part above to learn what it does.</div>';
+}
+
+/* FLOATING DECO */
+(function(){
+  const icons=['🎵','🎶','🫁','👂','〰️','🧠','🐚','🔊','🎤','🥁'];
+  for(let i=0;i<10;i++){
+    const el=document.createElement('div');el.className='deco';
+    el.style.fontSize=(18+Math.random()*16)+'px';el.textContent=icons[Math.floor(Math.random()*icons.length)];
+    document.body.appendChild(el);
+    const s={el,x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,vx:(Math.random()-0.5)*0.6,vy:(Math.random()-0.5)*0.6};
+    (function tick(){const W=window.innerWidth,H=window.innerHeight;s.x+=s.vx;s.y+=s.vy;if(s.x<0){s.x=0;s.vx*=-1;}if(s.x>W){s.x=W;s.vx*=-1;}if(s.y<0){s.y=0;s.vy*=-1;}if(s.y>H){s.y=H;s.vy*=-1;}s.el.style.left=s.x+'px';s.el.style.top=s.y+'px';requestAnimationFrame(tick);})();
+  }
+})();
+</script>
+</body>
+</html>
