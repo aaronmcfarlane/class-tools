@@ -864,23 +864,12 @@ async function takeSnapshot() {
   const btn = document.getElementById('snap-btn');
   btn.disabled = true;
 
-  // Show countdown
   const cw   = document.getElementById('countdown-wrap');
   const fill = document.getElementById('countdown-fill');
   const lbl  = document.getElementById('countdown-label');
   cw.classList.add('visible');
 
-  // Collect float32 snapshots from the analyser every ~50ms during the countdown
-  // This avoids ScriptProcessorNode (deprecated/blocked) entirely
-  const snapshots = [];
-  const bufLen = analyser.fftSize; // full buffer, not frequencyBinCount
-  const snapInterval = setInterval(() => {
-    const buf = new Float32Array(bufLen);
-    analyser.getFloatTimeDomainData(buf);
-    snapshots.push(buf);
-  }, 50);
-
-  // Animate countdown
+  // Animate countdown, then grab ONE clean buffer at the end
   const start = performance.now();
   await new Promise(resolve => {
     function tick() {
@@ -894,16 +883,12 @@ async function takeSnapshot() {
     requestAnimationFrame(tick);
   });
 
-  clearInterval(snapInterval);
   cw.classList.remove('visible');
 
-  // Flatten all snapshots into one big buffer
-  const total   = snapshots.reduce((s, b) => s + b.length, 0);
-  const samples = new Float32Array(total);
-  let offset = 0;
-  for (const b of snapshots) { samples.set(b, offset); offset += b.length; }
+  // Single buffer grab — 8192 samples is plenty for autocorrelation
+  const samples = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(samples);
 
-  // Analyse
   const freq = detectPitch(samples, audioCtx.sampleRate);
   const rms  = Math.sqrt(samples.reduce((s, v) => s + v * v, 0) / samples.length);
 
@@ -929,7 +914,6 @@ async function takeSnapshot() {
     rms < 0.15 ? 'Moderate' :
     rms < 0.35 ? 'Loud' : 'Very loud';
 
-  // Draw waveform
   document.getElementById('idle-overlay').classList.add('hidden');
   requestAnimationFrame(() => { resizeCanvas(); drawSnapshot({ freq, rms }); });
 
@@ -939,37 +923,31 @@ async function takeSnapshot() {
 
 /* ── PITCH DETECTION via Autocorrelation ── */
 function detectPitch(buf, sampleRate) {
-  const n = buf.length;
+  // Cap to 2048 samples — enough for accurate pitch, won't freeze Safari
+  const n = Math.min(buf.length, 2048);
+  const slice = buf.subarray(0, n);
 
-  // Check there's enough signal
-  const rms = Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / n);
+  const rms = Math.sqrt(slice.reduce((s, v) => s + v * v, 0) / n);
   if (rms < 0.005) return null;
 
-  // Autocorrelation
   const corr = new Float32Array(n);
   for (let lag = 0; lag < n; lag++) {
     let sum = 0;
-    for (let i = 0; i < n - lag; i++) sum += buf[i] * buf[i + lag];
+    for (let i = 0; i < n - lag; i++) sum += slice[i] * slice[i + lag];
     corr[lag] = sum;
   }
 
-  // Find the first dip below zero then the next peak
-  const minLag = Math.floor(sampleRate / 1200); // ~1200 Hz max
-  const maxLag = Math.floor(sampleRate / 50);   // ~50 Hz min
+  const minLag = Math.floor(sampleRate / 1200);
+  const maxLag = Math.floor(sampleRate / 50);
 
-  let dipped = false;
-  let bestLag = -1, bestVal = -Infinity;
-  for (let lag = minLag; lag < maxLag; lag++) {
+  let dipped = false, bestLag = -1, bestVal = -Infinity;
+  for (let lag = minLag; lag < Math.min(maxLag, n - 1); lag++) {
     if (!dipped && corr[lag] < 0) dipped = true;
-    if (dipped && corr[lag] > bestVal) {
-      bestVal = corr[lag];
-      bestLag = lag;
-    }
+    if (dipped && corr[lag] > bestVal) { bestVal = corr[lag]; bestLag = lag; }
   }
 
   if (bestLag === -1 || bestVal < corr[0] * 0.4) return null;
 
-  // Parabolic interpolation for sub-sample precision
   const a = corr[bestLag - 1] || 0;
   const b = corr[bestLag];
   const c = corr[bestLag + 1] || 0;
