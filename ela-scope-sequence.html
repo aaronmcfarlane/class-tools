@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greater Gatineau Language Scope & Sequence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --ink-light: #7a7a9a;
+    --paper: #faf9f6;
+    --paper-warm: #f3f0e8;
+    --rule: #e2ddd4;
+    --accent: #c84b31;
+    --accent-soft: #f0e8e5;
+    --teal: #2a7a6f;
+    --teal-soft: #e3f0ee;
+    --gold: #b8860b;
+    --gold-soft: #faf3dc;
+    --grade-k: #7c5c8a;
+    --grade-1: #2a7a6f;
+    --grade-2: #c84b31;
+    --grade-3: #2563a8;
+    --grade-4: #7a6020;
+    --grade-5: #3d6b3d;
+    --grade-6: #7a3060;
+
+    --grade-k-soft: #f3eef6;
+    --grade-1-soft: #e3f0ee;
+    --grade-2-soft: #f9ece9;
+    --grade-3-soft: #e8f0f9;
+    --grade-4-soft: #f5f0e3;
+    --grade-5-soft: #e8f2e8;
+    --grade-6-soft: #f5e8f1;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: white;
+    padding: 2.5rem 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(200,75,49,0.15) 100%);
+  }
+  .header-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  header h1 em {
+    font-style: italic;
+    color: rgba(255,255,255,0.65);
+  }
+  .header-meta {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    background: white;
+    border-bottom: 1px solid var(--rule);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .controls-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .controls-inner::-webkit-scrollbar { display: none; }
+
+  .view-tabs {
+    display: flex;
+    border-right: 1px solid var(--rule);
+  }
+  .view-tab {
+    padding: 1rem 1.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--ink-light);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .view-tab:hover { color: var(--ink); background: var(--paper); }
+  .view-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-soft); }
+
+  .strand-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0;
+    padding: 0.5rem 1rem;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .strand-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-light);
+    margin-right: 0.75rem;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+  .strand-chip {
+    padding: 0.35rem 0.85rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--rule);
+    background: none;
+    color: var(--ink-soft);
+    transition: all 0.18s;
+    white-space: nowrap;
+    margin-right: 0.4rem;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .strand-chip:hover { border-color: var(--ink-soft); }
+  .strand-chip.active-strand { background: var(--ink); color: white; border-color: var(--ink); }
+
+  .controls-actions {
+    margin-left: auto;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid var(--rule);
+    flex-shrink: 0;
+  }
+  .print-btn {
+    padding: 0.45rem 1.1rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.18s;
+  }
+  .print-btn:hover { background: #a83d27; }
+  .print-btn svg { width: 14px; height: 14px; }
+
+  /* ── GRADE FILTER BAR ── */
+  .grade-bar {
+    background: var(--paper-warm);
+    border-bottom: 1px solid var(--rule);
+    padding: 0.5rem 2rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .grade-bar-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-light);
+    margin-right: 0.5rem;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+  .grade-pill {
+    padding: 0.3rem 0.9rem;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.18s;
+    white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .grade-pill[data-grade="K"] { background: var(--grade-k-soft); color: var(--grade-k); border-color: var(--grade-k-soft); }
+  .grade-pill[data-grade="1"] { background: var(--grade-1-soft); color: var(--grade-1); border-color: var(--grade-1-soft); }
+  .grade-pill[data-grade="2"] { background: var(--grade-2-soft); color: var(--grade-2); border-color: var(--grade-2-soft); }
+  .grade-pill[data-grade="3"] { background: var(--grade-3-soft); color: var(--grade-3); border-color: var(--grade-3-soft); }
+  .grade-pill[data-grade="4"] { background: var(--grade-4-soft); color: var(--grade-4); border-color: var(--grade-4-soft); }
+  .grade-pill[data-grade="5"] { background: var(--grade-5-soft); color: var(--grade-5); border-color: var(--grade-5-soft); }
+  .grade-pill[data-grade="6"] { background: var(--grade-6-soft); color: var(--grade-6); border-color: var(--grade-6-soft); }
+
+  .grade-pill.active[data-grade="K"] { border-color: var(--grade-k); }
+  .grade-pill.active[data-grade="1"] { border-color: var(--grade-1); }
+  .grade-pill.active[data-grade="2"] { border-color: var(--grade-2); }
+  .grade-pill.active[data-grade="3"] { border-color: var(--grade-3); }
+  .grade-pill.active[data-grade="4"] { border-color: var(--grade-4); }
+  .grade-pill.active[data-grade="5"] { border-color: var(--grade-5); }
+  .grade-pill.active[data-grade="6"] { border-color: var(--grade-6); }
+  .grade-pill.inactive { opacity: 0.4; }
+
+  /* ── MAIN CONTENT ── */
+  .main { padding: 2rem 2rem 4rem; max-width: 1600px; margin: 0 auto; }
+
+  /* ── GRADE VIEW ── */
+  .grade-view { display: none; }
+  .grade-view.visible { display: block; }
+
+  .grade-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--rule);
+  }
+  .grade-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+  .grade-subtitle {
+    font-size: 0.85rem;
+    color: var(--ink-light);
+    font-weight: 300;
+  }
+
+  .strands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .strand-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--rule);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .strand-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+
+  .strand-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .strand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .strand-card-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+    letter-spacing: 0.01em;
+  }
+  .strand-card-body {
+    padding: 1.1rem 1.25rem;
+  }
+  .strand-card-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+  .strand-card-body li {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .strand-card-body li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--ink-light);
+  }
+  .strand-card-body .resource-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: var(--paper-warm);
+    color: var(--ink-soft);
+    margin-top: 0.75rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── STRAND VIEW ── */
+  .strand-view { display: none; }
+  .strand-view.visible { display: block; }
+
+  .strand-view-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--rule);
+  }
+  .strand-view-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .progression-track {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+  }
+  .progression-track::-webkit-scrollbar { height: 4px; }
+  .progression-track::-webkit-scrollbar-track { background: var(--rule); border-radius: 2px; }
+  .progression-track::-webkit-scrollbar-thumb { background: var(--ink-light); border-radius: 2px; }
+
+  .progression-card {
+    min-width: 260px;
+    max-width: 300px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    background: white;
+  }
+  .progression-card.hidden-grade { display: none; }
+
+  .progression-card-top {
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+  }
+  .progression-card-body {
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    min-height: 120px;
+  }
+  .progression-card-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .progression-card-body li {
+    padding-left: 0.9rem;
+    position: relative;
+  }
+  .progression-card-body li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--ink-light);
+    font-size: 0.7rem;
+    top: 0.15em;
+  }
+
+  /* Grade colors for progression cards */
+  .gc-K .progression-card-top { background: var(--grade-k-soft); color: var(--grade-k); }
+  .gc-1 .progression-card-top { background: var(--grade-1-soft); color: var(--grade-1); }
+  .gc-2 .progression-card-top { background: var(--grade-2-soft); color: var(--grade-2); }
+  .gc-3 .progression-card-top { background: var(--grade-3-soft); color: var(--grade-3); }
+  .gc-4 .progression-card-top { background: var(--grade-4-soft); color: var(--grade-4); }
+  .gc-5 .progression-card-top { background: var(--grade-5-soft); color: var(--grade-5); }
+  .gc-6 .progression-card-top { background: var(--grade-6-soft); color: var(--grade-6); }
+
+  /* ── TABLE VIEW ── */
+  .table-view { display: none; }
+  .table-view.visible { display: block; }
+
+  .table-scroll { overflow-x: auto; border-radius: 10px; border: 1px solid var(--rule); }
+  .curriculum-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    background: white;
+  }
+  .curriculum-table thead tr {
+    background: var(--ink);
+    color: white;
+  }
+  .curriculum-table thead th {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .curriculum-table thead th:first-child { background: var(--accent); }
+
+  .curriculum-table tbody tr {
+    border-bottom: 1px solid var(--rule);
+    transition: background 0.15s;
+  }
+  .curriculum-table tbody tr:hover { background: var(--paper); }
+  .curriculum-table tbody tr:last-child { border-bottom: none; }
+
+  .curriculum-table tbody td {
+    padding: 1rem;
+    vertical-align: top;
+    border-right: 1px solid var(--rule);
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .curriculum-table tbody td:first-child {
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    background: var(--paper-warm);
+    width: 160px;
+  }
+  .curriculum-table tbody td:last-child { border-right: none; }
+  .curriculum-table tbody td ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .curriculum-table tbody td li {
+    padding-left: 0.85rem;
+    position: relative;
+    font-size: 0.77rem;
+  }
+  .curriculum-table tbody td li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--ink-light);
+  }
+  .curriculum-table .grade-th-K { border-top: 3px solid var(--grade-k); }
+  .curriculum-table .grade-th-1 { border-top: 3px solid var(--grade-1); }
+  .curriculum-table .grade-th-2 { border-top: 3px solid var(--grade-2); }
+  .curriculum-table .grade-th-3 { border-top: 3px solid var(--grade-3); }
+  .curriculum-table .grade-th-4 { border-top: 3px solid var(--grade-4); }
+  .curriculum-table .grade-th-5 { border-top: 3px solid var(--grade-5); }
+  .curriculum-table .grade-th-6 { border-top: 3px solid var(--grade-6); }
+
+  .curriculum-table td.hidden-col { display: none; }
+  .curriculum-table th.hidden-col { display: none; }
+
+  /* ── STRAND SELECTOR ── */
+  .strand-selector {
+    display: none;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .strand-selector.visible { display: flex; }
+  .strand-select-btn {
+    padding: 0.5rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: 2px solid var(--rule);
+    background: white;
+    color: var(--ink-soft);
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .strand-select-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .strand-select-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  /* ── EMPTY ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--ink-light);
+    font-size: 0.9rem;
+  }
+
+  /* ── GRADE NAV (grade view) ── */
+  .grade-nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .grade-nav-btn {
+    padding: 0.5rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .grade-nav-btn[data-g="K"] { background: var(--grade-k-soft); color: var(--grade-k); border-color: var(--grade-k-soft); }
+  .grade-nav-btn[data-g="1"] { background: var(--grade-1-soft); color: var(--grade-1); border-color: var(--grade-1-soft); }
+  .grade-nav-btn[data-g="2"] { background: var(--grade-2-soft); color: var(--grade-2); border-color: var(--grade-2-soft); }
+  .grade-nav-btn[data-g="3"] { background: var(--grade-3-soft); color: var(--grade-3); border-color: var(--grade-3-soft); }
+  .grade-nav-btn[data-g="4"] { background: var(--grade-4-soft); color: var(--grade-4); border-color: var(--grade-4-soft); }
+  .grade-nav-btn[data-g="5"] { background: var(--grade-5-soft); color: var(--grade-5); border-color: var(--grade-5-soft); }
+  .grade-nav-btn[data-g="6"] { background: var(--grade-6-soft); color: var(--grade-6); border-color: var(--grade-6-soft); }
+  .grade-nav-btn.active[data-g="K"] { border-color: var(--grade-k); }
+  .grade-nav-btn.active[data-g="1"] { border-color: var(--grade-1); }
+  .grade-nav-btn.active[data-g="2"] { border-color: var(--grade-2); }
+  .grade-nav-btn.active[data-g="3"] { border-color: var(--grade-3); }
+  .grade-nav-btn.active[data-g="4"] { border-color: var(--grade-4); }
+  .grade-nav-btn.active[data-g="5"] { border-color: var(--grade-5); }
+  .grade-nav-btn.active[data-g="6"] { border-color: var(--grade-6); }
+
+  .bas-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 1.5rem;
+  }
+
+  /* ── PRINT STYLES ── */
+  @media print {
+    header { background: var(--ink) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .controls, .grade-bar { display: none !important; }
+    .main { padding: 1rem; max-width: none; }
+    body { font-size: 11px; }
+    .strand-card:hover { box-shadow: none; }
+    .strands-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; page-break-inside: avoid; }
+    .strand-card { page-break-inside: avoid; }
+    .progression-track { flex-wrap: wrap; overflow: visible; }
+    .progression-card { min-width: 200px; }
+    .curriculum-table { font-size: 0.65rem; }
+    .curriculum-table thead th, .curriculum-table tbody td { padding: 0.5rem 0.6rem; }
+    .grade-view, .strand-view, .table-view { display: none !important; }
+    .grade-view.visible, .strand-view.visible, .table-view.visible { display: block !important; }
+    .progression-card.hidden-grade { display: none !important; }
+    .curriculum-table td.hidden-col, .curriculum-table th.hidden-col { display: none !important; }
+    @page { margin: 0.75in; size: landscape; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Greater Gatineau School Board · Elementary Program</div>
+  <h1>Language Scope <em>&</em> Sequence</h1>
+  <div class="header-meta">Kindergarten through Grade 6 · Updated March 23, 2026</div>
+</header>
+
+<div class="controls">
+  <div class="controls-inner">
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="grade">By Grade Level</button>
+      <button class="view-tab" data-view="strand">By Strand</button>
+      <button class="view-tab" data-view="table">Full Table</button>
+    </div>
+    <div class="strand-filters" id="strandFilters" style="display:none;">
+      <span class="strand-label">Strand:</span>
+    </div>
+    <div class="controls-actions">
+      <button class="print-btn" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="grade-bar" id="gradeBar">
+  <span class="grade-bar-label">Grade:</span>
+  <button class="grade-pill active" data-grade="K">Kindergarten</button>
+  <button class="grade-pill active" data-grade="1">Grade 1</button>
+  <button class="grade-pill active" data-grade="2">Grade 2</button>
+  <button class="grade-pill active" data-grade="3">Grade 3</button>
+  <button class="grade-pill active" data-grade="4">Grade 4</button>
+  <button class="grade-pill active" data-grade="5">Grade 5</button>
+  <button class="grade-pill active" data-grade="6">Grade 6</button>
+</div>
+
+<div class="main">
+
+  <!-- ══ GRADE VIEW ══ -->
+  <div class="grade-view visible" id="gradeView">
+    <div class="grade-nav" id="gradeNav">
+      <button class="grade-nav-btn active" data-g="K">Kindergarten</button>
+      <button class="grade-nav-btn" data-g="1">Grade 1</button>
+      <button class="grade-nav-btn" data-g="2">Grade 2</button>
+      <button class="grade-nav-btn" data-g="3">Grade 3</button>
+      <button class="grade-nav-btn" data-g="4">Grade 4</button>
+      <button class="grade-nav-btn" data-g="5">Grade 5</button>
+      <button class="grade-nav-btn" data-g="6">Grade 6</button>
+    </div>
+    <div id="gradeContent"></div>
+  </div>
+
+  <!-- ══ STRAND VIEW ══ -->
+  <div class="strand-view" id="strandView">
+    <div class="strand-selector visible" id="strandSelector"></div>
+    <div id="strandContent"></div>
+  </div>
+
+  <!-- ══ TABLE VIEW ══ -->
+  <div class="table-view" id="tableView">
+    <div class="table-scroll">
+      <table class="curriculum-table" id="mainTable">
+        <thead id="tableHead"></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════
+const GRADES = ['K','1','2','3','4','5','6'];
+const GRADE_NAMES = { K:'Kindergarten', '1':'Grade 1','2':'Grade 2','3':'Grade 3','4':'Grade 4','5':'Grade 5','6':'Grade 6' };
+
+const BAS = {
+  K: 'KBAS Assessments',
+  '1': 'I – J',
+  '2': 'M – N',
+  '3': 'P – Q',
+  '4': 'S – T – U',
+  '5': 'V+',
+  '6': 'V+'
+};
+
+const STRANDS = [
+  { id: 'phonological', name: 'Phonological Awareness & Decoding', icon: '🔤' },
+  { id: 'morphology',   name: 'Morphology',                        icon: '🧩' },
+  { id: 'grammar',      name: 'Grammar & Syntax',                  icon: '📐' },
+  { id: 'vocabulary',   name: 'Vocabulary & Sight Words',          icon: '📚' },
+  { id: 'comprehension',name: 'Comprehension & Response',          icon: '💡' },
+  { id: 'background',   name: 'Background Knowledge',              icon: '🌍' },
+];
+
+const STRAND_ICONS = {
+  phonological: '🔤', morphology: '🧩', grammar: '📐',
+  vocabulary: '📚', comprehension: '💡', background: '🌍'
+};
+const STRAND_COLORS = {
+  phonological: { bg:'#ede9fe', fg:'#5b21b6' },
+  morphology:   { bg:'#e0f2fe', fg:'#0369a1' },
+  grammar:      { bg:'#fef9c3', fg:'#a16207' },
+  vocabulary:   { bg:'#dcfce7', fg:'#166534' },
+  comprehension:{ bg:'#fee2e2', fg:'#991b1b' },
+  background:   { bg:'#f3f0e8', fg:'#78350f' },
+};
+
+const DATA = {
+  phonological: {
+    K:  ['Cycle through Alphabet (once or twice)', 'UFLI "Getting Ready" lessons (A–J)'],
+    '1':['Alphabet (#1–34)', 'Short vowels (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer words (#63–68)', 'Ending spelling patterns (#69–76)'],
+    '2':['Short vowel review (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer words (#63–68)', 'Ending spelling patterns (#69–70, 72–76)', 'R-controlled vowels (#77–78, 80–83)', 'Long vowels (#84–87)', 'Other vowel teams (#89–91, 93–94)', 'Diphthongs (#95–96)', 'Silent letters (#98)', 'Suffixes and prefixes (#99–101, 103)', 'Suffix spelling changes (#107–110)'],
+    '3':['Short vowel review (#38, 41)', 'Digraph review (#42, 43, 49, 53)', 'VCe review (#57, 59, 62)', 'Longer words (#63–68)', 'Ending spelling patterns (#71, 72, 76)', 'R-controlled vowels (#79, 82, 83)', 'Long vowel teams (#84–88)', 'Other vowel teams (#89–94)', 'Diphthongs (#95–97)', 'Silent letters (#98)', 'Suffixes and prefixes (#99–106)', 'Suffix spelling changes (#107–110)'],
+    '4':['Suffix & prefixes (#99–106)', 'Suffix spelling changes (#107–110)', 'Low frequency spellings (#111–118)', 'Additional affixes (#119–128)', 'UFLI as intervention'],
+    '5':['UFLI as intervention where needed', 'Focus shifts to morphology & vocabulary'],
+    '6':['UFLI as intervention where needed', 'Focus shifts to morphology & vocabulary'],
+  },
+  morphology: {
+    K:  ['Oral only – correct use of morphemes in speech', 'Suffixes: -ed, -es/-s, -ing', 'Compound words'],
+    '1':['Grade K expectations plus:', 'Suffixes: -er/-est, -ly, -less/-ful', 'Prefixes: un-'],
+    '2':['Grade 1 expectations plus:', 'Suffixes: -sion/-tion, -er/-or/-ist, -ish, -y, -ness, -ment'],
+    '3':['Grade 2 expectations plus:', 'Suffixes: -al/-ial, -y, -ity/-ty, -ic, -ous, -en', 'Prefixes: pre-, re-, dis-', 'Doubling/Dropping/Changing rule for suffixes', 'Suffixes: -able/-ible', 'Prefixes: uni-, bi-, tri-, in-, non-, mis-, sub-', 'Roots: port (carry), rupt (break), dict (say)', 'Suffixes: -ive, -er/-or, -age', 'Prefixes: de-, trans-, dis-, ex-', 'Roots: aud (hear), vis/vid (see), scrib/script (write), struct (build), tract (pull/draw)'],
+    '4':['Grade 3 expectations plus:', 'Suffixes: -ance/-ence, -ant/-ent, -ary/-ery/-ory, -ify/-fy, -ize/-ise, -ward', 'Prefixes: over-, under-, inter-, fore-, en-/em-, mid-, super-, out-', 'Roots: ject (throw), spec/spect (look), fract/frag (break), form (shape), terr (land/earth), man/manu (hand), fac/fact (make/do), mit/miss (send)'],
+    '5':['Grade 4 expectations plus:', 'Prefixes: per-, counter-, anti-, pro-, post-, circum-, co-/com-/con-', 'Roots: cred (believe), duc/duct (lead), pos/pon (place/put), ven/vent (come), fer (carry/bear), voc/vok (voice/call), junct (join), grad/gress (step/go)'],
+    '6':['Grade 5 expectations plus:', 'Roots: graph/gram (write), phon/phone (sound), scope (view/examine), bio (life), geo (earth), auto (self), micro/macro (small/large), -ology (study of), chron (time), therm (heat), hydr (water), dem (people)'],
+  },
+  grammar: {
+    K:  ['Identify fragments and sentences', 'Sentence types: statement or question', 'Capital letters for beginning of sentence & names', 'Ending punctuation: full stops, question marks, exclamation marks'],
+    '1':['Consolidate K foundations', 'Identify all sentence types (statement, command, question, exclamation)', 'Identify subject & verb of a clause/sentence', 'Unscramble statements (bolded first word)', 'Starting to use commas'],
+    '2':['Consolidate Yr 1', 'Identify subject and predicate', 'Unscramble all sentence types', 'Paragraphs: topic sentences, supporting details, concluding sentence', 'Commas for lists', 'Comma after fronted adverbials', 'Commas to separate clauses', 'Word contractions with apostrophes'],
+    '3':['Consolidate Yr 2 sentence knowledge', 'Identify subject and predicate within a clause', 'Identify dependent and independent clauses', 'Paragraphs: topic sentences, supporting details', 'Quotation marks (dialogue, quotes, titles)', 'Apostrophes for singular possessives', 'Ellipses for incomplete thoughts'],
+    '4':['Consolidate Yr 1–3 sentence knowledge', 'Identify dependent and independent clauses', 'Identify run-on sentences', 'Paragraphs: topic sentences, supporting details, concluding sentence, transition words', 'Apostrophes for singular and plural possessives', 'Parenthesis for abbreviations/acronyms'],
+    '5':['Consolidate Yr 1–4 sentence knowledge', 'Identify direct vs indirect speech', 'Paragraphs: topic sentences, supporting details, concluding sentence, transition words'],
+    '6':['Consolidate Yr 1–5 sentence knowledge (full review)'],
+  },
+  vocabulary: {
+    K:  ['Focus: Exposure & Early Recognition (~20 words)', 'Beginning recognition, effortful', 'Concept of a word', 'Nouns & verbs', 'Adjectives', 'Conjunctions: and, but, because, before, after, if, when'],
+    '1':['Focus: Building Automaticity (~50 words)', 'Recognizes increasing bank of high-frequency irregular words', 'Reading becomes less effortful', 'Common, proper & pronouns', 'Verbs; adjectives & adverbs', 'Subject (doer); past tense; plurals', 'Conjunctions: and, but, because, so, before, after, if, when'],
+    '2':['Focus: Mastery & Fluency (~100 words)', 'Knows most high-frequency irregular words automatically', 'Action & mental verbs', 'Adverbs of manner, place, time', 'Modal verbs & adverbs', 'Irregular past tense & plurals', 'Personal, subject, object, possessive pronouns', 'Expanded conjunction set'],
+    '3':['Focus: Consolidation & Application (100+ words)', 'Automatic recognition in reading and writing', 'Uses automaticity to support fluent oral reading', 'Reflexive pronouns', 'Action, speaking & mental verbs', 'Adverbs of frequency', 'Appositives; determiners', 'Coordinating & subordinating conjunctions', 'Transition words'],
+    '4':['Focus: Fluency, Precision & Vocabulary Awareness', 'Complete automaticity with high-frequency irregular words', 'Self-correction skills', 'Auxiliary/helping verbs', 'Transitive & intransitive verbs', 'Argumentative nouns & verbs', 'Adverbs of affirmation', 'Full FANBOYS conjunctions', 'Determiners (articles, demonstratives, quantifiers, ordinals)'],
+    '5':['Focus: Automaticity in Complex Text & Writing Precision', 'Complete and consistent automaticity', 'Strong spelling accuracy and self-monitoring', 'Consolidate Grades 1–4 word knowledge', 'Stative verbs', 'Relative pronouns (who, whom, whose, that, which)', 'Relative adjectives (when, where, why)'],
+    '6':['Focus: Precision, Nuance & Academic Language', 'Near-perfect spelling in grade-level writing', 'Academic vocabulary and formal writing', 'Reading complex texts across subject areas', 'Consolidate Grades 1–5 word knowledge'],
+  },
+  comprehension: {
+    K:  ['Simple sequence (First, then, next)', 'Make simple predictions using pictures and clues', 'Connection to own experience', 'Identify who, what, where', 'Create simple mental image', 'Retell story beginning, middle and end'],
+    '1':['Identify character, setting and main events', 'Make predictions before and during text', 'Text-to-self connections', 'Visualize (describe what they picture)', 'Infer simple ideas', 'Ask simple questions about the text', 'Retell story with clear sequence and important details'],
+    '2':['Retell and summarize key ideas (not every detail)', 'Answer questions (who, what, where, when, why, how) with evidence', 'Make connections (text-to-self, beginning text-to-text)', 'Make simple inferences (feelings, motives)', 'Be aware of different text types (fiction vs non-fiction)'],
+    '3':['Summarize texts clearly using key ideas', 'Identify main idea and supporting details', 'Analyze characters (traits, motivations, changes over time)', 'Explain themes in simple terms', 'Make connections (text-to-self, text-to-text, text-to-world)', 'Visualize and describe detailed mental images', 'Identify the author\'s purpose (inform, entertain, persuade)'],
+    '4':['Summarize texts clearly and concisely', 'Analyze characters (traits, motivations, relationships, changes)', 'Explain themes with supporting evidence', 'Ask deeper, critical questions about meaning and purpose', 'Make predictions and explain reasoning using text evidence', 'Analyze author\'s purpose and point of view', 'Compare and contrast texts, themes, or characters'],
+    '5':['Read and understand complex fiction and non-fiction independently', 'Analyze characters with deeper insight', 'Explain themes with clear evidence', 'Ask critical questions about ideas, messages, and perspectives', 'Analyze author\'s purpose, point of view, and bias', 'Compare and evaluate different texts, ideas, or perspectives', 'Interpret and analyze text features (charts, graphs, diagrams)'],
+    '6':['Synthesize information from multiple texts', 'Analyze author\'s purpose, point of view, and bias (full analysis)', 'Compare and evaluate texts, ideas, and perspectives at a high level', 'Make inferences using multiple pieces of evidence', 'Strong, specific text evidence in responses'],
+  },
+  background: {
+    K:  ['Non-fiction themes'],
+    '1':['SoundPrints resources', 'Non-fiction Themes', 'Culture and Citizenship in Québec (CCQ)'],
+    '2':['SoundPrints resources', 'Non-fiction Themes', 'CCQ'],
+    '3':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
+    '4':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
+    '5':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
+    '6':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let currentView = 'grade';
+let activeGrade = 'K';
+let activeStrand = 'phonological';
+let activeGrades = new Set(GRADES);
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function listHTML(items) {
+  if (!items || !items.length) return '<em style="color:var(--ink-light);font-size:0.8rem">No specific expectations listed.</em>';
+  return `<ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GRADE VIEW
+// ═══════════════════════════════════════════════════════════════
+function renderGradeView() {
+  const g = activeGrade;
+  const c = document.getElementById('gradeContent');
+  const gColor = `var(--grade-${g})`;
+  const gColorSoft = `var(--grade-${g}-soft)`;
+
+  let html = `
+    <div class="grade-header">
+      <div class="grade-title" style="color:var(--grade-${g})">${GRADE_NAMES[g]}</div>
+      <div class="grade-subtitle">${STRANDS.length} learning strands</div>
+    </div>
+    <div class="bas-badge">📊 BAS Level: ${BAS[g]}</div>
+    <div class="strands-grid">
+  `;
+
+  for (const s of STRANDS) {
+    const col = STRAND_COLORS[s.id];
+    const items = DATA[s.id][g] || [];
+    html += `
+      <div class="strand-card">
+        <div class="strand-card-header">
+          <div class="strand-icon" style="background:${col.bg};color:${col.fg}">${s.icon}</div>
+          <div class="strand-card-title" style="color:${col.fg}">${s.name}</div>
+        </div>
+        <div class="strand-card-body">
+          ${listHTML(items)}
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+function initGradeNav() {
+  const nav = document.getElementById('gradeNav');
+  nav.querySelectorAll('.grade-nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      nav.querySelectorAll('.grade-nav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeGrade = btn.dataset.g;
+      renderGradeView();
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STRAND VIEW
+// ═══════════════════════════════════════════════════════════════
+function renderStrandSelector() {
+  const sel = document.getElementById('strandSelector');
+  sel.innerHTML = STRANDS.map(s => {
+    const col = STRAND_COLORS[s.id];
+    const isActive = s.id === activeStrand;
+    return `<button class="strand-select-btn ${isActive ? 'active' : ''}" data-sid="${s.id}"
+      style="${isActive ? '' : ''}">
+      ${s.icon} ${s.name}
+    </button>`;
+  }).join('');
+  sel.querySelectorAll('.strand-select-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeStrand = btn.dataset.sid;
+      renderStrandSelector();
+      renderStrandContent();
+    });
+  });
+}
+
+function renderStrandContent() {
+  const s = STRANDS.find(x => x.id === activeStrand);
+  const col = STRAND_COLORS[activeStrand];
+  const c = document.getElementById('strandContent');
+
+  let html = `
+    <div class="strand-view-header">
+      <div class="strand-view-title" style="color:${col.fg}">${s.icon} ${s.name}</div>
+    </div>
+    <div class="progression-track">
+  `;
+
+  for (const g of GRADES) {
+    const hidden = !activeGrades.has(g) ? 'hidden-grade' : '';
+    const items = DATA[activeStrand][g] || [];
+    html += `
+      <div class="progression-card gc-${g} ${hidden}">
+        <div class="progression-card-top">${GRADE_NAMES[g]}</div>
+        <div class="progression-card-body">${listHTML(items)}</div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  c.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE VIEW
+// ═══════════════════════════════════════════════════════════════
+function renderTable() {
+  const thead = document.getElementById('tableHead');
+  const tbody = document.getElementById('tableBody');
+
+  let headHtml = '<tr><th>Strand</th>';
+  for (const g of GRADES) {
+    const hidden = !activeGrades.has(g) ? 'hidden-col' : '';
+    headHtml += `<th class="grade-th-${g} ${hidden}">${GRADE_NAMES[g]}</th>`;
+  }
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  let bodyHtml = '';
+  for (const s of STRANDS) {
+    const col = STRAND_COLORS[s.id];
+    bodyHtml += `<tr>
+      <td style="border-left:4px solid ${col.fg}">
+        <span style="color:${col.fg}">${s.icon}</span> ${s.name}
+      </td>`;
+    for (const g of GRADES) {
+      const hidden = !activeGrades.has(g) ? 'hidden-col' : '';
+      const items = DATA[s.id][g] || [];
+      bodyHtml += `<td class="${hidden}">${listHTML(items)}</td>`;
+    }
+    bodyHtml += '</tr>';
+  }
+  tbody.innerHTML = bodyHtml;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GRADE FILTER BAR
+// ═══════════════════════════════════════════════════════════════
+function initGradeBar() {
+  document.querySelectorAll('.grade-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      const g = pill.dataset.grade;
+      if (activeGrades.has(g)) {
+        if (activeGrades.size > 1) {
+          activeGrades.delete(g);
+          pill.classList.remove('active');
+          pill.classList.add('inactive');
+        }
+      } else {
+        activeGrades.add(g);
+        pill.classList.add('active');
+        pill.classList.remove('inactive');
+      }
+      refreshCurrentView();
+    });
+  });
+}
+
+function refreshCurrentView() {
+  if (currentView === 'grade') {
+    // Grade view uses its own nav
+  } else if (currentView === 'strand') {
+    renderStrandContent();
+  } else if (currentView === 'table') {
+    renderTable();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+
+  document.getElementById('gradeView').classList.toggle('visible', view === 'grade');
+  document.getElementById('strandView').classList.toggle('visible', view === 'strand');
+  document.getElementById('tableView').classList.toggle('visible', view === 'table');
+
+  // Grade bar: show for strand + table, hide for grade (grade has its own nav)
+  document.getElementById('gradeBar').style.display = view === 'grade' ? 'none' : 'flex';
+  document.getElementById('gradeNav').style.display = view === 'grade' ? 'flex' : 'none';
+
+  if (view === 'grade') renderGradeView();
+  if (view === 'strand') { renderStrandSelector(); renderStrandContent(); }
+  if (view === 'table') renderTable();
+}
+
+document.querySelectorAll('.view-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
+});
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+initGradeNav();
+initGradeBar();
+switchView('grade');
+</script>
+</body>
+</html>
