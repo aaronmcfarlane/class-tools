@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Greater Gatineau Language Scope & Sequence</title>
+<title>English Language Arts Scope & Sequence</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -581,30 +581,182 @@
 
   /* ── PRINT STYLES ── */
   @media print {
-    header { background: var(--ink) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .controls, .grade-bar { display: none !important; }
-    .main { padding: 1rem; max-width: none; }
-    body { font-size: 11px; }
-    .strand-card:hover { box-shadow: none; }
-    .strands-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; page-break-inside: avoid; }
-    .strand-card { page-break-inside: avoid; }
-    .progression-track { flex-wrap: wrap; overflow: visible; }
-    .progression-card { min-width: 200px; }
-    .curriculum-table { font-size: 0.65rem; }
-    .curriculum-table thead th, .curriculum-table tbody td { padding: 0.5rem 0.6rem; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+    /* Hide everything web-specific */
+    header, .controls, .grade-bar, .grade-nav,
+    .strand-selector, .print-btn { display: none !important; }
+
+    body {
+      background: white !important;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 9pt;
+      color: #111;
+      margin: 0;
+      padding: 0;
+    }
+
+    .main { padding: 0; max-width: none; }
+
+    /* Hide non-active views */
     .grade-view, .strand-view, .table-view { display: none !important; }
     .grade-view.visible, .strand-view.visible, .table-view.visible { display: block !important; }
+
+    /* ── PRINT HEADER (injected via JS) ── */
+    .print-header {
+      display: block !important;
+      border-bottom: 2.5pt solid #1a1a2e;
+      padding-bottom: 8pt;
+      margin-bottom: 14pt;
+    }
+    .print-header-org {
+      font-family: 'DM Mono', monospace;
+      font-size: 7pt;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 3pt;
+    }
+    .print-header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .print-header-subtitle {
+      font-size: 8.5pt;
+      color: #555;
+      margin-top: 3pt;
+    }
+    .print-header-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 7pt;
+      color: #aaa;
+      margin-top: 4pt;
+    }
+
+    /* ── GRADE VIEW PRINT ── */
+    .grade-header { display: none !important; }
+    .bas-badge {
+      display: inline-block !important;
+      font-family: 'DM Mono', monospace;
+      font-size: 7.5pt;
+      color: #7a6020;
+      background: #faf3dc !important;
+      border: 0.75pt solid #b8860b !important;
+      border-radius: 100px;
+      padding: 2pt 7pt;
+      margin-bottom: 10pt;
+    }
+
+    .strands-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 9pt;
+      page-break-inside: avoid;
+    }
+
+    .grammar-group-print {
+      grid-column: 1 / -1;
+    }
+    .grammar-group-print .grammar-group-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 10pt;
+      font-weight: 700;
+      color: #a16207;
+      border-bottom: 1pt solid #fde8b4;
+      padding-bottom: 3pt;
+      margin-bottom: 6pt;
+    }
+    .grammar-group-print .grammar-sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8pt;
+    }
+
+    .strand-card {
+      border: 0.75pt solid #ddd !important;
+      border-radius: 5pt !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      overflow: visible !important;
+    }
+    .strand-card-header {
+      padding: 5pt 7pt !important;
+      border-bottom: 0.75pt solid #eee !important;
+    }
+    .strand-icon { width: 18pt !important; height: 18pt !important; font-size: 9pt !important; border-radius: 4pt !important; }
+    .strand-card-title { font-size: 7.5pt !important; font-weight: 700 !important; }
+    .strand-card-body { padding: 6pt 7pt !important; }
+    .strand-card-body li { font-size: 7pt !important; line-height: 1.45 !important; }
+    .strand-card-body ul { gap: 2pt !important; }
+
+    /* ── STRAND VIEW PRINT ── */
+    .strand-view-header { margin-bottom: 10pt; padding-bottom: 6pt; border-bottom: 1.5pt solid #eee !important; }
+    .strand-view-title { font-size: 14pt !important; }
+
+    .progression-track {
+      display: grid !important;
+      grid-template-columns: repeat(7, 1fr) !important;
+      gap: 6pt !important;
+      overflow: visible !important;
+    }
+    .progression-card {
+      min-width: 0 !important;
+      max-width: none !important;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
     .progression-card.hidden-grade { display: none !important; }
+    .progression-card-top { padding: 4pt 6pt !important; font-size: 6.5pt !important; }
+    .progression-card-body { padding: 5pt 6pt !important; font-size: 6.5pt !important; line-height: 1.4 !important; min-height: 0 !important; }
+    .progression-card-body li { font-size: 6.5pt !important; }
+    .progression-card-body ul { gap: 2pt !important; }
+
+    /* ── TABLE VIEW PRINT ── */
+    .table-scroll { overflow: visible !important; border: none !important; border-radius: 0 !important; }
+    .curriculum-table { font-size: 6.5pt !important; width: 100% !important; }
+    .curriculum-table thead th {
+      padding: 4pt 5pt !important;
+      font-size: 6pt !important;
+      background: #1a1a2e !important;
+      color: white !important;
+    }
+    .curriculum-table thead th:first-child { background: #c84b31 !important; }
+    .curriculum-table tbody td { padding: 4pt 5pt !important; font-size: 6pt !important; line-height: 1.4 !important; }
+    .curriculum-table tbody td:first-child { background: #f5f3ef !important; font-size: 6.5pt !important; }
+    .curriculum-table tbody td li { font-size: 6pt !important; }
     .curriculum-table td.hidden-col, .curriculum-table th.hidden-col { display: none !important; }
-    @page { margin: 0.75in; size: landscape; }
+
+    /* Sub-section rows in table */
+    .curriculum-table tr.subsection-row td:first-child {
+      font-style: italic;
+      font-weight: 500;
+      padding-left: 14pt !important;
+      color: #555;
+    }
+    .curriculum-table tr.parent-row td:first-child {
+      font-weight: 700;
+      background: #f0ede6 !important;
+    }
+
+    @page {
+      size: letter landscape;
+      margin: 0.55in 0.5in;
+    }
+    /* Portrait for grade and strand views which are less wide */
+    .grade-view.visible ~ * { }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-eyebrow">Greater Gatineau School Board · Elementary Program</div>
-  <h1>Language Scope <em>&</em> Sequence</h1>
+  <div class="header-eyebrow">Greater Gatineau School — Western Quebec School Board</div>
+  <h1>English Language Arts Scope <em>&</em> Sequence</h1>
   <div class="header-meta">Kindergarten through Grade 6 · Updated March 23, 2026</div>
 </header>
 
@@ -636,6 +788,13 @@
   <button class="grade-pill active" data-grade="4">Grade 4</button>
   <button class="grade-pill active" data-grade="5">Grade 5</button>
   <button class="grade-pill active" data-grade="6">Grade 6</button>
+</div>
+
+<div class="print-header" style="display:none" id="printHeader">
+  <div class="print-header-org">Greater Gatineau School — Western Quebec School Board</div>
+  <div class="print-header-title">English Language Arts Scope &amp; Sequence</div>
+  <div class="print-header-subtitle" id="printHeaderSubtitle"></div>
+  <div class="print-header-meta">March 23, 2026</div>
 </div>
 
 <div class="main">
@@ -690,77 +849,96 @@ const BAS = {
 };
 
 const STRANDS = [
-  { id: 'phonological', name: 'Phonological Awareness & Decoding', icon: '🔤' },
-  { id: 'morphology',   name: 'Morphology',                        icon: '🧩' },
-  { id: 'grammar',      name: 'Grammar & Syntax',                  icon: '📐' },
-  { id: 'vocabulary',   name: 'Vocabulary & Sight Words',          icon: '📚' },
-  { id: 'comprehension',name: 'Comprehension & Response',          icon: '💡' },
-  { id: 'background',   name: 'Background Knowledge',              icon: '🌍' },
+  { id: 'phonological',        name: 'Phonological Awareness & Decoding', icon: '🔤', parent: null },
+  { id: 'morphology',          name: 'Morphology',                        icon: '🧩', parent: null },
+  { id: 'grammar_sentence',    name: 'Sentence Knowledge',                icon: '📐', parent: 'Grammar & Syntax' },
+  { id: 'grammar_punctuation', name: 'Punctuation',                       icon: '✏️', parent: 'Grammar & Syntax' },
+  { id: 'grammar_word',        name: 'Word Knowledge',                    icon: '🔖', parent: 'Grammar & Syntax' },
+  { id: 'vocabulary',          name: 'Vocabulary & Sight Words',          icon: '📚', parent: null },
+  { id: 'comprehension',       name: 'Comprehension & Response',          icon: '💡', parent: null },
+  { id: 'background',          name: 'Background Knowledge',              icon: '🌍', parent: null },
 ];
 
-const STRAND_ICONS = {
-  phonological: '🔤', morphology: '🧩', grammar: '📐',
-  vocabulary: '📚', comprehension: '💡', background: '🌍'
-};
 const STRAND_COLORS = {
-  phonological: { bg:'#ede9fe', fg:'#5b21b6' },
-  morphology:   { bg:'#e0f2fe', fg:'#0369a1' },
-  grammar:      { bg:'#fef9c3', fg:'#a16207' },
-  vocabulary:   { bg:'#dcfce7', fg:'#166534' },
-  comprehension:{ bg:'#fee2e2', fg:'#991b1b' },
-  background:   { bg:'#f3f0e8', fg:'#78350f' },
+  phonological:        { bg:'#ede9fe', fg:'#5b21b6' },
+  morphology:          { bg:'#e0f2fe', fg:'#0369a1' },
+  grammar_sentence:    { bg:'#fef9c3', fg:'#a16207' },
+  grammar_punctuation: { bg:'#fef3c7', fg:'#92400e' },
+  grammar_word:        { bg:'#fde8b4', fg:'#7c3b0a' },
+  vocabulary:          { bg:'#dcfce7', fg:'#166534' },
+  comprehension:       { bg:'#fee2e2', fg:'#991b1b' },
+  background:          { bg:'#f3f0e8', fg:'#78350f' },
 };
 
 const DATA = {
   phonological: {
-    K:  ['Cycle through Alphabet (once or twice)', 'UFLI "Getting Ready" lessons (A–J)'],
-    '1':['Alphabet (#1–34)', 'Short vowels (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer words (#63–68)', 'Ending spelling patterns (#69–76)'],
-    '2':['Short vowel review (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer words (#63–68)', 'Ending spelling patterns (#69–70, 72–76)', 'R-controlled vowels (#77–78, 80–83)', 'Long vowels (#84–87)', 'Other vowel teams (#89–91, 93–94)', 'Diphthongs (#95–96)', 'Silent letters (#98)', 'Suffixes and prefixes (#99–101, 103)', 'Suffix spelling changes (#107–110)'],
-    '3':['Short vowel review (#38, 41)', 'Digraph review (#42, 43, 49, 53)', 'VCe review (#57, 59, 62)', 'Longer words (#63–68)', 'Ending spelling patterns (#71, 72, 76)', 'R-controlled vowels (#79, 82, 83)', 'Long vowel teams (#84–88)', 'Other vowel teams (#89–94)', 'Diphthongs (#95–97)', 'Silent letters (#98)', 'Suffixes and prefixes (#99–106)', 'Suffix spelling changes (#107–110)'],
-    '4':['Suffix & prefixes (#99–106)', 'Suffix spelling changes (#107–110)', 'Low frequency spellings (#111–118)', 'Additional affixes (#119–128)', 'UFLI as intervention'],
-    '5':['UFLI as intervention where needed', 'Focus shifts to morphology & vocabulary'],
-    '6':['UFLI as intervention where needed', 'Focus shifts to morphology & vocabulary'],
+    K:  ['Cycle through Alphabet once (or twice)', 'UFLI A-J; "Getting ready" lessons'],
+    '1':['Alphabet (#1–34)', 'Short vowels (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer Words (#63–68)', 'Ending Spelling Patterns (#69–76)'],
+    '2':['Short Vowel Review (#35–41)', 'Digraphs (#42–53)', 'VCe (#54–62)', 'Longer Words (#63–68)', 'Ending Spelling Patterns (#69–70, 72–76)', 'R-Controlled Vowels (#77–78, 80–83)', 'Long Vowels (#84–87)', 'Other Vowel Teams (#89–91, 93–94)', 'Dipthongs (#95–96)', 'Silent Letters (#98)', 'Suffixes and Prefixes (#99–101, 103)', 'Suffix Spelling Changes (#107–110)'],
+    '3':['Short Vowel Review (#38, 41)', 'Digraph Review (#42, 43, 49, 53)', 'VCe Review (#57, 59, 62)', 'Longer Words (#63–68)', 'Ending Spelling Patterns (#71, 72, 76)', 'R-Controlled Vowels (#79, 82, 83)', 'Long Vowel Teams (#84–88)', 'Other Vowel Teams (#89–94)', 'Dipthongs (#95–97)', 'Silent Letters (#98)', 'Suffixes and Prefixes (#99–106)', 'Suffix & Prefixes (#99–106)', 'Suffix Spelling Changes (#107–110)', 'Low Frequency Spellings (#111–118)', 'Additional Affixes (#119–128)'],
+    '4':['UFLI as intervention'],
+    '5':['UFLI as intervention'],
+    '6':['UFLI as intervention'],
   },
   morphology: {
-    K:  ['Oral only – correct use of morphemes in speech', 'Suffixes: -ed, -es/-s, -ing', 'Compound words'],
-    '1':['Grade K expectations plus:', 'Suffixes: -er/-est, -ly, -less/-ful', 'Prefixes: un-'],
-    '2':['Grade 1 expectations plus:', 'Suffixes: -sion/-tion, -er/-or/-ist, -ish, -y, -ness, -ment'],
-    '3':['Grade 2 expectations plus:', 'Suffixes: -al/-ial, -y, -ity/-ty, -ic, -ous, -en', 'Prefixes: pre-, re-, dis-', 'Doubling/Dropping/Changing rule for suffixes', 'Suffixes: -able/-ible', 'Prefixes: uni-, bi-, tri-, in-, non-, mis-, sub-', 'Roots: port (carry), rupt (break), dict (say)', 'Suffixes: -ive, -er/-or, -age', 'Prefixes: de-, trans-, dis-, ex-', 'Roots: aud (hear), vis/vid (see), scrib/script (write), struct (build), tract (pull/draw)'],
-    '4':['Grade 3 expectations plus:', 'Suffixes: -ance/-ence, -ant/-ent, -ary/-ery/-ory, -ify/-fy, -ize/-ise, -ward', 'Prefixes: over-, under-, inter-, fore-, en-/em-, mid-, super-, out-', 'Roots: ject (throw), spec/spect (look), fract/frag (break), form (shape), terr (land/earth), man/manu (hand), fac/fact (make/do), mit/miss (send)'],
-    '5':['Grade 4 expectations plus:', 'Prefixes: per-, counter-, anti-, pro-, post-, circum-, co-/com-/con-', 'Roots: cred (believe), duc/duct (lead), pos/pon (place/put), ven/vent (come), fer (carry/bear), voc/vok (voice/call), junct (join), grad/gress (step/go)'],
-    '6':['Grade 5 expectations plus:', 'Roots: graph/gram (write), phon/phone (sound), scope (view/examine), bio (life), geo (earth), auto (self), micro/macro (small/large), -ology (study of), chron (time), therm (heat), hydr (water), dem (people)'],
+    K:  ['Oral only (correct use of morphemes orally, e.g. "I watched-ed TV" vs "I watched")', 'Suffixes: -ed, -es / -s, -ing', 'Compound Words'],
+    '1':['Grade K expectations plus:', 'Suffixes: -er / -est, -ly, -less / -ful', 'Prefixes: un-'],
+    '2':['Grade 1 expectations plus:', 'Suffixes: -sion / -tion, -er / -or / -ist, -ish, -y, -ness, -ment', 'Prefixes: pre- / re-, dis-', 'Doubling/Dropping/Changing rule for suffixes'],
+    '3':['Grade 2 expectations plus:', 'Suffixes: -able / -ible', 'Prefixes: uni-, bi-, tri-, in-, non-, mis-, sub-', 'Roots: port (carry), rupt (break), dict (say)'],
+    '4':['Suffixes: -ive, -er / -or, -age', 'Prefixes: de-, trans-, dis-, ex-', 'Roots: aud (hear), vis / vid (see), scrib / script (write), struct (build), tract (pull/draw)'],
+    '5':['Suffixes: -ance / -ence, -ant / -ent, -ary / -ery / -ory, -ify / -fy, -ize / -ise, -ward', 'Prefixes: over-, under-, inter-, fore-, en- / em-, mid-, super-, out-', 'Roots: ject (throw), spec / spect (look), fract / frag (break), form (shape), terr (land/earth), man / manu (hand), fac / fact (make/do), mit / miss (send)'],
+    '6':['Prefixes: per-, counter-, anti-, pro-, post-, circum-, co- / com- / con-', 'Roots: cred (believe), duc / duct (lead), pos / pon (place/put), ven / vent (come), fer (carry/bear), voc / vok (voice/call), junct (join), grad / gress (step/go), graph / gram (write), phon / phone (sound), scope (view/examine), bio (life), geo (earth), auto (self), micro / macro (small/large), -ology (study of), chron (time), therm (heat), hydr (water), dem (people)'],
   },
-  grammar: {
-    K:  ['Identify fragments and sentences', 'Sentence types: statement or question', 'Capital letters for beginning of sentence & names', 'Ending punctuation: full stops, question marks, exclamation marks'],
-    '1':['Consolidate K foundations', 'Identify all sentence types (statement, command, question, exclamation)', 'Identify subject & verb of a clause/sentence', 'Unscramble statements (bolded first word)', 'Starting to use commas'],
-    '2':['Consolidate Yr 1', 'Identify subject and predicate', 'Unscramble all sentence types', 'Paragraphs: topic sentences, supporting details, concluding sentence', 'Commas for lists', 'Comma after fronted adverbials', 'Commas to separate clauses', 'Word contractions with apostrophes'],
-    '3':['Consolidate Yr 2 sentence knowledge', 'Identify subject and predicate within a clause', 'Identify dependent and independent clauses', 'Paragraphs: topic sentences, supporting details', 'Quotation marks (dialogue, quotes, titles)', 'Apostrophes for singular possessives', 'Ellipses for incomplete thoughts'],
-    '4':['Consolidate Yr 1–3 sentence knowledge', 'Identify dependent and independent clauses', 'Identify run-on sentences', 'Paragraphs: topic sentences, supporting details, concluding sentence, transition words', 'Apostrophes for singular and plural possessives', 'Parenthesis for abbreviations/acronyms'],
-    '5':['Consolidate Yr 1–4 sentence knowledge', 'Identify direct vs indirect speech', 'Paragraphs: topic sentences, supporting details, concluding sentence, transition words'],
-    '6':['Consolidate Yr 1–5 sentence knowledge (full review)'],
+  // Grammar uses sub-sections — rendered separately
+  grammar_sentence: {
+    K:  ['1) Identify fragments and sentences', '2) Sentence types: statement or question'],
+    '1':['1) Identify fragments and sentences', '2) Identify all sentence types: statement, command, question, exclamation', '3) Identify subject & verb of a clause/sentence', '4) Unscramble statements — bolded first word'],
+    '2':['1) Identify fragments and sentences', '2) Identify all sentence types: statement, command, question, exclamation', '3) Identify subject & predicate of a clause/sentence', '4) Unscramble all sentence types', '5) Paragraphs: identify topic sentences, identify supporting details, identify concluding sentence'],
+    '3':['Consolidate Yr 2 sentence knowledge', '1) Identify subject and predicate within a clause', '2) Identify dependent and independent clauses within a sentence', '3) Paragraphs: identify topic sentences, identify supporting details'],
+    '4':['Consolidate Yr 1–3 sentence knowledge', '1) Identify dependent and independent clauses within a sentence', '2) Identify run-on sentences within a passage', '3) Paragraphs: identify topic sentences, identify supporting details, identify concluding sentence, identify transition words'],
+    '5':['Consolidate Yr 1–4 sentence knowledge', '1) Identify direct vs indirect speech', '2) Paragraphs: identify topic sentences, identify supporting details, identify concluding sentence, identify transition words'],
+    '6':['Consolidate Yr 1–4 sentence knowledge'],
+  },
+  grammar_punctuation: {
+    K:  ['1) Capital letters for beginning of sentence & names', '2) Ending punctuation: full stops, question marks, exclamation marks'],
+    '1':['Consolidate Foundations', '1) Capital letters for beginning of sentence & names', '2) Ending punctuation: full stops, question marks, exclamation marks', '3) Starting to use commas'],
+    '2':['Consolidate Yr 1', '2) Ending punctuation: full stops, question marks, exclamation marks', '3) Commas for lists'],
+    '3':['Consolidate Yr 2 punctuation', '3) Comma usually after an adverbial/adverbial phrase at the beginning of a sentence (fronted adverbial)', 'Commas to separate clauses', 'Word contractions for apostrophes (e.g. haven\'t = have not)'],
+    '4':['Consolidate Yr 1–3 punctuation', '1) Quotation marks: dialogue (direct speech), quotes, titles', '2) Apostrophes signalling singular possessive — common and proper nouns (e.g. the mother\'s scarf, Tom\'s house)', '3) Ellipses — to show an incomplete thought'],
+    '5':['Consolidate Yr 1–3 punctuation', '1) Apostrophes signalling singular AND plural possessive (e.g. the girls\' bags)', '2) Parenthesis for the first use of an abbreviation or acronym'],
+    '6':['Consolidate Yr 1–4 punctuation'],
+  },
+  grammar_word: {
+    K:  ['Concept of a word'],
+    '1':['Nouns & verbs', 'Adjectives', 'Conjunctions: and, but, because, before, after, if, when'],
+    '2':['Common, proper & pronouns', 'Verbs; adjectives & adverbs', 'Subject (doer); past tense; plurals', 'Conjunctions: and, but, because, so, before, after, if, when'],
+    '3':['Personal, subject, object, possessive pronouns', 'Action & mental verbs', 'Adverbs of manner, place, time', 'Modal verbs & adverbs', 'Irregular past tense & plurals', 'Expanded conjunction set'],
+    '4':['Consolidate Grade 3', 'Reflexive pronouns', 'Action, speaking & mental verbs', 'Adverbs of frequency', 'Appositives; determiners', 'Coordinating & subordinating conjunctions', 'Transition words'],
+    '5':['Consolidate Grades 1–4', 'Auxiliary/helping verbs', 'Transitive & intransitive verbs', 'Argumentative nouns & verbs', 'Adverbs of affirmation', 'Full FANBOYS conjunctions', 'Expanded subordinating conjunctions', 'Determiners (articles, demonstratives, quantifiers, ordinals)'],
+    '6':['Consolidate Grades 1–5', 'Stative verbs', 'Relative pronouns (who, whom, whose, that, which)', 'Relative adjectives (when, where, why)'],
   },
   vocabulary: {
-    K:  ['Focus: Exposure & Early Recognition (~20 words)', 'Beginning recognition, effortful', 'Concept of a word', 'Nouns & verbs', 'Adjectives', 'Conjunctions: and, but, because, before, after, if, when'],
-    '1':['Focus: Building Automaticity (~50 words)', 'Recognizes increasing bank of high-frequency irregular words', 'Reading becomes less effortful', 'Common, proper & pronouns', 'Verbs; adjectives & adverbs', 'Subject (doer); past tense; plurals', 'Conjunctions: and, but, because, so, before, after, if, when'],
-    '2':['Focus: Mastery & Fluency (~100 words)', 'Knows most high-frequency irregular words automatically', 'Action & mental verbs', 'Adverbs of manner, place, time', 'Modal verbs & adverbs', 'Irregular past tense & plurals', 'Personal, subject, object, possessive pronouns', 'Expanded conjunction set'],
-    '3':['Focus: Consolidation & Application (100+ words)', 'Automatic recognition in reading and writing', 'Uses automaticity to support fluent oral reading', 'Reflexive pronouns', 'Action, speaking & mental verbs', 'Adverbs of frequency', 'Appositives; determiners', 'Coordinating & subordinating conjunctions', 'Transition words'],
-    '4':['Focus: Fluency, Precision & Vocabulary Awareness', 'Complete automaticity with high-frequency irregular words', 'Self-correction skills', 'Auxiliary/helping verbs', 'Transitive & intransitive verbs', 'Argumentative nouns & verbs', 'Adverbs of affirmation', 'Full FANBOYS conjunctions', 'Determiners (articles, demonstratives, quantifiers, ordinals)'],
-    '5':['Focus: Automaticity in Complex Text & Writing Precision', 'Complete and consistent automaticity', 'Strong spelling accuracy and self-monitoring', 'Consolidate Grades 1–4 word knowledge', 'Stative verbs', 'Relative pronouns (who, whom, whose, that, which)', 'Relative adjectives (when, where, why)'],
-    '6':['Focus: Precision, Nuance & Academic Language', 'Near-perfect spelling in grade-level writing', 'Academic vocabulary and formal writing', 'Reading complex texts across subject areas', 'Consolidate Grades 1–5 word knowledge'],
+    K:  ['Focus: Exposure & Early Recognition', '~20 words; beginning recognition, effortful'],
+    '1':['Focus: Building Automaticity', 'Recognizes an increasing bank of high-frequency "irregular" words', 'Works toward automatic recognition (approx. 50 words)', 'Reading becomes less effortful, but still developing fluency', 'Begins to: use irregular words more fluidly in reading; apply them in writing'],
+    '2':['Focus: Mastery & Fluency', 'Recognizes a robust bank of high-frequency irregular words automatically', 'Knows most high-frequency "irregular" words (approx. 100 words)', 'Expect automatic recall in both reading and writing', 'Fluent oral reading; improved comprehension', 'Begins to: notice patterns within irregular words (e.g. said, again); self-correct quickly when errors occur'],
+    '3':['Focus: Consolidation & Application', 'Recognizes high-frequency "irregular" words automatically and effortlessly', 'Maintains a large, stable bank (100+ words)', 'Uses automatic recognition to support: spelling accuracy (especially commonly misspelled irregular words); word nuance and meaning; morphological connections (e.g. does → doing)'],
+    '4':['Focus: Fluency, Precision & Vocabulary Awareness', 'Demonstrates complete automaticity with high-frequency irregular words', 'Applies knowledge seamlessly in: complex texts, academic reading and writing', 'Shifts attention to: spelling accuracy (including commonly confused: their/there/they\'re); editing and revision skills'],
+    '5':['Focus: Automaticity in Complex Text & Writing Precision', 'Demonstrates complete and consistent automaticity with high-frequency "irregular" words', 'Applies knowledge seamlessly across: complex literary and informational texts, independent writing', 'Shows strong control of: spelling accuracy (including commonly confused: their/there/they\'re); editing and revision skills'],
+    '6':['Focus: Precision, Nuance & Academic Language', 'Uses high-frequency "irregular" words automatically, accurately, and strategically', 'Demonstrates: near-perfect spelling in grade-level writing; strong ability to self-monitor and correct errors', 'Applies knowledge to: academic vocabulary and formal writing; reading complex texts across subject areas'],
   },
   comprehension: {
-    K:  ['Simple sequence (First, then, next)', 'Make simple predictions using pictures and clues', 'Connection to own experience', 'Identify who, what, where', 'Create simple mental image', 'Retell story beginning, middle and end'],
-    '1':['Identify character, setting and main events', 'Make predictions before and during text', 'Text-to-self connections', 'Visualize (describe what they picture)', 'Infer simple ideas', 'Ask simple questions about the text', 'Retell story with clear sequence and important details'],
-    '2':['Retell and summarize key ideas (not every detail)', 'Answer questions (who, what, where, when, why, how) with evidence', 'Make connections (text-to-self, beginning text-to-text)', 'Make simple inferences (feelings, motives)', 'Be aware of different text types (fiction vs non-fiction)'],
-    '3':['Summarize texts clearly using key ideas', 'Identify main idea and supporting details', 'Analyze characters (traits, motivations, changes over time)', 'Explain themes in simple terms', 'Make connections (text-to-self, text-to-text, text-to-world)', 'Visualize and describe detailed mental images', 'Identify the author\'s purpose (inform, entertain, persuade)'],
-    '4':['Summarize texts clearly and concisely', 'Analyze characters (traits, motivations, relationships, changes)', 'Explain themes with supporting evidence', 'Ask deeper, critical questions about meaning and purpose', 'Make predictions and explain reasoning using text evidence', 'Analyze author\'s purpose and point of view', 'Compare and contrast texts, themes, or characters'],
-    '5':['Read and understand complex fiction and non-fiction independently', 'Analyze characters with deeper insight', 'Explain themes with clear evidence', 'Ask critical questions about ideas, messages, and perspectives', 'Analyze author\'s purpose, point of view, and bias', 'Compare and evaluate different texts, ideas, or perspectives', 'Interpret and analyze text features (charts, graphs, diagrams)'],
-    '6':['Synthesize information from multiple texts', 'Analyze author\'s purpose, point of view, and bias (full analysis)', 'Compare and evaluate texts, ideas, and perspectives at a high level', 'Make inferences using multiple pieces of evidence', 'Strong, specific text evidence in responses'],
+    K:  ['Simple sequence (First, then, next)', 'Make simple predictions using pictures and clues', 'Connection to own experience', 'Identify who, what, where', 'Create simple mental image'],
+    '1':['Retell story beginning, middle and end', 'Identify character, setting and main events', 'Make predictions before and during text', 'Text-to-self connections', 'Visualize (describe what they picture in their mind)', 'Infer simple ideas', 'Ask simple questions about the text'],
+    '2':['Retell story with clear sequence and important details', 'Identify character, setting, problem and solution', 'Answer questions (who, what, where, when, why, how) with evidence', 'Make connections (text-to-self, beginning text-to-text)', 'Visualize and describe mental images clearly', 'Make simple inferences (feelings, motives, clues from text)', 'Be aware of different text types (fiction vs non-fiction)'],
+    '3':['Retell and summarize key ideas (not every detail)', 'Identify main idea and supporting details', 'Describe characters, setting, problem, and solution in detail', 'Explain how characters change or grow', 'Answer questions using evidence from the text', 'Ask deeper questions before, during, and after reading', 'Make predictions and explain thinking', 'Make connections (text-to-self, text-to-text, text-to-world)', 'Make inferences using clues + prior knowledge', 'Identify the author\'s purpose (inform, entertain, persuade)', 'Recognize different text types (fiction vs non-fiction)'],
+    '4':['Summarize texts clearly using key ideas (no unnecessary details)', 'Identify main idea and multiple supporting details', 'Analyze characters (traits, motivations, changes over time)', 'Explain themes (lessons/messages) in simple terms', 'Answer questions using clear evidence from the text', 'Ask deeper, thoughtful questions about meaning', 'Make predictions and justify thinking', 'Make connections (text-to-self, text-to-text, text-to-world)', 'Visualize and describe detailed mental images', 'Make inferences using text clues + prior knowledge', 'Identify author\'s purpose and point of view'],
+    '5':['Summarize texts clearly and concisely (focus on key ideas)', 'Identify main idea and multiple supporting details across paragraphs', 'Analyze characters (traits, motivations, relationships, changes)', 'Explain themes with supporting evidence', 'Answer questions using specific evidence and examples from the text', 'Ask deeper, critical questions about meaning and purpose', 'Make predictions and explain reasoning using text evidence', 'Make connections (text-to-self, text-to-text, text-to-world) with deeper thinking', 'Visualize and describe detailed mental images', 'Make inferences using multiple clues from the text', 'Analyze author\'s purpose and point of view', 'Compare and contrast texts, themes, or characters'],
+    '6':['Read and understand complex fiction and non-fiction texts independently', 'Summarize texts clearly, focusing on key ideas and important details', 'Identify main ideas across paragraphs and entire texts', 'Analyze characters (traits, motivations, relationships, development)', 'Explain themes with clear evidence and deeper insight', 'Answer questions using strong, specific text evidence', 'Ask critical questions about ideas, messages, and perspectives', 'Make predictions and justify thinking with evidence', 'Make connections (text-to-self, text-to-text, text-to-world) with depth', 'Visualize and describe detailed mental images', 'Make inferences using multiple pieces of evidence', 'Analyze author\'s purpose, point of view, and bias', 'Compare and evaluate different texts, ideas, or perspectives', 'Interpret and analyze text features (charts, graphs, diagrams)', 'Synthesize information from multiple texts'],
   },
   background: {
     K:  ['Non-fiction themes'],
-    '1':['SoundPrints resources', 'Non-fiction Themes', 'Culture and Citizenship in Québec (CCQ)'],
-    '2':['SoundPrints resources', 'Non-fiction Themes', 'CCQ'],
+    '1':['SoundPrints', 'Non-fiction Themes', 'CCQ'],
+    '2':['SoundPrints', 'Non-fiction Themes', 'CCQ'],
     '3':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
     '4':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
     '5':['Social Studies', 'Science', 'CCQ', 'Other non-fiction themes'],
@@ -775,6 +953,7 @@ let currentView = 'grade';
 let activeGrade = 'K';
 let activeStrand = 'phonological';
 let activeGrades = new Set(GRADES);
+let grammarActive = false;
 
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
@@ -790,8 +969,6 @@ function listHTML(items) {
 function renderGradeView() {
   const g = activeGrade;
   const c = document.getElementById('gradeContent');
-  const gColor = `var(--grade-${g})`;
-  const gColorSoft = `var(--grade-${g}-soft)`;
 
   let html = `
     <div class="grade-header">
@@ -802,8 +979,35 @@ function renderGradeView() {
     <div class="strands-grid">
   `;
 
+  let grammarEmitted = false;
+
   for (const s of STRANDS) {
     const col = STRAND_COLORS[s.id];
+
+    if (s.parent === 'Grammar & Syntax') {
+      if (!grammarEmitted) {
+        grammarEmitted = true;
+        // Emit the grammar group spanning full width
+        const grammarSubs = STRANDS.filter(x => x.parent === 'Grammar & Syntax');
+        html += `<div class="grammar-group-print" style="grid-column: 1 / -1;">
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#a16207;border-bottom:2px solid #fde8b4;padding-bottom:0.4rem;margin-bottom:0.85rem;">📐 Grammar &amp; Syntax</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">`;
+        for (const sub of grammarSubs) {
+          const sc = STRAND_COLORS[sub.id];
+          const items = DATA[sub.id][g] || [];
+          html += `<div class="strand-card">
+            <div class="strand-card-header">
+              <div class="strand-icon" style="background:${sc.bg};color:${sc.fg}">${sub.icon}</div>
+              <div class="strand-card-title" style="color:${sc.fg}">${sub.name}</div>
+            </div>
+            <div class="strand-card-body">${listHTML(items)}</div>
+          </div>`;
+        }
+        html += `</div></div>`;
+      }
+      continue;
+    }
+
     const items = DATA[s.id][g] || [];
     html += `
       <div class="strand-card">
@@ -811,9 +1015,7 @@ function renderGradeView() {
           <div class="strand-icon" style="background:${col.bg};color:${col.fg}">${s.icon}</div>
           <div class="strand-card-title" style="color:${col.fg}">${s.name}</div>
         </div>
-        <div class="strand-card-body">
-          ${listHTML(items)}
-        </div>
+        <div class="strand-card-body">${listHTML(items)}</div>
       </div>
     `;
   }
@@ -830,6 +1032,7 @@ function initGradeNav() {
       btn.classList.add('active');
       activeGrade = btn.dataset.g;
       renderGradeView();
+      updatePrintHeader();
     });
   });
 }
@@ -839,17 +1042,31 @@ function initGradeNav() {
 // ═══════════════════════════════════════════════════════════════
 function renderStrandSelector() {
   const sel = document.getElementById('strandSelector');
-  sel.innerHTML = STRANDS.map(s => {
-    const col = STRAND_COLORS[s.id];
-    const isActive = s.id === activeStrand;
-    return `<button class="strand-select-btn ${isActive ? 'active' : ''}" data-sid="${s.id}"
-      style="${isActive ? '' : ''}">
-      ${s.icon} ${s.name}
-    </button>`;
-  }).join('');
+  let html = '';
+  let grammarDone = false;
+
+  for (const s of STRANDS) {
+    if (s.parent === 'Grammar & Syntax') {
+      if (!grammarDone) {
+        grammarDone = true;
+        const isActive = grammarActive;
+        html += `<button class="strand-select-btn ${isActive ? 'active' : ''}" data-sid="grammar">📐 Grammar &amp; Syntax</button>`;
+      }
+      continue;
+    }
+    const isActive = !grammarActive && s.id === activeStrand;
+    html += `<button class="strand-select-btn ${isActive ? 'active' : ''}" data-sid="${s.id}">${s.icon} ${s.name}</button>`;
+  }
+
+  sel.innerHTML = html;
   sel.querySelectorAll('.strand-select-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      activeStrand = btn.dataset.sid;
+      if (btn.dataset.sid === 'grammar') {
+        grammarActive = true;
+      } else {
+        grammarActive = false;
+        activeStrand = btn.dataset.sid;
+      }
       renderStrandSelector();
       renderStrandContent();
     });
@@ -857,9 +1074,41 @@ function renderStrandSelector() {
 }
 
 function renderStrandContent() {
+  const c = document.getElementById('strandContent');
+
+  if (grammarActive) {
+    const grammarSubs = STRANDS.filter(x => x.parent === 'Grammar & Syntax');
+    let html = `
+      <div class="strand-view-header">
+        <div class="strand-view-title" style="color:#a16207">📐 Grammar &amp; Syntax</div>
+      </div>`;
+
+    for (const sub of grammarSubs) {
+      const col = STRAND_COLORS[sub.id];
+      html += `
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:${col.fg};margin-bottom:0.6rem;padding-bottom:0.35rem;border-bottom:1.5px solid ${col.bg};">
+            ${sub.icon} ${sub.name}
+          </div>
+          <div class="progression-track">`;
+
+      for (const g of GRADES) {
+        const hidden = !activeGrades.has(g) ? 'hidden-grade' : '';
+        const items = DATA[sub.id][g] || [];
+        html += `
+          <div class="progression-card gc-${g} ${hidden}">
+            <div class="progression-card-top">${GRADE_NAMES[g]}</div>
+            <div class="progression-card-body">${listHTML(items)}</div>
+          </div>`;
+      }
+      html += `</div></div>`;
+    }
+    c.innerHTML = html;
+    return;
+  }
+
   const s = STRANDS.find(x => x.id === activeStrand);
   const col = STRAND_COLORS[activeStrand];
-  const c = document.getElementById('strandContent');
 
   let html = `
     <div class="strand-view-header">
@@ -883,9 +1132,6 @@ function renderStrandContent() {
   c.innerHTML = html;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// TABLE VIEW
-// ═══════════════════════════════════════════════════════════════
 function renderTable() {
   const thead = document.getElementById('tableHead');
   const tbody = document.getElementById('tableBody');
@@ -899,11 +1145,27 @@ function renderTable() {
   thead.innerHTML = headHtml;
 
   let bodyHtml = '';
+  let grammarParentEmitted = false;
+
   for (const s of STRANDS) {
     const col = STRAND_COLORS[s.id];
-    bodyHtml += `<tr>
-      <td style="border-left:4px solid ${col.fg}">
-        <span style="color:${col.fg}">${s.icon}</span> ${s.name}
+
+    if (s.parent === 'Grammar & Syntax' && !grammarParentEmitted) {
+      grammarParentEmitted = true;
+      // Parent row
+      bodyHtml += `<tr class="parent-row">
+        <td style="font-weight:700;background:#f5f1e8;border-left:4px solid #a16207;color:#a16207;">📐 Grammar &amp; Syntax</td>`;
+      for (const g of GRADES) {
+        const hidden = !activeGrades.has(g) ? 'hidden-col' : '';
+        bodyHtml += `<td class="${hidden}" style="background:#fefdf8;"></td>`;
+      }
+      bodyHtml += '</tr>';
+    }
+
+    const isSubsection = !!s.parent;
+    bodyHtml += `<tr class="${isSubsection ? 'subsection-row' : ''}">
+      <td style="border-left:4px solid ${col.fg};${isSubsection ? 'padding-left:1.4rem;font-style:italic;font-weight:500;color:#555;' : ''}">
+        ${isSubsection ? '' : `<span style="color:${col.fg}">${s.icon}</span> `}${s.name}
       </td>`;
     for (const g of GRADES) {
       const hidden = !activeGrades.has(g) ? 'hidden-col' : '';
@@ -913,6 +1175,21 @@ function renderTable() {
     bodyHtml += '</tr>';
   }
   tbody.innerHTML = bodyHtml;
+}
+
+// ── PRINT HEADER UPDATER ──
+function updatePrintHeader() {
+  const el = document.getElementById('printHeaderSubtitle');
+  if (currentView === 'grade') {
+    el.textContent = `${GRADE_NAMES[activeGrade]} — All Strands`;
+  } else if (currentView === 'strand') {
+    const s = STRANDS.find(x => x.id === activeStrand);
+    const grades = GRADES.filter(g => activeGrades.has(g)).map(g => GRADE_NAMES[g]).join(', ');
+    el.textContent = `${s.parent ? s.parent + ': ' : ''}${s.name} — ${grades}`;
+  } else {
+    const grades = GRADES.filter(g => activeGrades.has(g)).map(g => GRADE_NAMES[g]).join(', ');
+    el.textContent = `All Strands — ${grades}`;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -934,6 +1211,7 @@ function initGradeBar() {
         pill.classList.remove('inactive');
       }
       refreshCurrentView();
+      updatePrintHeader();
     });
   });
 }
@@ -959,13 +1237,14 @@ function switchView(view) {
   document.getElementById('strandView').classList.toggle('visible', view === 'strand');
   document.getElementById('tableView').classList.toggle('visible', view === 'table');
 
-  // Grade bar: show for strand + table, hide for grade (grade has its own nav)
   document.getElementById('gradeBar').style.display = view === 'grade' ? 'none' : 'flex';
   document.getElementById('gradeNav').style.display = view === 'grade' ? 'flex' : 'none';
 
   if (view === 'grade') renderGradeView();
   if (view === 'strand') { renderStrandSelector(); renderStrandContent(); }
   if (view === 'table') renderTable();
+
+  updatePrintHeader();
 }
 
 document.querySelectorAll('.view-tab').forEach(tab => {
