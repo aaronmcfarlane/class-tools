@@ -21,6 +21,10 @@
   --red-light:    #fdeaea;
   --blue:         #4a7fc1;
   --blue-light:   #e6eefa;
+  --green:        #3a9e6f;
+  --green-light:  #e0f5ec;
+  --orange:       #e07c2a;
+  --orange-light: #fef0e2;
 }
 
 body {
@@ -47,7 +51,7 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 580px;
+  max-width: 600px;
   text-align: center;
 }
 
@@ -77,21 +81,23 @@ h1 {
   padding: 5px;
   border-radius: 14px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .tab {
   flex: 1;
-  padding: 9px 10px;
+  min-width: 80px;
+  padding: 9px 8px;
   border-radius: 10px;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   cursor: pointer;
   color: var(--muted);
   transition: all 0.18s;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 5px;
   user-select: none;
 }
 
@@ -103,6 +109,7 @@ h1 {
 .tab[data-cat="utilities"].active { color: var(--pink); }
 .tab[data-cat="arts"].active      { color: var(--red); }
 .tab[data-cat="science"].active   { color: var(--blue); }
+.tab[data-cat="math"].active      { color: var(--green); }
 
 /* TOOL LISTS */
 .tool-list { display: none; flex-direction: column; gap: 14px; }
@@ -143,14 +150,17 @@ h1 {
 .tool-card:hover::before { opacity: 1; }
 .tool-card:active { transform: scale(0.98); }
 
-.tool-card.monsters { border-left-color: var(--pink); }
-.tool-card.monsters::before { background: linear-gradient(90deg, var(--pink-light), transparent); }
+.tool-card.monsters  { border-left-color: var(--pink); }
+.tool-card.monsters::before  { background: linear-gradient(90deg, var(--pink-light), transparent); }
 
-.tool-card.drama { border-left-color: var(--red); }
-.tool-card.drama::before { background: linear-gradient(90deg, var(--red-light), transparent); }
+.tool-card.drama     { border-left-color: var(--red); }
+.tool-card.drama::before     { background: linear-gradient(90deg, var(--red-light), transparent); }
 
-.tool-card.waveform { border-left-color: var(--blue); }
-.tool-card.waveform::before { background: linear-gradient(90deg, var(--blue-light), transparent); }
+.tool-card.waveform  { border-left-color: var(--blue); }
+.tool-card.waveform::before  { background: linear-gradient(90deg, var(--blue-light), transparent); }
+
+.tool-card.decimalart { border-left-color: var(--green); }
+.tool-card.decimalart::before { background: linear-gradient(90deg, var(--green-light), transparent); }
 
 .tool-icon { font-size: 2.2rem; flex-shrink: 0; line-height: 1; }
 .tool-text { flex: 1; }
@@ -174,6 +184,7 @@ h1 {
 
   <div class="tabs">
     <div class="tab active" data-cat="utilities" onclick="showTab('utilities')">🛠 Utilities</div>
+    <div class="tab"        data-cat="math"      onclick="showTab('math')">🔢 Math</div>
     <div class="tab"        data-cat="arts"      onclick="showTab('arts')">🎨 Arts</div>
     <div class="tab"        data-cat="science"   onclick="showTab('science')">🔬 Science</div>
   </div>
@@ -184,6 +195,17 @@ h1 {
       <div class="tool-text">
         <h2>Monster Group Maker</h2>
         <p>Create balanced student groups with constraints, absence tracking, and drag-to-swap.</p>
+      </div>
+      <div class="tool-arrow">→</div>
+    </a>
+  </div>
+
+  <div class="tool-list" id="cat-math">
+    <a href="decimal-art.html" class="tool-card decimalart">
+      <div class="tool-icon">🎨</div>
+      <div class="tool-text">
+        <h2>Decimal Art</h2>
+        <p>Colour a hundreds chart with 3 colours, then convert each section into fractions and decimals.</p>
       </div>
       <div class="tool-arrow">→</div>
     </a>
