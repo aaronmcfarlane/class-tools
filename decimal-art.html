@@ -114,8 +114,8 @@
   .frac-table { width: 100%; border-collapse: collapse; }
   .frac-table th {
     background: #f0f4f6; padding: 9px 12px; text-align: center;
-    font-size: 0.82rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 0.5px; border: 1px solid var(--border);
+    font-size: 0.85rem; font-weight: 800;
+    border: 1px solid var(--border);
   }
   .frac-table th:first-child { text-align: left; }
   .frac-table td { padding: 10px 10px; border: 1px solid var(--border); vertical-align: middle; text-align: center; }
@@ -1233,20 +1233,17 @@ function generatePDF(name) {
     return midY + BOX_H/2 + 3;
   }
 
-  // Section label helper
+  // Section label helper — small, calm, no uppercase
   function sectionLabel(label, ly) {
-    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
-    doc.setTextColor(140,150,160);
+    doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+    doc.setTextColor(155,165,175);
     doc.text(label, PW/2, ly, {align:'center'});
-    return ly + 5;
+    return ly + 4;
   }
 
-  // thin rule
-  doc.setDrawColor(210,215,220); doc.setLineWidth(0.35);
-  doc.line(ML, y - 4, PW-MR, y - 4);
-
   // Fraction equation
-  y = sectionLabel('FRACTION EQUATION', y);
+  y += 6;
+  y = sectionLabel('Fraction Equation', y);
   const fracItems = [];
   for (let i=0;i<4;i++) {
     if (i>0) fracItems.push({type:'op', value:'+'});
@@ -1255,14 +1252,10 @@ function generatePDF(name) {
   fracItems.push({type:'op', value:'='});
   fracItems.push({type:'frac', num:eqFracResNum||'–', den:eqFracResDen||'–'});
   fracItems.push({type:'text', value:'= 1 whole'});
-  y = drawEquationRow(y, fracItems, 11) + 4;
-
-  // thin rule
-  doc.setDrawColor(210,215,220); doc.setLineWidth(0.25);
-  doc.line(ML + 20, y - 2, PW-MR - 20, y - 2);
+  y = drawEquationRow(y, fracItems, 8) + 3;
 
   // Decimal equation
-  y = sectionLabel('DECIMAL EQUATION', y + 2);
+  y = sectionLabel('Decimal Equation', y);
   const decItems = [];
   for (let i=0;i<4;i++) {
     if (i>0) decItems.push({type:'op', value:'+'});
@@ -1271,7 +1264,7 @@ function generatePDF(name) {
   decItems.push({type:'op', value:'='});
   decItems.push({type:'dec', value:eqDecResVal||'–'});
   decItems.push({type:'text', value:'= 1 whole'});
-  drawEquationRow(y, decItems, 11);
+  drawEquationRow(y, decItems, 8);
 
   // ── Footer ───────────────────────────────────────────
   doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
@@ -1329,11 +1322,13 @@ async function submitWork() {
   try {
     const pdfBlob = generatePDF(name);
     bar.style.width='50%';
-    // Format: FirstnameLastname_YYYY-MM-DD_decimal-art.pdf
-    // Same name + same date = overwrites previous submission in Drive automatically
+    // Format: FirstnameLastname_YYYY-MM-DD_HHMM_decimal-art.pdf
+    // Same name + same date+time = overwrites previous submission in Drive automatically
     const safe = name.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'');
-    const date = new Date().toISOString().slice(0,10);
-    const filename = `${safe}_${date}_decimal-art.pdf`;
+    const now  = new Date();
+    const date = now.toISOString().slice(0,10);
+    const time = now.toTimeString().slice(0,5).replace(':','');
+    const filename = `${safe}_${date}_${time}_decimal-art.pdf`;
 
     status.textContent='Uploading to Google Drive…'; bar.style.width='75%';
     const result = await uploadToDrive(pdfBlob, filename);
@@ -1352,8 +1347,11 @@ async function submitWork() {
     console.warn('Drive upload failed, falling back to download:', err);
     try {
       const pdfBlob = generatePDF(name);
-      const safe = name.replace(/[^a-zA-Z0-9\- ]/g,'').replace(/\s+/g,'-').toLowerCase();
-      const filename = `decimal-art-${safe}-${new Date().toISOString().slice(0,10)}.pdf`;
+      const safe2 = name.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'');
+      const now2  = new Date();
+      const date2 = now2.toISOString().slice(0,10);
+      const time2 = now2.toTimeString().slice(0,5).replace(':','');
+      const filename = `${safe2}_${date2}_${time2}_decimal-art.pdf`;
       const url=URL.createObjectURL(pdfBlob);
       const a=document.createElement('a'); a.href=url; a.download=filename;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
