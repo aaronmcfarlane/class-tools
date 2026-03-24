@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decimal Art</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #fdf6ec;
+    --card: #ffffff;
+    --text: #2d3436;
+    --border: #dfe6e9;
+    --shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    font-family: 'Nunito', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 16px 60px;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #bbb 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.28;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrapper { max-width: 800px; margin: 0 auto; position: relative; z-index: 1; }
+
+  header { text-align: center; margin-bottom: 26px; }
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    background: linear-gradient(135deg, #ff6b6b, #f7b733, #4ecdc4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1.1;
+  }
+  header p { color: #636e72; font-size: 1rem; margin-top: 4px; font-weight: 600; }
+
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 18px; }
+  .card h2 { font-family: 'Fredoka One', cursive; font-size: 1.25rem; margin-bottom: 14px; }
+
+  /* Name */
+  .name-row { display: flex; align-items: center; gap: 12px; }
+  .name-row label { font-weight: 800; white-space: nowrap; }
+  .name-row input {
+    flex: 1; padding: 10px 16px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700;
+    outline: none; transition: border-color 0.2s;
+  }
+  .name-row input:focus { border-color: #4ecdc4; }
+
+  /* ── Crayon Picker ── */
+  .crayon-picker { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; align-items: flex-end; padding: 10px 0 4px; }
+
+  .crayon-slot { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+  .crayon-slot label { font-weight: 800; font-size: 0.78rem; color: #636e72; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; }
+
+  /* The crayon SVG wrapper */
+  .crayon-wrap {
+    position: relative;
+    width: 36px;
+    height: 90px;
+    transition: transform 0.15s;
+    filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.18));
+  }
+  .crayon-wrap:hover { transform: translateY(-4px) rotate(-3deg); }
+  .crayon-wrap.crayon-active { transform: translateY(-8px) rotate(-6deg); filter: drop-shadow(3px 6px 8px rgba(0,0,0,0.28)); }
+
+  .crayon-wrap svg { width: 100%; height: 100%; }
+
+  /* Hidden colour input sits over the crayon */
+  .crayon-color-input {
+    position: absolute; inset: 0; opacity: 0;
+    width: 100%; height: 100%; cursor: pointer; border: none; padding: 0;
+  }
+
+  .active-label {
+    font-size: 0.7rem; font-weight: 800; color: #2d3436;
+    height: 14px; text-align: center;
+  }
+
+  /* Grid */
+  .grid-wrap { display: flex; justify-content: center; }
+  #pixel-grid {
+    display: grid;
+    grid-template-columns: repeat(10,1fr);
+    grid-template-rows: repeat(10,1fr);
+    width: 100%; max-width: 480px; aspect-ratio: 1;
+    border: 3px solid #2d3436; border-radius: 6px; overflow: hidden;
+    cursor: crosshair; user-select: none;
+  }
+  .cell { border-right: 1px solid #c8d0d4; border-bottom: 1px solid #c8d0d4; background: #fff; }
+  .cell:nth-child(10n) { border-right: none; }
+  .cell:nth-last-child(-n+10) { border-bottom: none; }
+
+  .grid-controls { display: flex; justify-content: flex-end; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 8px; }
+  .btn-sm {
+    padding: 7px 14px; border-radius: 8px; border: 2px solid var(--border); background: white;
+    font-family: 'Nunito', sans-serif; font-size: 0.83rem; font-weight: 800; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-sm:hover { background: #f0f0f0; }
+  .btn-sm.erase-mode { background: #ff6b6b; color: white; border-color: #ff6b6b; }
+
+  /* Fraction/Decimal Table */
+  .frac-table { width: 100%; border-collapse: collapse; }
+  .frac-table th {
+    background: #f0f4f6; padding: 9px 12px; text-align: center;
+    font-size: 0.82rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.5px; border: 1px solid var(--border);
+  }
+  .frac-table th:first-child { text-align: left; }
+  .frac-table td { padding: 10px 10px; border: 1px solid var(--border); vertical-align: middle; text-align: center; }
+  .color-swatch { width: 30px; height: 30px; border-radius: 7px; border: 2px solid #ddd; display: inline-block; vertical-align: middle; }
+  .white-swatch { background: white !important; border: 2px solid #bbb !important; }
+
+  /* Stacked fraction input — both lines blank */
+  .frac-input-wrap { display: inline-flex; flex-direction: column; align-items: center; gap: 0; }
+  .frac-input-wrap input {
+    width: 54px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    border: none;
+    outline: none; background: transparent; padding: 2px 0; color: #2d3436;
+  }
+  /* fraction bar */
+  .frac-bar { width: 54px; height: 2.5px; background: #2d3436; margin: 2px 0; }
+
+  .dec-input {
+    width: 78px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1.05rem;
+    border: none; border-bottom: 2.5px solid #2d3436;
+    outline: none; background: transparent; padding: 2px 4px; color: #2d3436;
+  }
+  .dec-input:focus { border-bottom-color: #4ecdc4; }
+
+  .feedback { margin-left: 5px; font-size: 1rem; }
+
+  .check-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+  .btn-check {
+    padding: 10px 22px; border-radius: 10px; border: none;
+    background: #f7b733; color: #2d3436;
+    font-family: 'Fredoka One', cursive; font-size: 1.1rem; cursor: pointer;
+    box-shadow: 0 3px 10px rgba(247,183,51,0.4); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-check:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(247,183,51,0.5); }
+  #check-summary { font-weight: 800; font-size: 0.92rem; padding: 8px 14px; border-radius: 8px; display: none; }
+  #check-summary.all-good   { background: #d4f7e7; color: #27ae60; display: block; }
+  #check-summary.has-errors { background: #fde8e8; color: #c0392b; display: block; }
+
+  /* ── Equations ── */
+  .eq-label { font-weight: 800; font-size: 0.88rem; color: #636e72; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .equation-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; padding: 6px 2px 14px; }
+  .eq-op    { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: #636e72; }
+  .eq-whole { font-family: 'Fredoka One', cursive; font-size: 1.05rem; color: #636e72; }
+
+  /* colour-coded fraction box in equation */
+  .eq-frac-box {
+    display: inline-flex; flex-direction: column; align-items: center;
+    border-radius: 10px; padding: 5px 10px 6px; border: 2px solid transparent;
+  }
+  .eq-frac-box input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+  .eq-frac-denom-input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+
+  /* white box for equation */
+  .eq-white-box {
+    display: inline-flex; flex-direction: column; align-items: center;
+    border-radius: 10px; padding: 5px 10px 6px;
+    background: #f8f8f8; border: 2px solid #ccc;
+  }
+  .eq-white-box input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+  .eq-white-denom-input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+
+  /* result box */
+  .eq-result-box {
+    display: inline-flex; flex-direction: column; align-items: center;
+    border-radius: 10px; padding: 5px 10px 6px;
+    background: #f0f4f6; border: 2px solid var(--border);
+  }
+  .eq-result-box input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+  .eq-result-denom-input {
+    width: 46px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none;
+    outline: none; background: transparent; padding: 1px 0; color: #2d3436;
+  }
+
+  /* decimal equation row */
+  .dec-eq-input {
+    width: 70px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none; border-bottom: 2.5px solid rgba(0,0,0,0.2);
+    outline: none; background: transparent; padding: 2px 2px; color: #2d3436;
+  }
+  .dec-eq-box {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 10px; padding: 5px 10px; border: 2px solid transparent;
+  }
+  .dec-eq-result {
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 10px; padding: 5px 10px;
+    background: #f0f4f6; border: 2px solid var(--border);
+  }
+  .dec-eq-result input {
+    width: 70px; text-align: center;
+    font-family: 'Fredoka One', cursive; font-size: 1rem;
+    border: none; border-bottom: 2px solid #aaa;
+    outline: none; background: transparent; padding: 2px 2px; color: #2d3436;
+  }
+
+  /* Submit */
+  .submit-section { text-align: center; }
+  .btn-submit {
+    background: linear-gradient(135deg, #4ecdc4, #2ec4b6);
+    color: white; border: none; padding: 15px 42px; border-radius: 14px;
+    font-family: 'Fredoka One', cursive; font-size: 1.3rem; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(78,205,196,0.4); transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,205,196,0.5); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .submit-note { margin-top: 10px; font-size: 0.82rem; color: #b2bec3; font-weight: 600; }
+  #upload-progress { display: none; margin-top: 14px; background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
+  #upload-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#4ecdc4,#2ec4b6); border-radius: 10px; transition: width 0.3s; }
+  #upload-status { margin-top: 8px; font-size: 0.88rem; font-weight: 700; color: #636e72; display: none; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #2d3436; color: white;
+    padding: 12px 24px; border-radius: 10px;
+    font-weight: 700; font-size: 0.9rem;
+    transition: transform 0.3s; z-index: 999; white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Rubric */
+  details.rubric-details { background: #f8f9fa; border-radius: 12px; padding: 14px 18px; }
+  details.rubric-details summary { font-weight: 800; cursor: pointer; color: #636e72; font-size: 0.9rem; }
+  .rubric-grid { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit,minmax(155px,1fr)); gap: 10px; }
+  .rubric-score { background: white; border-radius: 10px; padding: 10px 12px; border-left: 4px solid; }
+  .rubric-score:nth-child(1) { border-color: #ffe66d; }
+  .rubric-score:nth-child(2) { border-color: #4ecdc4; }
+  .rubric-score:nth-child(3) { border-color: #ff9f43; }
+  .rubric-score:nth-child(4) { border-color: #ff6b6b; }
+  .rubric-score strong { font-family: 'Fredoka One', cursive; font-size: 1.1rem; display: block; }
+  .rubric-score ul { margin-top: 4px; padding-left: 14px; font-size: 0.77rem; color: #636e72; line-height: 1.6; }
+
+  hr.eq-divider { border: none; border-top: 1.5px dashed var(--border); margin: 4px 0 14px; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <h1>🎨 Decimal Art</h1>
+    <p>Colour the grid, then work out your fractions and decimals!</p>
+  </header>
+
+  <!-- Name -->
+  <div class="card">
+    <div class="name-row">
+      <label for="student-name">✏️ Your Name:</label>
+      <input type="text" id="student-name" placeholder="Type your name here..." autocomplete="off">
+    </div>
+  </div>
+
+  <!-- Crayon Picker -->
+  <div class="card">
+    <h2>🖍️ Pick Your 3 Crayon Colours</h2>
+    <div class="crayon-picker" id="crayon-picker">
+      <!-- built by JS -->
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="card">
+    <h2>🟦 Colour the Hundreds Chart</h2>
+    <div class="grid-wrap"><div id="pixel-grid"></div></div>
+    <div class="grid-controls">
+      <button class="btn-sm" id="erase-btn" onclick="toggleErase()">🧹 Eraser</button>
+      <button class="btn-sm" onclick="clearGrid()">🗑️ Clear All</button>
+    </div>
+  </div>
+
+  <!-- Fraction / Decimal Table -->
+  <div class="card">
+    <h2>📊 Fill In Your Fractions &amp; Decimals</h2>
+    <table class="frac-table">
+      <thead>
+        <tr>
+          <th style="text-align:left">Colour</th>
+          <th>Fraction</th>
+          <th>Decimal</th>
+        </tr>
+      </thead>
+      <tbody id="frac-tbody"></tbody>
+    </table>
+    <div class="check-row">
+      <button class="btn-check" onclick="checkWork()">✅ Check My Work</button>
+      <div id="check-summary"></div>
+    </div>
+  </div>
+
+  <!-- Equations -->
+  <div class="card">
+    <h2>🔢 Write Your Equations</h2>
+    <p style="font-size:0.87rem;color:#636e72;margin-bottom:14px;font-weight:600;">
+      Fill in all the blanks to show how your four parts add up to one whole.
+    </p>
+
+    <div class="eq-label">Fraction Equation</div>
+    <div class="equation-row" id="frac-equation-row"></div>
+
+    <hr class="eq-divider">
+
+    <div class="eq-label">Decimal Equation</div>
+    <div class="equation-row" id="dec-equation-row"></div>
+  </div>
+
+  <!-- Submit -->
+  <div class="card submit-section">
+    <button class="btn-submit" id="submit-btn" onclick="submitWork()">☁️ Submit My Work</button>
+    <p class="submit-note">Your work will be saved as a PDF and sent directly to your teacher's Google Drive.</p>
+    <div id="upload-progress"><div id="upload-bar"></div></div>
+    <div id="upload-status"></div>
+  </div>
+
+  <!-- Rubric -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <details class="rubric-details">
+      <summary>📋 Rubric — What do I need to do?</summary>
+      <div class="rubric-grid">
+        <div class="rubric-score"><strong>⭐ 4</strong><ul>
+          <li>3 colours + white used</li>
+          <li>4 correct fractions</li>
+          <li>4 correct decimals</li>
+          <li>Fraction equation totals 1 whole</li>
+          <li>Decimal equation totals 1 whole</li>
+        </ul></div>
+        <div class="rubric-score"><strong>✅ 3</strong><ul>
+          <li>3 colours + white used</li>
+          <li>4 correct fractions</li>
+          <li>4 correct decimals</li>
+          <li>One equation correct</li>
+        </ul></div>
+        <div class="rubric-score"><strong>📝 2</strong><ul>
+          <li>Chart coloured</li>
+          <li>At least 3 correct fractions or decimals</li>
+        </ul></div>
+        <div class="rubric-score"><strong>🖍️ 1</strong><ul>
+          <li>Chart coloured</li>
+        </ul></div>
+      </div>
+    </details>
+  </div>
+
+</div><!-- /wrapper -->
+<div id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────
+const DRIVE_FOLDER_ID = '1bfIXb2htKxlmq2mIPocXnMhSvXFEOHMp';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfpQiEBz7H29zndFlqL-qgczIZy-RXhVhaOMEHES_QyebGwzDY1hk649HbyCxgFvP-/exec';
+const STORAGE_KEY     = 'decimal_art_v4';
+
+// Preset crayon palette — kid-friendly named colours
+const CRAYON_PALETTE = [
+  { name: 'Red',        hex: '#e63946' },
+  { name: 'Orange',     hex: '#f4a261' },
+  { name: 'Yellow',     hex: '#f7d716' },
+  { name: 'Green',      hex: '#57cc57' },
+  { name: 'Teal',       hex: '#4ecdc4' },
+  { name: 'Blue',       hex: '#4361ee' },
+  { name: 'Purple',     hex: '#9b5de5' },
+  { name: 'Pink',       hex: '#f72585' },
+  { name: 'Brown',      hex: '#a0522d' },
+  { name: 'Black',      hex: '#2d3436' },
+];
+
+// ── State ─────────────────────────────────────────────
+// colors[0..2] = three chosen colours. Index 3 = white (fixed, uncoloured cells).
+let colors      = ['#e63946', '#4361ee', '#57cc57'];
+let activeColor = 0;   // 0,1,2 = colour slots; -1 = erase
+let eraseMode   = false;
+let isMouseDown = false;
+let gridData    = new Array(100).fill(-1);  // -1=white/blank, 0/1/2=colour index
+
+// Student inputs — 4 rows (colours 0,1,2, then white=3)
+let fracNums  = ['','','',''];   // numerators
+let fracDens  = ['','','',''];   // denominators
+let decVals   = ['','','',''];   // decimals
+
+// Fraction equation: 4 colour boxes + result box (each has num+den)
+let eqFracNums = ['','','',''];
+let eqFracDens = ['','','',''];
+let eqFracResNum = '';
+let eqFracResDen = '';
+
+// Decimal equation: 4 boxes + result
+let eqDecVals    = ['','','',''];
+let eqDecResVal  = '';
+
+// ── Helpers ───────────────────────────────────────────
+const getCounts = () => {
+  const c = [0,0,0];
+  gridData.forEach(v => { if (v >= 0) c[v]++; });
+  return c;
+};
+const getWhiteCount = () => gridData.filter(v => v === -1).length;
+
+const hexToRgb = hex => [
+  parseInt(hex.slice(1,3),16),
+  parseInt(hex.slice(3,5),16),
+  parseInt(hex.slice(5,7),16)
+];
+
+const lighten = (hex, amt) => {
+  const [r,g,b] = hexToRgb(hex);
+  const m = v => Math.round(v + (255-v)*amt);
+  return `rgb(${m(r)},${m(g)},${m(b)})`;
+};
+
+// ── Crayon SVG ────────────────────────────────────────
+function crayonSVG(hex) {
+  // Derive shading colours
+  const [r,g,b] = hexToRgb(hex);
+  const darker  = `rgb(${Math.max(0,r-45)},${Math.max(0,g-45)},${Math.max(0,b-45)})`;
+  const lighter = `rgb(${Math.min(255,r+55)},${Math.min(255,g+55)},${Math.min(255,b+55)})`;
+  const tip     = `rgb(${Math.max(0,r-20)},${Math.max(0,g-20)},${Math.max(0,b-20)})`;
+
+  return `<svg viewBox="0 0 36 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- wrapper band top -->
+    <rect x="4" y="4" width="28" height="10" rx="3" fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"/>
+    <!-- label area (white paper wrap) -->
+    <rect x="4" y="14" width="28" height="44" rx="0" fill="white" stroke="#ddd" stroke-width="0.5"/>
+    <!-- colour body -->
+    <rect x="4" y="58" width="28" height="24" rx="0" fill="${hex}" stroke="${darker}" stroke-width="0.5"/>
+    <!-- shine on body -->
+    <rect x="7" y="60" width="5" height="20" rx="2" fill="${lighter}" opacity="0.45"/>
+    <!-- wrapper band bottom -->
+    <rect x="4" y="58" width="28" height="6" rx="0" fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"/>
+    <!-- tapered tip housing -->
+    <polygon points="4,82 32,82 26,92 10,92" fill="${darker}" stroke="${darker}" stroke-width="0.3"/>
+    <!-- actual tip point -->
+    <polygon points="10,92 26,92 18,100" fill="${tip}" stroke="${darker}" stroke-width="0.3"/>
+    <!-- label lines decoration -->
+    <line x1="8" y1="22" x2="28" y2="22" stroke="#eee" stroke-width="1"/>
+    <line x1="8" y1="48" x2="28" y2="48" stroke="#eee" stroke-width="1"/>
+  </svg>`;
+}
+
+// ── Build Crayon Picker ───────────────────────────────
+function buildCrayonPicker() {
+  const container = document.getElementById('crayon-picker');
+  container.innerHTML = '';
+
+  for (let slot = 0; slot < 3; slot++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'crayon-slot';
+    wrap.id = `crayon-slot-${slot}`;
+    wrap.onclick = () => selectColor(slot);
+
+    const label = document.createElement('label');
+    label.textContent = `Colour ${slot+1}`;
+
+    const crayonWrap = document.createElement('div');
+    crayonWrap.className = 'crayon-wrap' + (slot === 0 ? ' crayon-active' : '');
+    crayonWrap.id = `crayon-wrap-${slot}`;
+    crayonWrap.innerHTML = crayonSVG(colors[slot]);
+
+    // Colour palette popup
+    const paletteBtn = document.createElement('div');
+    paletteBtn.style.cssText = 'position:relative;';
+
+    // We replace the native color input with a palette popup
+    const palettePopup = document.createElement('div');
+    palettePopup.id = `palette-${slot}`;
+    palettePopup.style.cssText = `
+      display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+      background:white; border-radius:12px; box-shadow:0 6px 24px rgba(0,0,0,0.18);
+      padding:10px; z-index:100; width:160px;
+      display:none; grid-template-columns:repeat(5,1fr); gap:6px;
+    `;
+    CRAYON_PALETTE.forEach(c => {
+      const dot = document.createElement('div');
+      dot.title = c.name;
+      dot.style.cssText = `width:24px;height:24px;border-radius:50%;background:${c.hex};cursor:pointer;border:2px solid transparent;transition:transform 0.1s,border-color 0.1s;`;
+      dot.onmouseenter = () => dot.style.transform='scale(1.2)';
+      dot.onmouseleave = () => dot.style.transform='scale(1)';
+      dot.onclick = (e) => {
+        e.stopPropagation();
+        updateColor(slot, c.hex);
+        palettePopup.style.display='none';
+        selectColor(slot);
+      };
+      palettePopup.appendChild(dot);
+    });
+    document.body.appendChild(palettePopup); // attach to body to avoid overflow clipping
+
+    // Position popup on open
+    crayonWrap.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // close others
+      [0,1,2].forEach(s => {
+        if (s !== slot) {
+          const p = document.getElementById(`palette-${s}`);
+          if (p) p.style.display='none';
+        }
+      });
+      if (palettePopup.style.display === 'grid') {
+        palettePopup.style.display='none';
+      } else {
+        const rect = crayonWrap.getBoundingClientRect();
+        palettePopup.style.display = 'grid';
+        palettePopup.style.position = 'fixed';
+        palettePopup.style.top = (rect.bottom + 6) + 'px';
+        palettePopup.style.left = (rect.left + rect.width/2) + 'px';
+        palettePopup.style.transform = 'translateX(-50%)';
+      }
+      selectColor(slot);
+    });
+
+    const activeLbl = document.createElement('div');
+    activeLbl.className = 'active-label';
+    activeLbl.id = `crayon-lbl-${slot}`;
+    activeLbl.textContent = slot === 0 ? '▲ Using' : '';
+
+    wrap.appendChild(label);
+    wrap.appendChild(crayonWrap);
+    wrap.appendChild(activeLbl);
+    container.appendChild(wrap);
+  }
+
+  // Close palettes on outside click
+  document.addEventListener('click', () => {
+    [0,1,2].forEach(s => {
+      const p = document.getElementById(`palette-${s}`);
+      if (p) p.style.display='none';
+    });
+  });
+}
+
+// ── Grid ──────────────────────────────────────────────
+function buildGrid() {
+  const grid = document.getElementById('pixel-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 100; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.i = i;
+    grid.appendChild(cell);
+  }
+
+  const paint = el => {
+    const i = +el.dataset.i;
+    if (eraseMode) { gridData[i] = -1; el.style.backgroundColor = '#fff'; }
+    else { gridData[i] = activeColor; el.style.backgroundColor = colors[activeColor]; }
+    clearFeedback();
+    saveState();
+  };
+
+  grid.addEventListener('mousedown', e => { if (e.target.classList.contains('cell')) { isMouseDown=true; paint(e.target); }});
+  grid.addEventListener('mousemove', e => { if (isMouseDown && e.target.classList.contains('cell')) paint(e.target); });
+  document.addEventListener('mouseup', () => isMouseDown = false);
+  grid.addEventListener('touchstart', e => { e.preventDefault(); const t=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY); if(t&&t.classList.contains('cell')) paint(t); },{passive:false});
+  grid.addEventListener('touchmove',  e => { e.preventDefault(); const t=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY); if(t&&t.classList.contains('cell')) paint(t); },{passive:false});
+}
+
+function renderGridColors() {
+  document.querySelectorAll('.cell').forEach((cell,i) => {
+    cell.style.backgroundColor = gridData[i] === -1 ? '#fff' : colors[gridData[i]];
+  });
+}
+
+function toggleErase() {
+  eraseMode = !eraseMode;
+  document.getElementById('erase-btn').classList.toggle('erase-mode', eraseMode);
+  if (eraseMode) {
+    [0,1,2].forEach(j => {
+      document.getElementById(`crayon-wrap-${j}`)?.classList.remove('crayon-active');
+      document.getElementById(`crayon-lbl-${j}`).textContent = '';
+    });
+  } else {
+    selectColor(activeColor);
+  }
+}
+
+function clearGrid() {
+  if (!confirm('Clear all colours from the grid?')) return;
+  gridData.fill(-1);
+  document.querySelectorAll('.cell').forEach(c => c.style.backgroundColor = '#fff');
+  clearFeedback();
+  saveState();
+}
+
+// ── Colour Controls ───────────────────────────────────
+function selectColor(i) {
+  activeColor = i; eraseMode = false;
+  document.getElementById('erase-btn').classList.remove('erase-mode');
+  [0,1,2].forEach(j => {
+    document.getElementById(`crayon-wrap-${j}`)?.classList.toggle('crayon-active', j===i);
+    document.getElementById(`crayon-lbl-${j}`).textContent = j===i ? '▲ Using' : '';
+  });
+  saveState();
+}
+
+function updateColor(slot, hex) {
+  colors[slot] = hex;
+  // Rebuild crayon SVG
+  const wrap = document.getElementById(`crayon-wrap-${slot}`);
+  if (wrap) wrap.innerHTML = crayonSVG(hex);
+  // Re-paint grid cells
+  document.querySelectorAll('.cell').forEach((c,idx) => {
+    if (gridData[idx] === slot) c.style.backgroundColor = hex;
+  });
+  // Update swatch in table
+  const sw = document.getElementById(`swatch-${slot}`);
+  if (sw) sw.style.backgroundColor = hex;
+  // Update equation box colour
+  const eqBox = document.getElementById(`eq-frac-box-${slot}`);
+  if (eqBox) { eqBox.style.backgroundColor = lighten(hex,0.8); eqBox.style.borderColor = hex; }
+  const eqDecBox = document.getElementById(`eq-dec-box-${slot}`);
+  if (eqDecBox) { eqDecBox.style.backgroundColor = lighten(hex,0.8); eqDecBox.style.borderColor = hex; }
+  saveState();
+}
+
+// ── Fraction Table ────────────────────────────────────
+function buildFracTable() {
+  const tbody = document.getElementById('frac-tbody');
+  tbody.innerHTML = '';
+
+  // Rows 0-2: three chosen colours
+  for (let i = 0; i < 3; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="color-swatch" id="swatch-${i}" style="background:${colors[i]}"></span></td>
+      <td>
+        <div class="frac-input-wrap">
+          <input type="text" inputmode="numeric" id="fn-${i}" maxlength="3"
+            placeholder="?" value="${fracNums[i]}"
+            oninput="fracNums[${i}]=this.value;clearFeedback();saveState();">
+          <div class="frac-bar"></div>
+          <input type="text" inputmode="numeric" id="fd-${i}" maxlength="3"
+            placeholder="?" value="${fracDens[i]}"
+            oninput="fracDens[${i}]=this.value;clearFeedback();saveState();">
+        </div>
+        <span class="feedback" id="fb-frac-${i}"></span>
+      </td>
+      <td>
+        <input type="text" inputmode="decimal" class="dec-input" id="dv-${i}"
+          placeholder="?" maxlength="6" value="${decVals[i]}"
+          oninput="decVals[${i}]=this.value;clearFeedback();saveState();">
+        <span class="feedback" id="fb-dec-${i}"></span>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Row 3: white / uncoloured
+  const trW = document.createElement('tr');
+  trW.innerHTML = `
+    <td><span class="color-swatch white-swatch"></span>&nbsp;<span style="font-size:0.8rem;font-weight:700;color:#999;">White</span></td>
+    <td>
+      <div class="frac-input-wrap">
+        <input type="text" inputmode="numeric" id="fn-3" maxlength="3"
+          placeholder="?" value="${fracNums[3]}"
+          oninput="fracNums[3]=this.value;clearFeedback();saveState();">
+        <div class="frac-bar"></div>
+        <input type="text" inputmode="numeric" id="fd-3" maxlength="3"
+          placeholder="?" value="${fracDens[3]}"
+          oninput="fracDens[3]=this.value;clearFeedback();saveState();">
+      </div>
+      <span class="feedback" id="fb-frac-3"></span>
+    </td>
+    <td>
+      <input type="text" inputmode="decimal" class="dec-input" id="dv-3"
+        placeholder="?" maxlength="6" value="${decVals[3]}"
+        oninput="decVals[3]=this.value;clearFeedback();saveState();">
+      <span class="feedback" id="fb-dec-3"></span>
+    </td>`;
+  tbody.appendChild(trW);
+}
+
+// ── Equations ─────────────────────────────────────────
+function buildEquations() {
+  buildFracEquation();
+  buildDecEquation();
+}
+
+function buildFracEquation() {
+  const row = document.getElementById('frac-equation-row');
+  row.innerHTML = '';
+
+  // 4 colour boxes (0-2 = colours, 3 = white)
+  for (let i = 0; i < 4; i++) {
+    if (i > 0) {
+      const op = document.createElement('span');
+      op.className = 'eq-op'; op.textContent = '+';
+      row.appendChild(op);
+    }
+
+    if (i < 3) {
+      // coloured box
+      const box = document.createElement('div');
+      box.className = 'eq-frac-box'; box.id = `eq-frac-box-${i}`;
+      box.style.backgroundColor = lighten(colors[i], 0.8);
+      box.style.borderColor = colors[i];
+      box.innerHTML = `
+        <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+          id="eq-fn-${i}" value="${eqFracNums[i]}"
+          oninput="eqFracNums[${i}]=this.value;clearFeedback();saveState();">
+        <div class="frac-bar" style="width:46px"></div>
+        <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+          id="eq-fd-${i}" value="${eqFracDens[i]}" class="eq-frac-denom-input"
+          oninput="eqFracDens[${i}]=this.value;clearFeedback();saveState();">`;
+      row.appendChild(box);
+    } else {
+      // white box
+      const box = document.createElement('div');
+      box.className = 'eq-white-box';
+      box.innerHTML = `
+        <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+          id="eq-fn-3" value="${eqFracNums[3]}"
+          oninput="eqFracNums[3]=this.value;clearFeedback();saveState();">
+        <div class="frac-bar" style="width:46px;background:#bbb"></div>
+        <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+          id="eq-fd-3" value="${eqFracDens[3]}" class="eq-white-denom-input"
+          oninput="eqFracDens[3]=this.value;clearFeedback();saveState();">`;
+      row.appendChild(box);
+    }
+  }
+
+  // =
+  const eq = document.createElement('span'); eq.className='eq-op'; eq.textContent='='; row.appendChild(eq);
+
+  // result box
+  const res = document.createElement('div'); res.className='eq-result-box';
+  res.innerHTML = `
+    <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+      id="eq-fres-n" value="${eqFracResNum}"
+      oninput="eqFracResNum=this.value;clearFeedback();saveState();">
+    <div class="frac-bar" style="width:46px;background:#aaa"></div>
+    <input type="text" inputmode="numeric" maxlength="3" placeholder="?"
+      id="eq-fres-d" value="${eqFracResDen}" class="eq-result-denom-input"
+      oninput="eqFracResDen=this.value;clearFeedback();saveState();">`;
+  row.appendChild(res);
+
+  const whole = document.createElement('span'); whole.className='eq-whole'; whole.textContent='= 1 whole'; row.appendChild(whole);
+}
+
+function buildDecEquation() {
+  const row = document.getElementById('dec-equation-row');
+  row.innerHTML = '';
+
+  for (let i = 0; i < 4; i++) {
+    if (i > 0) {
+      const op = document.createElement('span'); op.className='eq-op'; op.textContent='+'; row.appendChild(op);
+    }
+    const isWhite = i === 3;
+    const box = document.createElement('div');
+    box.className = 'dec-eq-box'; box.id = `eq-dec-box-${i}`;
+    if (!isWhite) {
+      box.style.backgroundColor = lighten(colors[i], 0.8);
+      box.style.borderColor = colors[i];
+      box.style.border = `2px solid ${colors[i]}`;
+      box.style.borderRadius = '10px';
+    } else {
+      box.style.background = '#f8f8f8';
+      box.style.border = '2px solid #ccc';
+      box.style.borderRadius = '10px';
+    }
+    box.innerHTML = `<input type="text" inputmode="decimal" class="dec-eq-input" maxlength="6"
+      placeholder="?" id="eq-dv-${i}" value="${eqDecVals[i]}"
+      oninput="eqDecVals[${i}]=this.value;clearFeedback();saveState();">`;
+    row.appendChild(box);
+  }
+
+  const eq = document.createElement('span'); eq.className='eq-op'; eq.textContent='='; row.appendChild(eq);
+
+  const res = document.createElement('div'); res.className='dec-eq-result';
+  res.innerHTML = `<input type="text" inputmode="decimal" maxlength="6"
+    placeholder="?" id="eq-dres" value="${eqDecResVal}"
+    oninput="eqDecResVal=this.value;clearFeedback();saveState();">`;
+  row.appendChild(res);
+
+  const whole = document.createElement('span'); whole.className='eq-whole'; whole.textContent='= 1 whole'; row.appendChild(whole);
+}
+
+// ── Check Work ────────────────────────────────────────
+function checkWork() {
+  const counts  = getCounts();
+  const wCount  = getWhiteCount();
+  const allCounts = [...counts, wCount];
+  let allOk = true;
+  const summary = document.getElementById('check-summary');
+
+  for (let i = 0; i < 4; i++) {
+    const fnOk = parseInt(fracNums[i]) === allCounts[i];
+    const fdOk = parseInt(fracDens[i]) === 100;
+    const dvOk = Math.abs(parseFloat(decVals[i]) - allCounts[i]/100) < 0.001;
+    const fracOk = fnOk && fdOk;
+
+    document.getElementById(`fb-frac-${i}`).textContent =
+      (fracNums[i]==='' && fracDens[i]==='') ? '' : (fracOk ? '✅' : '❌');
+    document.getElementById(`fb-dec-${i}`).textContent =
+      decVals[i]==='' ? '' : (dvOk ? '✅' : '❌');
+
+    if (!fracOk || !dvOk) allOk = false;
+  }
+
+  // Check equations
+  const fracEqNumTotal = eqFracNums.map(n=>parseInt(n)||0).reduce((a,b)=>a+b,0);
+  const fracEqDenOk    = eqFracDens.every(d => parseInt(d)===100) && parseInt(eqFracResDen)===100;
+  const fracEqOk       = fracEqNumTotal===100 && fracEqDenOk && parseInt(eqFracResNum)===100;
+
+  const decEqTotal = eqDecVals.map(v=>parseFloat(v)||0).reduce((a,b)=>a+b,0);
+  const decEqOk    = Math.abs(decEqTotal - 1) < 0.001 && Math.abs(parseFloat(eqDecResVal)-1)<0.001;
+
+  if (allOk && fracEqOk && decEqOk) {
+    summary.textContent = '🎉 Everything is correct! Incredible work!';
+    summary.className = 'all-good';
+  } else if (allOk) {
+    summary.textContent = '✅ Fractions and decimals are correct! Double-check your equations.';
+    summary.className = 'all-good';
+  } else {
+    summary.textContent = '❌ Some answers need fixing — look for the ❌ marks above.';
+    summary.className = 'has-errors';
+  }
+}
+
+function clearFeedback() {
+  for (let i=0;i<4;i++) {
+    const a=document.getElementById(`fb-frac-${i}`);
+    const b=document.getElementById(`fb-dec-${i}`);
+    if(a) a.textContent=''; if(b) b.textContent='';
+  }
+  const s=document.getElementById('check-summary');
+  if(s){ s.textContent=''; s.className=''; }
+}
+
+// ── Persistence ───────────────────────────────────────
+function saveState() {
+  try {
+    localStorage.setItem('decimal_art_name', document.getElementById('student-name').value);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      gridData, colors, activeColor,
+      fracNums, fracDens, decVals,
+      eqFracNums, eqFracDens, eqFracResNum, eqFracResDen,
+      eqDecVals, eqDecResVal
+    }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s.gridData?.length===100)  gridData      = s.gridData;
+      if (s.colors?.length===3)      colors        = s.colors;
+      if (typeof s.activeColor==='number') activeColor = s.activeColor;
+      if (s.fracNums?.length===4)    fracNums      = s.fracNums;
+      if (s.fracDens?.length===4)    fracDens      = s.fracDens;
+      if (s.decVals?.length===4)     decVals       = s.decVals;
+      if (s.eqFracNums?.length===4)  eqFracNums    = s.eqFracNums;
+      if (s.eqFracDens?.length===4)  eqFracDens    = s.eqFracDens;
+      if (typeof s.eqFracResNum==='string') eqFracResNum = s.eqFracResNum;
+      if (typeof s.eqFracResDen==='string') eqFracResDen = s.eqFracResDen;
+      if (s.eqDecVals?.length===4)   eqDecVals     = s.eqDecVals;
+      if (typeof s.eqDecResVal==='string') eqDecResVal = s.eqDecResVal;
+    }
+    document.getElementById('student-name').value = localStorage.getItem('decimal_art_name') || '';
+  } catch(e) {}
+}
+
+// ── PDF ───────────────────────────────────────────────
+function generatePDF(name) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'letter' });
+  const counts   = getCounts();
+  const wCount   = getWhiteCount();
+  const allCounts = [...counts, wCount];
+
+  // Title
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(45,52,54);
+  doc.text('Decimal Art', 108, 18, {align:'center'});
+  doc.setFontSize(11); doc.setFont('helvetica','normal');
+  doc.text(`Student: ${name}`, 20, 27);
+  doc.text(`Date: ${new Date().toLocaleDateString('en-CA')}`, 20, 33);
+
+  // Grid
+  const gx=20, gy=40, cw=8.3, ch=8.3;
+  for (let row=0;row<10;row++) {
+    for (let col=0;col<10;col++) {
+      const idx=row*10+col, x=gx+col*cw, y=gy+row*ch;
+      if (gridData[idx]>=0) {
+        const [r,g,b]=hexToRgb(colors[gridData[idx]]);
+        doc.setFillColor(r,g,b); doc.rect(x,y,cw,ch,'F');
+      } else {
+        doc.setFillColor(255,255,255); doc.rect(x,y,cw,ch,'F');
+      }
+      doc.setDrawColor(180,190,195); doc.setLineWidth(0.22); doc.rect(x,y,cw,ch,'S');
+    }
+  }
+  doc.setDrawColor(45,52,54); doc.setLineWidth(0.7); doc.rect(gx,gy,cw*10,ch*10,'S');
+
+  // Table
+  const ty = gy+ch*10+8;
+  const colX = [20, 75, 135];
+  const colW = [55, 60, 50];
+  const headers = ['Colour','Fraction','Decimal'];
+  headers.forEach((h,i) => {
+    doc.setFillColor(240,244,246); doc.rect(colX[i],ty,colW[i],7,'F');
+    doc.setDrawColor(220,228,233); doc.setLineWidth(0.3); doc.rect(colX[i],ty,colW[i],7,'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(45,52,54);
+    doc.text(h, colX[i]+colW[i]/2, ty+4.8, {align:'center'});
+  });
+
+  const rowNames = ['Colour 1','Colour 2','Colour 3','White'];
+  for (let i=0;i<4;i++) {
+    const ry = ty+7+i*14;
+    // Swatch
+    if (i < 3) {
+      const [r,g,b]=hexToRgb(colors[i]);
+      doc.setFillColor(r,g,b);
+    } else {
+      doc.setFillColor(255,255,255);
+    }
+    doc.roundedRect(colX[0]+5, ry+2.5, 10, 9, 2, 2, 'F');
+    if (i===3) { doc.setDrawColor(180,180,180); doc.setLineWidth(0.4); doc.roundedRect(colX[0]+5,ry+2.5,10,9,2,2,'S'); }
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(45,52,54);
+    doc.text(rowNames[i], colX[0]+19, ry+8.5);
+    doc.setDrawColor(220,228,233); doc.setLineWidth(0.3); doc.rect(colX[0],ry,colW[0],14,'S');
+
+    // Fraction
+    const fn = fracNums[i]!=='' ? fracNums[i] : '___';
+    const fd = fracDens[i]!=='' ? fracDens[i] : '___';
+    const cx = colX[1]+colW[1]/2;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10);
+    doc.text(`${fn}`, cx, ry+4.8, {align:'center'});
+    doc.setLineWidth(0.35); doc.line(cx-10,ry+6,cx+10,ry+6);
+    doc.text(`${fd}`, cx, ry+11, {align:'center'});
+    doc.setLineWidth(0.3); doc.rect(colX[1],ry,colW[1],14,'S');
+
+    // Decimal
+    doc.setFont('helvetica','normal');
+    doc.text(decVals[i]!=='' ? decVals[i] : '______', colX[2]+colW[2]/2, ry+8.5, {align:'center'});
+    doc.rect(colX[2],ry,colW[2],14,'S');
+  }
+
+  // Fraction Equation
+  const feqY = ty+7+4*14+8;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(100,100,100);
+  doc.text('FRACTION EQUATION', 20, feqY);
+  let ex = 20;
+  const feqDataY = feqY+5;
+  for (let i=0;i<4;i++) {
+    if(i>0){ doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(100,100,100); doc.text('+',ex,feqDataY+4); ex+=8; }
+    // colour pip
+    if(i<3){ const [r,g,b]=hexToRgb(colors[i]); doc.setFillColor(r,g,b); } else { doc.setFillColor(230,230,230); }
+    doc.circle(ex+7, feqDataY-2, 3, 'F');
+    ex+=1;
+    const fn=eqFracNums[i]!==''?eqFracNums[i]:'_';
+    const fd=eqFracDens[i]!==''?eqFracDens[i]:'_';
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(45,52,54);
+    doc.text(`${fn}`,ex+7,feqDataY+1,{align:'center'});
+    doc.setLineWidth(0.3); doc.line(ex+1,feqDataY+2.5,ex+13,feqDataY+2.5);
+    doc.text(`${fd}`,ex+7,feqDataY+7,{align:'center'});
+    ex+=17;
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(100,100,100);
+  doc.text('=',ex,feqDataY+4); ex+=9;
+  const frn=eqFracResNum!==''?eqFracResNum:'_';
+  const frd=eqFracResDen!==''?eqFracResDen:'_';
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(45,52,54);
+  doc.text(`${frn}`,ex+7,feqDataY+1,{align:'center'});
+  doc.setLineWidth(0.3); doc.line(ex+1,feqDataY+2.5,ex+13,feqDataY+2.5);
+  doc.text(`${frd}`,ex+7,feqDataY+7,{align:'center'});
+  ex+=17;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(100,100,100);
+  doc.text('= 1 whole',ex,feqDataY+4);
+
+  // Decimal Equation
+  const deqY = feqY+20;
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(100,100,100);
+  doc.text('DECIMAL EQUATION', 20, deqY);
+  let dx=20;
+  const deqDataY = deqY+8;
+  for (let i=0;i<4;i++) {
+    if(i>0){ doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(100,100,100); doc.text('+',dx,deqDataY+1); dx+=9; }
+    if(i<3){ const [r,g,b]=hexToRgb(colors[i]); doc.setFillColor(r,g,b); } else { doc.setFillColor(230,230,230); }
+    doc.circle(dx+3, deqDataY-2, 3,'F');
+    const dv=eqDecVals[i]!==''?eqDecVals[i]:'____';
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(45,52,54);
+    doc.text(`${dv}`,dx+20,deqDataY+1,{align:'center'}); dx+=33;
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(100,100,100);
+  doc.text('=',dx,deqDataY+1); dx+=9;
+  const dres=eqDecResVal!==''?eqDecResVal:'____';
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(45,52,54);
+  doc.text(`${dres}`,dx+15,deqDataY+1,{align:'center'}); dx+=30;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(100,100,100);
+  doc.text('= 1 whole',dx,deqDataY+1);
+
+  doc.setFontSize(8); doc.setTextColor(180,190,195);
+  doc.text('Decimal Art — Digital Classroom Tool', 108, 270, {align:'center'});
+
+  return doc.output('blob');
+}
+
+// ── Drive Upload ──────────────────────────────────────
+async function blobToBase64(blob) {
+  return new Promise((res,rej) => {
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(',')[1]);
+    r.onerror=rej;
+    r.readAsDataURL(blob);
+  });
+}
+
+async function uploadToDrive(blob, filename) {
+  const base64 = await blobToBase64(blob);
+
+  // no-cors skips the CORS preflight so the browser won't block the request.
+  // The response will be opaque (unreadable) but the Apps Script still executes
+  // and saves the file. We optimistically return success; if the script errored
+  // the file simply won't appear in Drive.
+  await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: JSON.stringify({
+      filename,
+      mimeType: 'application/pdf',
+      folderId: DRIVE_FOLDER_ID,
+      data: base64
+    })
+  });
+
+  return { success: true };
+}
+
+// ── Submit ────────────────────────────────────────────
+async function submitWork() {
+  const name = document.getElementById('student-name').value.trim();
+  if (!name) { showToast('⚠️ Please enter your name first!'); return; }
+
+  const btn=document.getElementById('submit-btn');
+  const progressWrap=document.getElementById('upload-progress');
+  const bar=document.getElementById('upload-bar');
+  const status=document.getElementById('upload-status');
+
+  btn.disabled=true; btn.textContent='⏳ Preparing…';
+  progressWrap.style.display='block'; status.style.display='block';
+  status.textContent='Generating PDF…'; bar.style.width='20%';
+
+  try {
+    const pdfBlob = generatePDF(name);
+    bar.style.width='50%';
+    const safe = name.replace(/[^a-zA-Z0-9\- ]/g,'').replace(/\s+/g,'-').toLowerCase();
+    const date = new Date().toISOString().slice(0,10);
+    const filename = `decimal-art-${safe}-${date}.pdf`;
+
+    status.textContent='Uploading to Google Drive…'; bar.style.width='75%';
+    const result = await uploadToDrive(pdfBlob, filename);
+    bar.style.width='100%';
+
+    if (result && result.success) {
+      status.textContent='✅ Sent to your teacher!';
+      btn.textContent='✅ Submitted!';
+      btn.style.background='linear-gradient(135deg,#27ae60,#2ecc71)';
+      showToast('🎉 Work submitted successfully!');
+    } else {
+      throw new Error(result?.error || 'Unknown error');
+    }
+  } catch(err) {
+    // Fallback: download locally
+    console.warn('Drive upload failed, falling back to download:', err);
+    try {
+      const pdfBlob = generatePDF(name);
+      const safe = name.replace(/[^a-zA-Z0-9\- ]/g,'').replace(/\s+/g,'-').toLowerCase();
+      const filename = `decimal-art-${safe}-${new Date().toISOString().slice(0,10)}.pdf`;
+      const url=URL.createObjectURL(pdfBlob);
+      const a=document.createElement('a'); a.href=url; a.download=filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      bar.style.width='100%';
+      status.textContent='📥 PDF downloaded to your device instead.';
+      btn.textContent='📥 Downloaded';
+      btn.disabled=false;
+      btn.style.background='linear-gradient(135deg,#6c5ce7,#a29bfe)';
+      showToast('📄 Drive unavailable — PDF downloaded locally.');
+    } catch(e2) {
+      bar.style.width='0%';
+      status.textContent='❌ Something went wrong. Try again.';
+      btn.disabled=false; btn.textContent='☁️ Submit My Work';
+      showToast('❌ Submission failed. Try again.');
+    }
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+// ── Bootstrap ─────────────────────────────────────────
+window.onload = function() {
+  loadState();
+  buildCrayonPicker();
+  buildGrid();
+  buildFracTable();
+  buildEquations();
+  renderGridColors();
+  selectColor(activeColor);
+  document.getElementById('student-name').addEventListener('input', saveState);
+};
+</script>
+</body>
+</html>
