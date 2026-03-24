@@ -279,6 +279,39 @@
   .rubric-score ul { margin-top: 4px; padding-left: 14px; font-size: 0.77rem; color: #636e72; line-height: 1.6; }
 
   hr.eq-divider { border: none; border-top: 1.5px dashed var(--border); margin: 4px 0 14px; }
+
+  /* ── Decimal Hint Tooltip ── */
+  .hint-wrap { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; position: relative; }
+  .hint-btn {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #f7b733; color: #2d3436; border: none;
+    font-family: 'Fredoka One', cursive; font-size: 0.85rem;
+    cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0; box-shadow: 0 2px 6px rgba(247,183,51,0.4);
+    transition: transform 0.15s;
+  }
+  .hint-btn:hover { transform: scale(1.15); }
+  .hint-bubble {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%; transform: translateX(-50%);
+    background: #2d3436; color: #fff;
+    border-radius: 12px; padding: 12px 14px;
+    font-size: 0.82rem; font-weight: 700; line-height: 1.55;
+    width: 220px; text-align: left;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+    z-index: 50;
+    pointer-events: none;
+  }
+  .hint-bubble::after {
+    content: '';
+    position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 7px solid transparent; border-top-color: #2d3436;
+  }
+  .hint-btn:focus + .hint-bubble,
+  .hint-btn:hover + .hint-bubble,
+  .hint-wrap:hover .hint-bubble { display: block; }
 </style>
 </head>
 <body>
@@ -323,7 +356,17 @@
         <tr>
           <th style="text-align:left">Colour</th>
           <th>Fraction</th>
-          <th>Decimal</th>
+          <th>
+            Decimal
+            <span class="hint-wrap">
+              <button class="hint-btn" tabindex="0">?</button>
+              <div class="hint-bubble">
+                💡 <strong>How to find a decimal:</strong><br>
+                Imagine the grid is cut into <strong>100 equal pieces</strong>. Count how many squares you coloured. That number becomes your decimal!<br><br>
+                Example: 25 squares coloured = <strong>0.25</strong>
+              </div>
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody id="frac-tbody"></tbody>
@@ -956,10 +999,10 @@ function generatePDF(name) {
   doc.setLineWidth(0.4);
   doc.line(ML, y, PW-MR, y);
 
-  // ── Hundreds chart — centred ─────────────────────────
+  // ── Hundreds chart — centred, prominent ──────────────
   y += 6;
   const CELLS  = 10;
-  const GRID_W = 90; // mm — fits nicely centred on letter
+  const GRID_W = 110; // larger = more prominent on the page
   const cw     = GRID_W / CELLS;
   const ch     = cw;
   const gx     = (PW - GRID_W) / 2;
@@ -1070,34 +1113,65 @@ function generatePDF(name) {
   // ── Equations ────────────────────────────────────────
   y += 4 * ROW_H + 10;
 
-  // helper: draw one equation row
-  // items = [{type:'frac'|'dec'|'op'|'text', value, colorIdx}]
-  // type frac: draws stacked fraction, colorIdx colours the pip
-  // type dec: draws decimal value
-  // type op: draws operator (+, =)
-  // type text: draws plain text
-  function drawEquationRow(startY, items, fracFontSize) {
-    // First pass: measure total width to centre
-    const fracH = fracFontSize * 0.8; // approx half-height for vertical centering
-    const opSize  = fracFontSize + 1;
-    const midY = startY + fracH + 2; // baseline for operators
+  // Draw a coloured rounded box behind a fraction or decimal term, matching
+  // the website's eq-frac-box style. Returns the box width used.
+  function drawTermBox(ix, midY, boxH, colorIdx, drawContent) {
+    const PAD = 5; // horizontal padding inside box
+    // measure content width
+    const contentW = drawContent(ix + PAD, midY, true); // dry-run
+    const boxW = contentW + PAD * 2;
+    // fill
+    if (colorIdx !== undefined && colorIdx !== null) {
+      let fr, fg, fb;
+      if (colorIdx < 3) {
+        [fr,fg,fb] = hexToRgb(colors[colorIdx]);
+        // lighten by 80%
+        fr = Math.round(fr + (255-fr)*0.80);
+        fg = Math.round(fg + (255-fg)*0.80);
+        fb = Math.round(fb + (255-fb)*0.80);
+        doc.setFillColor(fr, fg, fb);
+        const [br,bg,bb] = hexToRgb(colors[colorIdx]);
+        doc.setDrawColor(br,bg,bb);
+      } else {
+        // white box
+        doc.setFillColor(245,245,245);
+        doc.setDrawColor(190,190,190);
+      }
+    } else {
+      // result box — light grey
+      doc.setFillColor(236,240,243);
+      doc.setDrawColor(200,210,215);
+    }
+    doc.setLineWidth(0.5);
+    doc.roundedRect(ix, midY - boxH/2, boxW, boxH, 2.5, 2.5, 'FD');
+    // draw content for real
+    drawContent(ix + PAD, midY, false);
+    return boxW;
+  }
 
-    // measure widths
+  // helper: draw one equation row using coloured rounded boxes
+  function drawEquationRow(startY, items, fracFontSize) {
+    const BOX_H   = fracFontSize * 1.9;  // box height encompasses num+bar+den
+    const fracH   = fracFontSize * 0.8;
+    const opSize  = fracFontSize + 1;
+    const midY    = startY + BOX_H / 2;
+
     doc.setFontSize(fracFontSize);
     doc.setFont('helvetica','bold');
     const numW = (s) => doc.getTextWidth(s || '–');
 
+    // First pass: compute widths for centering
     const itemWidths = items.map(it => {
-      if (it.type === 'op')   { doc.setFontSize(opSize);      return doc.getTextWidth(it.value) + 3; }
-      if (it.type === 'text') { doc.setFontSize(fracFontSize); return doc.getTextWidth(it.value) + 2; }
+      if (it.type === 'op')   { doc.setFontSize(opSize);      return doc.getTextWidth(it.value) + 5; }
+      if (it.type === 'text') { doc.setFontSize(fracFontSize-1); return doc.getTextWidth(it.value) + 4; }
       if (it.type === 'frac') {
         doc.setFontSize(fracFontSize);
-        const n = it.num || '–'; const d = it.den || '–';
-        return Math.max(numW(n), numW(d)) + 6;
+        const n = it.num||'–'; const d = it.den||'–';
+        return Math.max(numW(n), numW(d)) + 12; // content + 2*PAD
       }
       if (it.type === 'dec') {
         doc.setFontSize(fracFontSize);
-        return numW(it.value || '–') + 6;
+        return numW(it.value||'–') + 12;
       }
       return 0;
     });
@@ -1111,34 +1185,52 @@ function generatePDF(name) {
 
       if (it.type === 'op') {
         doc.setFont('helvetica','bold'); doc.setFontSize(opSize);
-        doc.setTextColor(120,130,140);
+        doc.setTextColor(110,120,130);
         doc.text(it.value, icx, midY, {align:'center', baseline:'middle'});
+
       } else if (it.type === 'text') {
-        doc.setFont('helvetica','normal'); doc.setFontSize(fracFontSize - 1);
-        doc.setTextColor(120,130,140);
+        doc.setFont('helvetica','normal'); doc.setFontSize(fracFontSize-1);
+        doc.setTextColor(110,120,130);
         doc.text(it.value, icx, midY, {align:'center', baseline:'middle'});
+
       } else if (it.type === 'frac') {
-        // colour pip above fraction
-        if (it.colorIdx !== undefined) {
-          if (it.colorIdx < 3) { const [r,g,b]=hexToRgb(colors[it.colorIdx]); doc.setFillColor(r,g,b); }
-          else { doc.setFillColor(210,210,210); }
-          doc.circle(icx, startY - 1.5, 1.8, 'F');
-        }
-        drawFraction(icx, midY, it.num||'–', it.den||'–', fracFontSize, [40,40,40]);
+        // draw the coloured box then the fraction inside it
+        const n = it.num||'–'; const d = it.den||'–';
+        const contentW = Math.max(numW(n), numW(d));
+        // box
+        let fr,fg,fb;
+        if (it.colorIdx !== undefined && it.colorIdx !== null) {
+          if (it.colorIdx < 3) {
+            [fr,fg,fb]=hexToRgb(colors[it.colorIdx]);
+            doc.setFillColor(Math.round(fr+(255-fr)*0.80), Math.round(fg+(255-fg)*0.80), Math.round(fb+(255-fb)*0.80));
+            doc.setDrawColor(fr,fg,fb);
+          } else { doc.setFillColor(244,244,244); doc.setDrawColor(185,185,185); }
+        } else { doc.setFillColor(232,238,242); doc.setDrawColor(195,206,212); }
+        doc.setLineWidth(0.5);
+        doc.roundedRect(ix, midY - BOX_H/2, iw, BOX_H, 2.5, 2.5, 'FD');
+        // fraction text
+        drawFraction(icx, midY, n, d, fracFontSize, [35,35,35]);
+
       } else if (it.type === 'dec') {
-        if (it.colorIdx !== undefined) {
-          if (it.colorIdx < 3) { const [r,g,b]=hexToRgb(colors[it.colorIdx]); doc.setFillColor(r,g,b); }
-          else { doc.setFillColor(210,210,210); }
-          doc.circle(icx, startY - 1.5, 1.8, 'F');
-        }
+        const v = it.value||'–';
+        // box
+        if (it.colorIdx !== undefined && it.colorIdx !== null) {
+          if (it.colorIdx < 3) {
+            const [fr,fg,fb]=hexToRgb(colors[it.colorIdx]);
+            doc.setFillColor(Math.round(fr+(255-fr)*0.80), Math.round(fg+(255-fg)*0.80), Math.round(fb+(255-fb)*0.80));
+            doc.setDrawColor(fr,fg,fb);
+          } else { doc.setFillColor(244,244,244); doc.setDrawColor(185,185,185); }
+        } else { doc.setFillColor(232,238,242); doc.setDrawColor(195,206,212); }
+        doc.setLineWidth(0.5);
+        doc.roundedRect(ix, midY - BOX_H/2, iw, BOX_H, 2.5, 2.5, 'FD');
         doc.setFont('helvetica','bold'); doc.setFontSize(fracFontSize);
-        doc.setTextColor(40,40,40);
-        doc.text(it.value||'–', icx, midY, {align:'center', baseline:'middle'});
+        doc.setTextColor(35,35,35);
+        doc.text(v, icx, midY, {align:'center', baseline:'middle'});
       }
       ix += iw;
     });
 
-    return midY + fracH + 4; // return bottom of row
+    return midY + BOX_H/2 + 3;
   }
 
   // Section label helper
