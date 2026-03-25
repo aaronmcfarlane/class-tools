@@ -242,14 +242,24 @@
 
   /* Submit */
   .submit-section { text-align: center; }
+  .submit-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
   .btn-submit {
-    background: linear-gradient(135deg, #4ecdc4, #2ec4b6);
-    color: white; border: none; padding: 15px 42px; border-radius: 14px;
-    font-family: 'Fredoka One', cursive; font-size: 1.3rem; cursor: pointer;
-    box-shadow: 0 4px 16px rgba(78,205,196,0.4); transition: transform 0.15s, box-shadow 0.15s;
+    flex: 1; min-width: 180px;
+    color: white; border: none; padding: 15px 24px; border-radius: 14px;
+    font-family: 'Fredoka One', cursive; font-size: 1.15rem; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
   }
-  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,205,196,0.5); }
-  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .btn-download {
+    background: linear-gradient(135deg, #f7b733, #f09819);
+    box-shadow: 0 4px 16px rgba(247,183,51,0.4);
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(247,183,51,0.5); }
+  .btn-drive {
+    background: linear-gradient(135deg, #4ecdc4, #2ec4b6);
+    box-shadow: 0 4px 16px rgba(78,205,196,0.4);
+  }
+  .btn-drive:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78,205,196,0.5); }
   .submit-note { margin-top: 10px; font-size: 0.82rem; color: #b2bec3; font-weight: 600; }
   #upload-progress { display: none; margin-top: 14px; background: #eee; border-radius: 10px; height: 10px; overflow: hidden; }
   #upload-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#4ecdc4,#2ec4b6); border-radius: 10px; transition: width 0.3s; }
@@ -395,8 +405,10 @@
 
   <!-- Submit -->
   <div class="card submit-section">
-    <button class="btn-submit" id="submit-btn" onclick="submitWork()">☁️ Submit My Work</button>
-    <p class="submit-note">Your work will be saved as a PDF and sent directly to your teacher's Google Drive.</p>
+    <div class="submit-btns">
+      <button class="btn-submit btn-download" id="download-btn" onclick="downloadPDF()">📄 Download PDF</button>
+      <button class="btn-submit btn-drive"    id="submit-btn"   onclick="submitToDrive()">☁️ Submit to Google Drive</button>
+    </div>
     <div id="upload-progress"><div id="upload-bar"></div></div>
     <div id="upload-status"></div>
   </div>
@@ -1267,9 +1279,9 @@ function generatePDF(name) {
   drawEquationRow(y, decItems, 8);
 
   // ── Footer ───────────────────────────────────────────
-  // doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
-  // doc.setTextColor(190,195,200);
-  // doc.text('Decimal Art  ·  Digital Classroom Tool', PW/2, PH - 8, {align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.setTextColor(190,195,200);
+  doc.text('Decimal Art  ·  Digital Classroom Tool', PW/2, PH - 8, {align:'center'});
 
   return doc.output('blob');
 }
@@ -1305,68 +1317,75 @@ async function uploadToDrive(blob, filename) {
   return { success: true };
 }
 
-// ── Submit ────────────────────────────────────────────
-async function submitWork() {
+// ── Shared filename helper ────────────────────────────
+function makeFilename(name) {
+  const safe = name.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'');
+  const now  = new Date();
+  const date = now.toISOString().slice(0,10);
+  const time = now.toTimeString().slice(0,5).replace(':','');
+  return `${safe}_${date}_${time}_decimal-art.pdf`;
+}
+
+// ── Download PDF ──────────────────────────────────────
+function downloadPDF() {
   const name = document.getElementById('student-name').value.trim();
   if (!name) { showToast('⚠️ Please enter your name first!'); return; }
 
-  const btn=document.getElementById('submit-btn');
-  const progressWrap=document.getElementById('upload-progress');
-  const bar=document.getElementById('upload-bar');
-  const status=document.getElementById('upload-status');
-
-  btn.disabled=true; btn.textContent='⏳ Preparing…';
-  progressWrap.style.display='block'; status.style.display='block';
-  status.textContent='Generating PDF…'; bar.style.width='20%';
+  const btn = document.getElementById('download-btn');
+  btn.disabled = true; btn.textContent = '⏳ Generating…';
 
   try {
     const pdfBlob = generatePDF(name);
-    bar.style.width='50%';
-    // Format: FirstnameLastname_YYYY-MM-DD_HHMM_decimal-art.pdf
-    // Same name + same date+time = overwrites previous submission in Drive automatically
-    const safe = name.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'');
-    const now  = new Date();
-    const date = now.toISOString().slice(0,10);
-    const time = now.toTimeString().slice(0,5).replace(':','');
-    const filename = `${safe}_${date}_${time}_decimal-art.pdf`;
+    const url = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = url; a.download = makeFilename(name);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    btn.textContent = '✅ Downloaded!';
+    btn.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
+    showToast('📄 PDF saved to your device!');
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '📄 Download PDF';
+    showToast('❌ Could not generate PDF. Try again.');
+  }
+}
 
-    status.textContent='Uploading to Google Drive…'; bar.style.width='75%';
+// ── Submit to Google Drive ────────────────────────────
+async function submitToDrive() {
+  const name = document.getElementById('student-name').value.trim();
+  if (!name) { showToast('⚠️ Please enter your name first!'); return; }
+
+  const btn         = document.getElementById('submit-btn');
+  const progressWrap = document.getElementById('upload-progress');
+  const bar         = document.getElementById('upload-bar');
+  const status      = document.getElementById('upload-status');
+
+  btn.disabled = true; btn.textContent = '⏳ Preparing…';
+  progressWrap.style.display = 'block'; status.style.display = 'block';
+  status.textContent = 'Generating PDF…'; bar.style.width = '20%';
+
+  try {
+    const pdfBlob  = generatePDF(name);
+    const filename = makeFilename(name);
+    bar.style.width = '50%';
+
+    status.textContent = 'Uploading to Google Drive…'; bar.style.width = '75%';
     const result = await uploadToDrive(pdfBlob, filename);
-    bar.style.width='100%';
+    bar.style.width = '100%';
 
     if (result && result.success) {
-      status.textContent='✅ Sent to your teacher!';
-      btn.textContent='✅ Submitted!';
-      btn.style.background='linear-gradient(135deg,#27ae60,#2ecc71)';
+      status.textContent = '✅ Sent to your teacher!';
+      btn.textContent = '✅ Submitted!';
+      btn.style.background = 'linear-gradient(135deg,#27ae60,#2ecc71)';
       showToast('🎉 Work submitted successfully!');
     } else {
       throw new Error(result?.error || 'Unknown error');
     }
   } catch(err) {
-    // Fallback: download locally
-    console.warn('Drive upload failed, falling back to download:', err);
-    try {
-      const pdfBlob = generatePDF(name);
-      const safe2 = name.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/\s+/g,'');
-      const now2  = new Date();
-      const date2 = now2.toISOString().slice(0,10);
-      const time2 = now2.toTimeString().slice(0,5).replace(':','');
-      const filename = `${safe2}_${date2}_${time2}_decimal-art.pdf`;
-      const url=URL.createObjectURL(pdfBlob);
-      const a=document.createElement('a'); a.href=url; a.download=filename;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      bar.style.width='100%';
-      status.textContent='📥 PDF downloaded to your device instead.';
-      btn.textContent='📥 Downloaded';
-      btn.disabled=false;
-      btn.style.background='linear-gradient(135deg,#6c5ce7,#a29bfe)';
-      showToast('📄 Drive unavailable — PDF downloaded locally.');
-    } catch(e2) {
-      bar.style.width='0%';
-      status.textContent='❌ Something went wrong. Try again.';
-      btn.disabled=false; btn.textContent='☁️ Submit My Work';
-      showToast('❌ Submission failed. Try again.');
-    }
+    console.warn('Drive upload failed:', err);
+    bar.style.width = '0%';
+    status.textContent = '❌ Upload failed. Try downloading instead.';
+    btn.disabled = false; btn.textContent = '☁️ Submit to Google Drive';
+    showToast('❌ Drive upload failed — try Download PDF instead.');
   }
 }
 
