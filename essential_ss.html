@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELA Scope & Sequence — Grades 1–6</title>
+<style>
+  :root {
+    --color-bg: #faf9f7;
+    --color-surface: #ffffff;
+    --color-border: rgba(0,0,0,0.1);
+    --color-border-mid: rgba(0,0,0,0.18);
+    --color-text: #1a1a1a;
+    --color-muted: #5f5e5a;
+    --color-accent-purple: #534AB7;
+    --color-accent-purple-light: #EEEDFE;
+    --color-accent-teal: #0F6E56;
+    --color-accent-teal-light: #E1F5EE;
+    --color-accent-coral: #993C1D;
+    --color-accent-coral-light: #FAECE7;
+    --color-accent-blue: #185FA5;
+    --color-accent-blue-light: #E6F1FB;
+    --color-accent-amber: #854F0B;
+    --color-accent-amber-light: #FAEEDA;
+    --color-grade1: #534AB7;
+    --color-grade2: #0F6E56;
+    --color-grade3: #993C1D;
+    --color-grade4: #185FA5;
+    --color-grade5: #854F0B;
+    --color-grade6: #993556;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  header {
+    background: var(--color-surface);
+    border-bottom: 0.5px solid var(--color-border-mid);
+    padding: 1.5rem 2rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+  }
+  header p.subtitle {
+    font-size: 13px;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+  }
+  .controls-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label.group-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+  .toggle-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .toggle-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .toggle-item span.toggle-label { font-size: 13px; font-weight: 500; }
+
+  /* Toggle switch */
+  .toggle-switch {
+    position: relative; width: 36px; height: 20px; flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0;
+    border-radius: 20px;
+    background: #d0cfc8;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+  .toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    left: 3px; top: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-slider { background: var(--toggle-color, #534AB7); }
+  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+  /* Grade-specific toggle colors */
+  .grade-1 .toggle-slider { --toggle-color: var(--color-grade1); }
+  .grade-2 .toggle-slider { --toggle-color: var(--color-grade2); }
+  .grade-3 .toggle-slider { --toggle-color: var(--color-grade3); }
+  .grade-4 .toggle-slider { --toggle-color: var(--color-grade4); }
+  .grade-5 .toggle-slider { --toggle-color: var(--color-grade5); }
+  .grade-6 .toggle-slider { --toggle-color: var(--color-grade6); }
+
+  .strand-toggle .toggle-slider { --toggle-color: #2c2c2a; }
+
+  main { padding: 1.5rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  /* Strand accordion */
+  .strand-block {
+    background: var(--color-surface);
+    border: 0.5px solid var(--color-border-mid);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: opacity 0.2s;
+  }
+  .strand-block.hidden { display: none; }
+  .strand-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--strand-header-bg, #f5f4f0);
+    border-bottom: 0.5px solid transparent;
+    transition: background 0.15s;
+  }
+  .strand-header:hover { filter: brightness(0.97); }
+  .strand-header.open { border-bottom-color: var(--color-border); }
+  .strand-header-left { display: flex; align-items: center; gap: 10px; }
+  .strand-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--strand-color, #888);
+    flex-shrink: 0;
+  }
+  .strand-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .strand-sub {
+    font-size: 12px;
+    color: var(--color-muted);
+    margin-left: 4px;
+  }
+  .chevron {
+    width: 18px; height: 18px;
+    border-right: 2px solid var(--color-muted);
+    border-bottom: 2px solid var(--color-muted);
+    transform: rotate(45deg);
+    margin-right: 4px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .strand-header.open .chevron { transform: rotate(-135deg); }
+
+  .strand-body { display: none; padding: 0; }
+  .strand-body.open { display: block; }
+
+  /* Sub-strands */
+  .substrand {
+    border-bottom: 0.5px solid var(--color-border);
+    padding: 0.85rem 1.25rem;
+  }
+  .substrand:last-child { border-bottom: none; }
+  .substrand-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+  }
+  .grade-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .grade-cell {
+    flex: 1;
+    min-width: 140px;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--color-border);
+    padding: 0.65rem 0.75rem;
+    transition: opacity 0.2s;
+  }
+  .grade-cell.hidden { display: none; }
+  .grade-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+  .grade-cell ul {
+    list-style: none;
+    padding: 0;
+  }
+  .grade-cell ul li {
+    font-size: 12.5px;
+    color: var(--color-text);
+    padding: 2px 0;
+    border-bottom: 0.5px solid var(--color-border);
+    line-height: 1.45;
+  }
+  .grade-cell ul li:last-child { border-bottom: none; }
+  .grade-cell ul li::before {
+    content: '·';
+    color: var(--color-muted);
+    margin-right: 5px;
+    font-weight: 700;
+  }
+  .no-grades-msg {
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    color: var(--color-muted);
+    font-size: 13px;
+  }
+  .grade-tag-1 { background: #EEEDFE; color: #3C3489; }
+  .grade-tag-2 { background: #E1F5EE; color: #085041; }
+  .grade-tag-3 { background: #FAECE7; color: #712B13; }
+  .grade-tag-4 { background: #E6F1FB; color: #0C447C; }
+  .grade-tag-5 { background: #FAEEDA; color: #633806; }
+  .grade-tag-6 { background: #FBEAF0; color: #72243E; }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--color-muted);
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+  button.text-btn {
+    background: none; border: 0.5px solid var(--color-border-mid);
+    border-radius: var(--radius-sm); padding: 4px 10px;
+    font-size: 12px; cursor: pointer; color: var(--color-muted);
+    transition: background 0.15s;
+  }
+  button.text-btn:hover { background: var(--color-border); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ELA Scope &amp; Sequence — Grades 1–6</h1>
+  <p class="subtitle">Source: Grade 1–6 ELA Essentials, organized by Writing Rope strands</p>
+  <div class="controls-row">
+    <div class="control-group">
+      <label class="group-label">Grades</label>
+      <div class="toggle-row" id="grade-toggles"></div>
+      <div class="btn-row">
+        <button class="text-btn" onclick="setAllGrades(true)">All on</button>
+        <button class="text-btn" onclick="setAllGrades(false)">All off</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="group-label">Strands</label>
+      <div class="toggle-row" id="strand-toggles"></div>
+      <div class="btn-row">
+        <button class="text-btn" onclick="setAllStrands(true)">All on</button>
+        <button class="text-btn" onclick="setAllStrands(false)">All off</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content"></main>
+
+<script>
+const GRADES = [1,2,3,4,5,6];
+const activeGrades = new Set(GRADES);
+const activeStrands = new Set();
+
+const STRAND_COLORS = {
+  transcription: '#534AB7',
+  craft: '#0F6E56',
+  textStructure: '#993C1D',
+  syntax: '#185FA5',
+  criticalThinking: '#854F0B',
+  readsListensViews: '#993556',
+  writesProduces: '#2c6e49',
+  talk: '#5f3a8a'
+};
+
+const STRAND_BG = {
+  transcription: '#f0effe',
+  craft: '#eaf5f0',
+  textStructure: '#faf0ec',
+  syntax: '#eaf2fb',
+  criticalThinking: '#faf3e6',
+  readsListensViews: '#faf0f5',
+  writesProduces: '#eaf4ec',
+  talk: '#f3eefa'
+};
+
+const data = {
+  strands: [
+    {
+      id: 'transcription',
+      name: 'Transcription',
+      subStrands: [
+        {
+          title: 'Spelling: phonics & patterns',
+          grades: {
+            1: ['Letters of the alphabet: name, produce sound, find in text', 'Blends and digraphs', 'Vowel patterns', 'Common VC and CVC word families (e.g., at, in, cat, win)', 'Invented spelling based on sounds heard in words'],
+            2: ['Consonant and vowel digraphs (sh, ch, th, wh, oo, ee)', 'CVC patterns with consonant blends (e.g., last, stop, stand)', 'V_e pattern (e.g., made, hole)', 'Invented spelling based on sounds for unfamiliar words', 'Uses word lists and environmental print to correct spelling'],
+            3: ['Combines basic letter-sound patterns with ease (e.g., tree, shine)', 'Awareness that letter-sound links vary', 'Uses available resources to correct own spelling'],
+            4: ['Moves beyond simple phonetic spelling', 'Explores more complex letter-sound patterns', 'Uses resources available to correct own spelling'],
+            5: ['Uses descriptors and word choice to create pictures and build sensory images', 'Some simple figurative language in writing'],
+            6: ['Uses descriptors and word choice to create pictures and build sensory images', 'Some figurative language', 'Advanced spelling applied with growing independence']
+          }
+        },
+        {
+          title: 'Spelling: high-frequency words',
+          grades: {
+            1: ['Reads and writes a bank of high-frequency words (Dolch sight words recommended)', 'School teams determine specific words covered'],
+            2: ['Reads and writes an expanding bank of high-frequency words', 'School teams determine specific words covered'],
+            3: ['Reads and writes an increasingly large bank of high-frequency words', 'Sight vocabulary continues to grow'],
+            4: ['High-frequency words from prior grades consolidated', 'Reference for students who require intervention']
+          }
+        },
+        {
+          title: 'Handwriting & letter formation',
+          grades: {
+            1: ['Letters formed in a conventional way', 'Left-to-right directionality', 'Leaves spaces between words']
+          }
+        }
+      ]
+    },
+    {
+      id: 'craft',
+      name: 'Writing Craft',
+      subStrands: [
+        {
+          title: 'Word choice & descriptive language',
+          grades: {
+            1: ['Uses vocabulary appropriate to the type of writing', 'Uses familiar vocabulary and adds new target words'],
+            2: ['Uses some simple, commonplace descriptive words (e.g., big, nice, cold)', 'Uses language in a variety of ways (imitating, creating new words, rhyming)'],
+            3: ['Uses basic descriptors (adjectives and adverbs) to create pictures for the reader'],
+            4: ['Uses basic descriptors regularly to create pictures and build sensory images', 'Begins to use literal and figurative language in a variety of ways'],
+            5: ['Descriptors and word choice to create a picture for the reader and build sensory images', 'Some simple figurative language'],
+            6: ['Descriptors and word choice to create pictures and build sensory images', 'Some figurative language used with increasing confidence']
+          }
+        },
+        {
+          title: 'Awareness of task, audience & purpose',
+          grades: {
+            1: ['Identifies why they are writing or producing', 'Familiar audience (teacher, class, parent)'],
+            2: ['Identifies why they are writing and what their message will be', 'Selects a favourite text to share with an audience'],
+            3: ['Selects a topic and text type based on purpose and intended audience'],
+            4: ['Examines models of text types to learn how to craft their own', 'Considers audience when writing; begins to adjust writing decisions to purpose and audience', 'Understands the purpose for producing a media text'],
+            5: ['Adjusts writing to purpose and audience; connects audience needs/expectations to writing decisions', 'Understands the purpose for producing a media text'],
+            6: ['Adjusts writing to purpose and audience; connects audience needs/expectations to writing decisions', 'Understands the purpose for producing a media text', 'Uses appropriate technology to produce a text']
+          }
+        },
+        {
+          title: 'Literary devices (figurative language, dialogue, etc.)',
+          grades: {
+            3: ['Uses dialogue in narrative writing (emerging)'],
+            4: ['Begins to vary sentence types for effect', 'Uses dialogue and point of view in narrative writing'],
+            5: ['Quotation marks to punctuate dialogue', 'Simple figurative language in writing', 'Narrative features: humor, suspense, dialogue, point of view'],
+            6: ['Quotation marks to punctuate dialogue', 'Figurative language used with greater range', 'Narrative features: humor, suspense, dialogue, point of view']
+          }
+        },
+        {
+          title: 'Use of visuals, colour & media',
+          grades: {
+            1: ['Uses color in drawings to represent emotion/tone/mood', 'Uses images and/or print and/or sound to produce a familiar media text (drawings)'],
+            2: ['Uses the visual element of color to convey emotion/tone/mood', 'Uses images and/or print and/or sound to produce a familiar text'],
+            3: ['Uses the visual element of color to convey emotion/tone/mood'],
+            4: ['Uses the visual element of color to convey emotion/tone/mood', 'Uses sound in video to convey emotion/tone/mood', 'Uses visuals that convey information (timelines, graphs, graphics)'],
+            5: ['Uses the visual element of color to convey emotion/tone/mood', 'Uses sound in video to convey emotion/tone/mood', 'Uses visuals (timelines, graphs, graphics)'],
+            6: ['Uses the visual element of color to convey emotion/tone/mood', 'Uses sound in video to convey emotion/tone/mood', 'Uses visuals that convey information/ideas', 'Uses appropriate technology to produce a text']
+          }
+        }
+      ]
+    },
+    {
+      id: 'textStructure',
+      name: 'Text Structure',
+      subStrands: [
+        {
+          title: 'Awareness of writing types (opinion, informational, narrative)',
+          grades: {
+            1: ['Narrative: stories based on ideas, experiences and events', 'Self-expressive: friendly letters, invitations, thank-you notes, journals', 'Informational: reports on personal experiences and topics of personal interest'],
+            2: ['Narrative: stories, illustrated picture books, photo stories', 'Self-expressive: friendly letters, greeting cards, journals', 'Informational: process texts (recipes, directions), reports, persuasive posters'],
+            3: ['Narrative: stories, illustrated picture books, photo stories', 'Self-expressive: letters, cards, journals, texts reflecting on own learning', 'Informational: reports, process texts, persuasive texts'],
+            4: ['Narrative: stories, comic strips, illustrated picture books', 'Self-expressive: poetry, journals, multimedia journals', 'Informational: reports, how-to texts, graphic organizers, persuasive texts'],
+            5: ['Narrative: stories, comic strips, illustrated picture books', 'Self-expressive: poetry, journals, multimedia journals', 'Informational: reports, how-to texts, graphic organizers, persuasive texts'],
+            6: ['Narrative: stories, comic strips, illustrated picture books', 'Self-expressive: poetry, journals, multimedia journals', 'Informational: reports, how-to texts, graphic organizers, persuasive texts']
+          }
+        },
+        {
+          title: 'Structure: introductions, body, conclusions',
+          grades: {
+            1: ['Predictable story patterns: beginning, middle, end', 'Title to indicate contents', 'Salutation, body, closing of a letter'],
+            2: ['Beginning, middle, end with sequence of events', 'Headline or title + series of logical steps', 'Salutation, body, closing of a letter'],
+            3: ['Predictable story patterns: sequence of events', 'Title + logical steps in images and/or print', 'Synthesizes ideas and feelings to focus on what is most important'],
+            4: ['Opening general statement about the topic', 'Logical sequential or chronological organization', 'Conclusion/summary of events/observations'],
+            5: ['General statement about the topic in an opening paragraph', 'Logical sequential or chronological organization of information', 'Summary of events, observations, impressions to highlight what is important'],
+            6: ['General statement about the topic in an opening paragraph', 'Logical sequential or chronological organization of information', 'Summary of events, observations, impressions to highlight what is important']
+          }
+        },
+        {
+          title: 'Paragraph structure',
+          grades: {
+            2: ['Continues on the same line before moving to the next when writing more than one sentence'],
+            3: ['Simple compound sentences by using prepositions, conjunctions and interjections'],
+            4: ['Both simple and compound sentences; begins to use transitional words/phrases', 'Revises to sequence information or events more clearly'],
+            5: ['Both simple and compound sentences; begins to use transitional phrases', 'Rearranges sentences and paragraphs for clarity and effect'],
+            6: ['Both simple and compound sentences with transitional phrases', 'Rearranges sentences and paragraphs for clarity and effect']
+          }
+        },
+        {
+          title: 'Patterns of organization (sequence, cause-effect, compare-contrast, etc.)',
+          grades: {
+            2: ['Information in sequence (chronological, steps to take)', 'Directions and instructions in logical order'],
+            3: ['Information in a sequence', 'Explanation of a procedure or how something works'],
+            4: ['Logical sequential or chronological organization', 'Compare/contrast and problem-solution strategies (information-based)', 'Uses visuals to organize a text or provide information (timelines, graphs, graphics)'],
+            5: ['Sequence or chronology in information-based texts', 'Compare/contrast, problem-solution, cause-effect strategies', 'Uses visuals to organize a text or provide information'],
+            6: ['Sequence or chronology in information-based texts', 'Compare/contrast, problem-solution, cause-effect strategies', 'Uses visuals to organize a text or provide information']
+          }
+        },
+        {
+          title: 'Linking & transition words',
+          grades: {
+            3: ['Simple compound sentences using prepositions, conjunctions and interjections (but, and, so)'],
+            4: ['Begins to use transitional words/phrases in writing'],
+            5: ['Uses transitional phrases in both simple and compound sentences'],
+            6: ['Uses transitional phrases with increasing confidence and consistency']
+          }
+        }
+      ]
+    },
+    {
+      id: 'syntax',
+      name: 'Syntax',
+      subStrands: [
+        {
+          title: 'Basic grammar (sentences, sentence types)',
+          grades: {
+            1: ['Simple sentences containing a subject and a verb', 'Structure of a question in writing'],
+            2: ['Simple sentences that follow a logical order', 'End punctuation: period, question mark, exclamation point'],
+            3: ['Simple compound sentences using prepositions, conjunctions and interjections', 'Correct verb tenses and pronouns (begins to use)'],
+            4: ['Both simple and compound sentences consistently', 'Correct verb tenses and pronouns used consistently'],
+            5: ['Both simple and compound sentences; begins to use transitional phrases', 'Checks for conventions of grammar during editing'],
+            6: ['Both simple and compound sentences with transitional phrases', 'Checks for conventions of grammar during editing']
+          }
+        },
+        {
+          title: 'Punctuation: basic',
+          grades: {
+            1: ['Capitalization: first word in a sentence, own name, the word "I"', 'Period at the end of a sentence', 'Question mark at the end of a question'],
+            2: ['Capitalization: own name, "I", first word in a sentence, proper names, days/months, holidays', 'End punctuation: period, question mark, exclamation point'],
+            3: ['Capitalization: first word in a sentence and proper nouns', 'End punctuation: period, question mark, exclamation point', 'Commas for items in a series and greetings (begins to use)', 'Apostrophes in often-used contractions (begins to use)'],
+            4: ['Commas for items in a series and greetings', 'Apostrophes in contractions and to show possession'],
+            5: ['Quotation marks to punctuate dialogue'],
+            6: ['Quotation marks to punctuate dialogue', 'Full range of basic punctuation applied with consistency']
+          }
+        },
+        {
+          title: 'Sentence elaboration',
+          grades: {
+            3: ['Uses basic descriptors (adjectives and adverbs) to create pictures for the reader'],
+            4: ['Uses basic descriptors regularly; begins to use literal and figurative language', 'Begins to vary types of sentences between simple and compound'],
+            5: ['Descriptors and word choice to build sensory images', 'Rearranges sentences for clarity and effect'],
+            6: ['Descriptors and word choice to build sensory images', 'Rearranges sentences and paragraphs for clarity and effect', 'Uses figurative language with greater range']
+          }
+        }
+      ]
+    },
+    {
+      id: 'criticalThinking',
+      name: 'Critical Thinking',
+      subStrands: [
+        {
+          title: 'Awareness of the writing process (think, plan, write, revise)',
+          grades: {
+            1: ['Identifies why they are writing or producing', 'Puts pencil to paper with intention of producing a message', 'Uses images and/or print and/or sound to produce a familiar media text'],
+            2: ['Identifies purpose (to entertain, to give information, etc.) and what their message will be', 'Begins to reread work to check for clarity', 'Selects a favourite text to share with an audience'],
+            3: ['Selects a topic and text type based on purpose and audience', 'Revises work by rereading and adding descriptive words', 'Begins to edit for spelling, capitalization and punctuation', 'Presents a produced text to its intended audience'],
+            4: ['Full writing process: plan, draft, revise, edit, publish', 'Revises to sequence information more clearly and delete unnecessary details', 'Checks for conventions of grammar during editing', 'Evaluates effectiveness given audience and purpose'],
+            5: ['Full writing process applied with increasing independence', 'Adds descriptive words and sufficient details during revision', 'Checks that information/events are sequenced logically', 'Seeks and provides feedback through all stages'],
+            6: ['Full writing process applied with increasing independence', 'Adds descriptive words and sufficient details during revision', 'Checks that information/events are sequenced logically', 'Seeks and provides feedback through all stages']
+          }
+        },
+        {
+          title: 'Planning: generating ideas & gathering information',
+          grades: {
+            1: ['Identifies why they are writing', 'Examines models of text types to learn how to craft their own (Good to Know)'],
+            2: ['Plans using a graphic organizer (storyboard, brainstorm, mindmap)', 'Examines models of text types to learn how to craft their own'],
+            3: ['Plans using a graphic organizer', 'Examines models of text types to learn how to craft their own'],
+            4: ['Selects topic and text type based on purpose and audience', 'Plans using a graphic organizer', 'Understands purpose for producing a media text'],
+            5: ['Plans using a graphic organizer', 'Examines models of text types to learn how to craft their own', 'Understands purpose for producing a media text'],
+            6: ['Plans using a graphic organizer', 'Examines models of text types to learn how to craft their own', 'Understands purpose for producing a media text']
+          }
+        },
+        {
+          title: 'Writing about texts & sources (synthesizing, summarizing, responding)',
+          grades: {
+            1: ['Makes literal connections between own experiences and the text', 'Participates in shared reading to build fluency, vocabulary and phonological skills'],
+            2: ['Makes connections between own experiences, prior knowledge and the text', 'Constructs a personal response to the text (makes meaning)', 'Uses a variety of reading strategies to make meaning'],
+            3: ['Makes explicit connections between own experiences and the story', 'Builds meaning from information-based texts using description of ideas and concepts', 'Uses prior knowledge of topic, author and text type'],
+            4: ['Uses details, evidence, structures and features in text to infer meaning', 'Builds background knowledge and integrates new information', 'Understands that texts are constructed for a specific audience; questions motivations', 'Uses visuals that convey information to make meaning (timelines, graphs, graphics)'],
+            5: ['Uses details and evidence in text to infer meaning', 'Considers ways to distinguish facts from opinion', 'Uses other readers\' interpretations to clarify and extend own ideas', 'Understands techniques used to attract a reader/viewer\'s attention'],
+            6: ['Uses details and evidence in text to infer meaning', 'Uses evidence to distinguish own thinking/values/beliefs from those in the text', 'Considers ways to distinguish facts from opinion', 'Uses other readers\' interpretations to clarify and extend own ideas']
+          }
+        }
+      ]
+    },
+    {
+      id: 'readsListensViews',
+      name: 'Reads, Listens & Views',
+      subStrands: [
+        {
+          title: 'Reading strategies & comprehension',
+          grades: {
+            1: ['Uses prior knowledge of topic and text type to add to understanding', 'Previews cover and illustrations to predict (predict)', 'Participates in shared reading of nursery rhymes, songs, chants, choral reading', 'Uses detail and evidence to infer meaning (esp. characters) in read-aloud context'],
+            2: ['Understands purpose for reading, listening, or viewing a text', 'Uses structures and features to make meaning (beginning, middle, end; graphics, titles)', 'Uses details and evidence to infer meaning (characters, problem/solution, graphics)', 'Interprets color to understand emotion/tone/mood'],
+            3: ['Begins to go beyond personal experience to build background knowledge', 'Uses a variety of reading strategies to make meaning', 'Integrates background knowledge with new information', 'Interprets visual element of color to understand emotion/tone/mood'],
+            4: ['Uses knowledge of text type/genre to determine important structures and features', 'Builds meaning using description, sequence/chronology, compare/contrast, problem-solution', 'Uses purpose of reading and clues in text to determine what is important', 'Interprets use of sound in video to understand emotion/tone/mood', 'Uses visuals (timelines, graphs, graphics) to make meaning'],
+            5: ['Makes use of structures and features in text to make meaning', 'Builds meaning using sequence/chronology, compare/contrast, problem-solution, cause-effect', 'Uses purpose of reading and clues in text to determine what is important', 'Considers ways to distinguish facts from opinion', 'Uses other readers\' interpretations to clarify and extend own ideas'],
+            6: ['Makes use of structures and features in text to make meaning', 'Builds meaning using sequence/chronology, compare/contrast, problem-solution, cause-effect', 'Uses purpose of reading and clues in text to determine what is important', 'Interprets use of sound in video to understand emotion/tone/mood', 'Uses visuals (timelines, graphs, graphics) to make meaning']
+          }
+        },
+        {
+          title: 'Text types read, listened to & viewed',
+          grades: {
+            1: ['Nursery rhymes, songs, chants', 'Picture books, illustrated picture books, online talking books', 'Simple non-fiction describing a topic', 'Popular signs, symbols, packaging', 'Friendly letters, invitations, thank-you notes'],
+            2: ['Picture books, poetry, classic and modern fairy tales', 'Stories in children\'s magazines, illustrated picture books, online talking books', 'Nonfiction (articles in children\'s magazines, books, websites)', 'Texts that explain a process/procedure (rules, recipes, directions)', 'Popular signs, symbols, packaging'],
+            3: ['Picture books, poetry, classic and modern fairy tales', 'Stories in children\'s magazines, illustrated picture books, online talking books', 'Nonfiction (articles in children\'s magazines, books, websites)', 'Texts that explain a process/procedure', 'Simple non-fiction describing a topic'],
+            4: ['Picture books (fiction and nonfiction, wordless, etc.)', 'Poetry, classic and modern fairy tales', 'Early/beginning chapter books, comic strips (graphic novels)', 'Age-appropriate videos', 'Nonfiction (articles, books, websites, posters, advertisements)'],
+            5: ['Picture books (fiction, nonfiction, wordless, etc.)', 'Poetry, early/beginning chapter books and appropriate young adult literature', 'Comic strips (graphic novels), age-appropriate videos', 'Nonfiction (articles, books, websites, posters, advertisements)'],
+            6: ['Picture books (fiction, nonfiction, wordless, etc.)', 'Poetry, early/beginning chapter books and appropriate young adult literature', 'Comic strips (graphic novels), age-appropriate videos', 'Nonfiction (articles, books, websites, posters, advertisements)']
+          }
+        },
+        {
+          title: 'Media literacy & critical viewing',
+          grades: {
+            2: ['Interprets persuasive images, words or phrases that promote a product'],
+            3: ['Uses persuasive images, words or phrases that promote a product'],
+            4: ['Understands that all texts are constructed to appeal to a specific audience', 'Uses details from the text to figure out the target audience', 'Questions the motivations of the people who constructed the text', 'Interprets the use of sound in video to understand emotion/tone/mood'],
+            5: ['Understands that all texts are constructed with a target audience in mind', 'Questions motivations of constructors; examines techniques used to attract attention', 'Considers ways to distinguish facts from opinion'],
+            6: ['Understands that all texts are constructed with a target audience in mind', 'Questions motivations of constructors; examines techniques used to attract attention', 'Uses evidence to distinguish own thinking/values/beliefs from those in the text', 'Considers ways to distinguish facts from opinion']
+          }
+        }
+      ]
+    },
+    {
+      id: 'writesProduces',
+      name: 'Writes & Produces',
+      subStrands: [
+        {
+          title: 'Conventions of written language',
+          grades: {
+            1: ['Letters formed in a conventional way', 'Left to right; spaces between words', 'Simple sentences (subject + verb)', 'Capitalization: first word, own name, "I"', 'Period and question mark', 'Invented spelling based on sounds heard', 'Common VC and CVC spelling patterns'],
+            2: ['Simple sentences in logical order', 'Capitalization: own name, "I", first word, proper names, days/months, holidays', 'End punctuation: period, question mark, exclamation point', 'Common spelling patterns: digraphs, blends, V_e pattern', 'Some simple, commonplace descriptive words'],
+            3: ['Capitalization: first word and proper nouns', 'End punctuation: period, question mark, exclamation point', 'Simple compound sentences (prepositions, conjunctions, interjections)', 'Correct verb tenses and pronouns (begins to use)', 'Commas for items in a series and greetings (begins to use)', 'Apostrophes in often-used contractions (begins to use)', 'Basic descriptors (adjectives and adverbs)'],
+            4: ['Both simple and compound sentences; begins to use transitional words/phrases', 'Correct verb tenses and pronouns consistently', 'Basic descriptors regularly; begins to use literal and figurative language', 'Commas for items in a series and greetings', 'Apostrophes in contractions and to show possession'],
+            5: ['Both simple and compound sentences; begins to use transitional phrases', 'Descriptors and word choice for sensory images', 'Some simple figurative language', 'Quotation marks to punctuate dialogue'],
+            6: ['Both simple and compound sentences with transitional phrases', 'Descriptors and word choice for sensory images', 'Some figurative language', 'Quotation marks to punctuate dialogue']
+          }
+        },
+        {
+          title: 'Writing process: drafting, revising, editing, publishing',
+          grades: {
+            1: ['Identifies why they are writing or producing', 'Puts pencil to paper with intention of producing a message', 'Uses images and/or print and/or sound to produce familiar media texts'],
+            2: ['Identifies purpose and message before drafting', 'Begins to reread work to check for clarity', 'Seeks and provides feedback', 'Selects a favourite text to share with an audience'],
+            3: ['Revises work, rereading to ensure clarity; adds descriptive words', 'Begins to edit for spelling, capitalization and punctuation', 'Presents produced text to its intended audience', 'Seeks and provides feedback through all stages'],
+            4: ['Revises to sequence information more clearly; deletes unnecessary details', 'Edits for spelling, capitalization and punctuation', 'Checks for conventions of grammar', 'Evaluates effectiveness given audience and purpose', 'Seeks and provides feedback through all stages'],
+            5: ['Adds descriptive words and sufficient details during revision', 'Checks that information/events are sequenced logically; makes changes when needed', 'Rearranges sentences and paragraphs for clarity and effect', 'Checks for conventions of grammar', 'Seeks and provides feedback through all stages'],
+            6: ['Adds descriptive words and sufficient details during revision', 'Revises to sequence information/events more clearly; deletes unnecessary details', 'Rearranges sentences and paragraphs for clarity and effect', 'Checks for conventions of grammar', 'Seeks and provides feedback through all stages']
+          }
+        },
+        {
+          title: 'Text types written & produced',
+          grades: {
+            1: ['Friendly letters, invitations, thank-you notes, journals', 'Stories based on ideas, experiences and events', 'Illustrated picture books (drawings, images, photos)', 'Photo stories (sequencing photos)', 'Reports on personal experiences or topics of personal interest'],
+            2: ['Friendly letters, greeting cards, thank-you notes, journals', 'Stories, illustrated picture books, photo stories', 'Learning/thinking logs', 'Process texts (rules, recipes, directions)', 'Reports on personal experiences or topics of personal interest', 'Persuasive texts promoting a product, event or service (poster, sign)'],
+            3: ['Friendly letters, greeting cards, thank-you notes, journals', 'Stories, illustrated picture books, photo stories', 'Learning/thinking logs', 'Process texts (rules, recipes, directions)', 'Reports on personal experiences or topics of personal interest', 'Persuasive texts promoting a product, event or service'],
+            4: ['Poetry, journals, multimedia journals', 'Stories, illustrated narratives in comic strip, illustrated picture books, photo stories', 'Graphic organizers, outlines, webs', 'Process texts, how-to books (illustrated/multimedia)', 'Reports about classroom/community, personal experiences, topics of personal interest', 'Persuasive texts promoting a product, event or service'],
+            5: ['Poetry, journals, multimedia journals', 'Stories, illustrated narratives in comic strip, illustrated picture books, photo stories', 'Graphic organizers, outlines, webs', 'Process texts, how-to books (illustrated/multimedia)', 'Reports about classroom/community, personal experiences, topics of personal interest', 'Persuasive texts promoting a product, event or service'],
+            6: ['Poetry, journals, multimedia journals', 'Stories, illustrated narratives in comic strip, illustrated picture books, photo stories', 'Graphic organizers, outlines, webs', 'Process texts, how-to books (illustrated/multimedia)', 'Reports about classroom/community, personal experiences, topics of personal interest', 'Persuasive texts promoting a product, event or service']
+          }
+        }
+      ]
+    },
+    {
+      id: 'talk',
+      name: 'Talk',
+      subStrands: [
+        {
+          title: 'Oral language & communication skills',
+          grades: {
+            1: ['Shares information with peers and teachers when prompted', 'Shares feelings about a topic, likes and dislikes', 'Asks and answers questions from peers and teachers', 'Experiments with gestures, facial expressions and elements of voice to convey a message', 'Listens to and exchanges ideas and information respectfully', 'Uses familiar vocabulary and adds new target words'],
+            2: ['Shares information with peers and teachers with increasing independence', 'Experiments with gestures, facial expressions and elements of voice', 'Listens to and exchanges ideas and information respectfully', 'Demonstrates known social conventions for working collaboratively (turn taking)'],
+            3: ['Uses strategies to share ideas and points of view', 'Uses strategies to respond to and question others\' ideas with respect', 'Demonstrates good collaborative skills (helpful suggestions, encouraging others, listening attentively, listening critically)', 'Experiments with appropriate language registers and vocabulary', 'Begins to practice nonverbal cues (eye contact, nodding)'],
+            4: ['Uses strategies to share ideas and points of view', 'Uses strategies to respond to and question others\' ideas with respect', 'Collaborates with peers for a specific purpose', 'Experiments with appropriate language registers', 'Begins to practice nonverbal cues (eye contact, nodding, leaning in)'],
+            5: ['Uses strategies to share ideas and points of view', 'Uses strategies to respond to and question others\' ideas with respect', 'Collaborates with peers for a specific purpose', 'Uses strategies to support communication', 'Practices nonverbal cues to communicate effectively'],
+            6: ['Uses strategies to share ideas and points of view', 'Uses strategies to respond to and question others\' ideas with respect', 'Collaborates with peers for a specific purpose', 'Uses strategies to support communication', 'Practices nonverbal cues to communicate effectively']
+          }
+        },
+        {
+          title: 'Collaborative discussion',
+          grades: {
+            1: ['Participates in collaborative activities (read alouds, games)', 'Can use "talk" to organize thoughts and ideas before writing'],
+            2: ['Begins to collaborate with peers for a specific purpose (partner reading, turn and talk, write a story together)', 'Participates in student-teacher conferences to discuss learning and set goals', 'Uses "talk" (e.g., turn and talk) to compose a first draft of thoughts, ideas and information'],
+            3: ['Uses strategies taught to respond to ideas and points of view of others with respect', 'Through talk, tries out different ways of thinking about a problem', 'Experiments with appropriate language registers', 'Begins to recognize and use nonverbal cues'],
+            4: ['Participates in group activities in a variety of roles (note taker, focus monitor, discussion leader)', 'Through talk, tries out different ways of thinking about a problem', 'Begins to clarify and reshape ideas after collaborative talk'],
+            5: ['Participates in group activities in a variety of roles (note taker, focus monitor, discussion leader)', 'Through talk, tries out different ways of thinking about a problem', 'Clarifies and reshapes ideas after collaborative talk'],
+            6: ['Participates in group activities in a variety of roles (note taker, focus monitor, discussion leader)', 'Through talk, tries out different ways of thinking about a problem', 'Clarifies and reshapes ideas after collaborative talk']
+          }
+        },
+        {
+          title: 'Oral text types',
+          grades: {
+            1: ['Formal and informal thank-yous, expressions of appreciation and support', 'Role-playing with characters from stories, literature, non-fiction', 'Story-telling', 'Directions and instructions (e.g., for a game)', 'Spoken report based on family, community or school experiences'],
+            2: ['Formal and informal thank-yous, expressions of appreciation and support', 'Role-playing with characters from their own stories, literature, non-fiction', 'Story-telling', 'Spoken report based on family, community or school experiences', 'Uses talk to plan (compose a first draft of thoughts, ideas and information)'],
+            3: ['Formal and informal thank-yous', 'Texts that focus on reflecting and evaluating own learning', 'Story-telling', 'Uses talk to clarify steps in a procedure or organizational plan (brainstorming)', 'Explanation of a procedure or how something works', 'Spoken reports describing the ways things are or were'],
+            4: ['Formal and informal thank-yous; texts reflecting on own learning', 'Story-telling', 'Uses talk to clarify steps in a procedure', 'Explanation of a procedure or how something works', 'Explanation of reasons for a decision', 'Spoken reports based on family, community or school experiences', 'Texts that seek to persuade peers to change habits/behaviours'],
+            5: ['Texts that focus on reflecting and evaluating own learning', 'Story-telling', 'Uses talk to clarify steps in a procedure', 'Explanation of a procedure or how something works', 'Explanation of reasons for a decision', 'Spoken reports based on family, community or school experiences', 'Texts that seek to persuade peers to change habits/behaviours'],
+            6: ['Texts that focus on reflecting and evaluating own learning', 'Story-telling', 'Uses talk to clarify steps in a procedure', 'Explanation of a procedure or how something works', 'Explanation of reasons for a decision', 'Spoken reports based on family, community or school experiences', 'Texts that seek to persuade peers to change habits/behaviours']
+          }
+        }
+      ]
+    }
+  ]
+};
+
+function buildGradeToggles() {
+  const container = document.getElementById('grade-toggles');
+  GRADES.forEach(g => {
+    const label = document.createElement('label');
+    label.className = `toggle-item grade-${g}`;
+    label.innerHTML = `
+      <label class="toggle-switch grade-${g}">
+        <input type="checkbox" checked data-grade="${g}" onchange="toggleGrade(${g}, this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="toggle-label" style="color:var(--color-grade${g})">Grade ${g}</span>
+    `;
+    container.appendChild(label);
+  });
+}
+
+function buildStrandToggles() {
+  const container = document.getElementById('strand-toggles');
+  data.strands.forEach(s => {
+    activeStrands.add(s.id);
+    const label = document.createElement('label');
+    label.className = 'toggle-item strand-toggle';
+    label.innerHTML = `
+      <label class="toggle-switch strand-toggle">
+        <input type="checkbox" checked data-strand="${s.id}" onchange="toggleStrand('${s.id}', this.checked)" style="--toggle-color:${STRAND_COLORS[s.id]}">
+        <span class="toggle-slider" style="--toggle-color:${STRAND_COLORS[s.id]}"></span>
+      </label>
+      <span class="toggle-label" style="color:${STRAND_COLORS[s.id]};font-size:12px">${s.name}</span>
+    `;
+    container.appendChild(label);
+  });
+}
+
+function buildContent() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '';
+  data.strands.forEach(strand => {
+    const block = document.createElement('div');
+    block.className = 'strand-block';
+    block.id = `strand-${strand.id}`;
+    if (!activeStrands.has(strand.id)) block.classList.add('hidden');
+
+    const header = document.createElement('div');
+    header.className = 'strand-header';
+    header.style.setProperty('--strand-header-bg', STRAND_BG[strand.id] || '#f5f4f0');
+    header.innerHTML = `
+      <div class="strand-header-left">
+        <div class="strand-dot" style="background:${STRAND_COLORS[strand.id]}"></div>
+        <span class="strand-name">${strand.name}</span>
+        <span class="strand-sub">${strand.subStrands.length} sub-strand${strand.subStrands.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="chevron"></div>
+    `;
+    header.onclick = () => {
+      header.classList.toggle('open');
+      body.classList.toggle('open');
+    };
+
+    const body = document.createElement('div');
+    body.className = 'strand-body';
+
+    strand.subStrands.forEach(ss => {
+      const sub = document.createElement('div');
+      sub.className = 'substrand';
+      sub.innerHTML = `<div class="substrand-title">${ss.title}</div>`;
+
+      const cells = document.createElement('div');
+      cells.className = 'grade-cells';
+
+      GRADES.forEach(g => {
+        const items = ss.grades[g];
+        const cell = document.createElement('div');
+        cell.className = `grade-cell grade-cell-${g}`;
+        if (!activeGrades.has(g)) cell.classList.add('hidden');
+        if (!items || items.length === 0) {
+          cell.innerHTML = `<span class="grade-tag grade-tag-${g}">Grade ${g}</span><ul><li style="color:var(--color-muted);font-style:italic">Continues from prior grade</li></ul>`;
+        } else {
+          const lis = items.map(i => `<li>${i}</li>`).join('');
+          cell.innerHTML = `<span class="grade-tag grade-tag-${g}">Grade ${g}</span><ul>${lis}</ul>`;
+        }
+        cells.appendChild(cell);
+      });
+
+      sub.appendChild(cells);
+      body.appendChild(sub);
+    });
+
+    block.appendChild(header);
+    block.appendChild(body);
+    main.appendChild(block);
+  });
+}
+
+function toggleGrade(grade, on) {
+  if (on) activeGrades.add(grade);
+  else activeGrades.delete(grade);
+  document.querySelectorAll(`.grade-cell-${grade}`).forEach(el => {
+    el.classList.toggle('hidden', !on);
+  });
+}
+
+function toggleStrand(id, on) {
+  if (on) activeStrands.add(id);
+  else activeStrands.delete(id);
+  const block = document.getElementById(`strand-${id}`);
+  if (block) block.classList.toggle('hidden', !on);
+}
+
+function setAllGrades(on) {
+  GRADES.forEach(g => {
+    if (on) activeGrades.add(g);
+    else activeGrades.delete(g);
+    document.querySelectorAll(`.grade-cell-${g}`).forEach(el => el.classList.toggle('hidden', !on));
+  });
+  document.querySelectorAll('[data-grade]').forEach(cb => cb.checked = on);
+}
+
+function setAllStrands(on) {
+  data.strands.forEach(s => {
+    if (on) activeStrands.add(s.id);
+    else activeStrands.delete(s.id);
+    const block = document.getElementById(`strand-${s.id}`);
+    if (block) block.classList.toggle('hidden', !on);
+  });
+  document.querySelectorAll('[data-strand]').forEach(cb => cb.checked = on);
+}
+
+buildGradeToggles();
+buildStrandToggles();
+buildContent();
+</script>
+</body>
+</html>
