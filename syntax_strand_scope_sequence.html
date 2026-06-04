@@ -1,0 +1,215 @@
+
+<style>
+h2.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+.strand-header{padding:1.5rem 1.5rem 0.5rem;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1rem}
+.strand-title{font-size:13px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-secondary);margin:0 0 4px}
+.strand-name{font-size:22px;font-weight:500;color:var(--color-text-primary);margin:0}
+.grade-row{display:grid;grid-template-columns:180px repeat(4,1fr);gap:0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.grade-row:last-child{border-bottom:none}
+.sub-label{font-size:12px;font-weight:500;color:var(--color-text-secondary);padding:10px 12px;display:flex;align-items:center;border-right:0.5px solid var(--color-border-tertiary)}
+.grade-headers{display:grid;grid-template-columns:180px repeat(4,1fr);gap:0;margin-bottom:0}
+.grade-header{font-size:11px;font-weight:500;color:var(--color-text-secondary);text-align:center;padding:8px 4px;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.grade-header:last-child{border-right:none}
+.corner{border-right:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.cycle-label{font-size:10px;font-weight:500;color:var(--color-text-tertiary);text-align:center;letter-spacing:0.06em;text-transform:uppercase;padding:4px 0}
+.cycle-bar{height:4px;margin:0 8px 8px;border-radius:2px}
+.cycle2{background:#9FE1CB}
+.cycle3{background:#AFA9EC}
+.cell{padding:6px 4px;border-right:0.5px solid var(--color-border-tertiary);position:relative;cursor:pointer;transition:background 0.12s}
+.cell:last-child{border-right:none}
+.cell:hover{background:var(--color-background-secondary)}
+.band{height:28px;border-radius:4px;margin:2px 6px;display:flex;align-items:center;justify-content:center}
+.band-formal{background:#5DCAA5;opacity:0.85}
+.band-refine{background:#9FE1CB;opacity:0.85}
+.band-adv{background:#AFA9EC;opacity:0.85}
+.band-none{background:transparent}
+.band-label{font-size:10px;font-weight:500;color:#085041}
+.band-label-adv{font-size:10px;font-weight:500;color:#3C3489}
+.popover{position:fixed;z-index:9999;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;width:300px;box-shadow:0 4px 24px rgba(0,0,0,0.12);display:none}
+.popover.active{display:block}
+.popover-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin:0 0 4px}
+.popover-grade{font-size:11px;color:var(--color-text-secondary);margin:0 0 10px}
+.popover-note{font-size:12px;color:var(--color-text-secondary);border-top:0.5px solid var(--color-border-tertiary);margin-top:10px;padding-top:10px;font-style:italic}
+.popover ul{margin:0;padding-left:1rem;list-style:disc}
+.popover li{font-size:12px;color:var(--color-text-primary);line-height:1.6;margin-bottom:2px}
+.popover-close{position:absolute;top:8px;right:10px;cursor:pointer;color:var(--color-text-tertiary);font-size:18px;line-height:1;background:none;border:none;padding:0}
+.legend{display:flex;gap:16px;padding:0.75rem 1.5rem;border-top:0.5px solid var(--color-border-tertiary);margin-top:4px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--color-text-secondary)}
+.legend-swatch{width:12px;height:12px;border-radius:2px}
+.overlay{position:fixed;inset:0;z-index:9998;display:none}
+.overlay.active{display:block}
+.cycle-headers{display:grid;grid-template-columns:180px 1fr 1fr;gap:0}
+.cycle-cell{padding:4px 8px;border-right:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.cycle-cell:last-child{border-right:none}
+</style>
+
+<h2 class="sr-only">Syntax strand scope and sequence, Grades 3–6, showing formal instruction, refinement, and advanced use phases for each sub-skill.</h2>
+
+<div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)">
+
+  <div class="strand-header">
+    <p class="strand-title">Writing Rope — Scope &amp; Sequence</p>
+    <p class="strand-name">Syntax</p>
+  </div>
+
+  <div class="cycle-headers">
+    <div class="cycle-cell"></div>
+    <div class="cycle-cell" style="text-align:center">
+      <div class="cycle-label">Cycle 2</div>
+      <div class="cycle-bar cycle2"></div>
+    </div>
+    <div class="cycle-cell" style="text-align:center">
+      <div class="cycle-label">Cycle 3</div>
+      <div class="cycle-bar cycle3"></div>
+    </div>
+  </div>
+
+  <div class="grade-headers">
+    <div class="corner" style="padding:8px 12px"></div>
+    <div class="grade-header">Grade 3</div>
+    <div class="grade-header">Grade 4</div>
+    <div class="grade-header">Grade 5</div>
+    <div class="grade-header" style="border-right:none">Grade 6</div>
+  </div>
+
+  <div id="rows"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch" style="background:#5DCAA5"></div>Formal instruction</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#9FE1CB"></div>Refinement</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#AFA9EC"></div>Advanced / ongoing</div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="popover" id="popover">
+  <button class="popover-close" id="popover-close" aria-label="Close">×</button>
+  <p class="popover-title" id="pop-title"></p>
+  <p class="popover-grade" id="pop-grade"></p>
+  <ul id="pop-bullets"></ul>
+  <p class="popover-note" id="pop-note"></p>
+</div>
+
+<script>
+const SKILLS = [
+  {
+    id: 'punct-basic',
+    label: 'Punctuation — basic',
+    grades: {
+      3: { band: 'formal', bullets: ['End punctuation (. ? !) in simple sentences', 'Commas: dates, lists, letter greetings/closings', 'Apostrophes: common contractions (can\'t, don\'t)', 'Apostrophes: simple possession', 'Recognise and place quotation marks around dialogue'], note: 'Focus on automaticity with common end-marks; introduce comma rules one at a time using mentor texts.' },
+      4: { band: 'formal', bullets: ['End punctuation in compound sentences', 'Commas with coordinating conjunctions (FANBOYS)', 'Commas in postal addresses', 'Apostrophes: less-common contractions (weren\'t, mustn\'t)', 'Apostrophes: possession in more complex contexts', 'Ellipsis to signal trailing off or omission'], note: 'Build on Grade 3 comma rules; FANBOYS is a high-leverage anchor for compound sentences.' },
+      5: { band: 'refine', bullets: ['Commas after introductory dependent clauses (AAAWWUBBIS)', 'Commas to tuck in appositives', 'Semicolons to link thematically-related sentences', 'Quotation marks: dialogue with end- and middle-tags', 'Quotation marks: short work titles and cited excerpts'], note: 'Shift from "using rules" to "crafting effect" — students begin choosing punctuation deliberately for voice and clarity.' },
+      6: { band: 'adv', bullets: ['Commas to set off adverbs/commentary (Finally, __;  __, unfortunately)', 'Colons after complete sentences introducing a list', 'Colons in formal letter/memo salutations', 'Colons for script dialogue speaker labels', 'Commas after transitional words/phrases', 'Direct vs. indirect speech (quotation vs. reported)', 'Single quotes within dialogue ("She said, \'hey\' to me.")', 'Quotation marks for emphasis and scare quotes'], note: 'Encourage students to analyse published writing for deliberate punctuation choices, then imitate.' }
+    }
+  },
+  {
+    id: 'punct-dialogue',
+    label: 'Punctuation — dialogue',
+    grades: {
+      3: { band: 'formal', bullets: ['Understand that quotation marks signal direct speech', 'Place quotation marks around dialogue ("hugs the talk")', 'Capitalise sentence beginnings within dialogue', 'Use ? and ! inside quotes rather than a comma where appropriate'], note: 'The "hugs the talk" anchor phrase works well for Grade 3; pair with short picture-book dialogue examples.' },
+      4: { band: 'formal', bullets: ['All Grade 3 skills, applied more fluently', 'Dialogue with end-tags (e.g., "Come here," she said.)', 'Plays with text features for effect (italics, fonts, speech bubbles)'], note: 'Introduce end-tag punctuation patterns explicitly; students often over-use exclamation marks.' },
+      5: { band: 'refine', bullets: ['Dialogue with middle-tags (e.g., "Well," she said, "come in.")', 'Apply punctuation knowledge in longer, multi-speaker exchanges', 'Quotation marks for titles of short works'], note: 'Middle-tags are a genuine challenge; mini-lessons with sorting activities help.' },
+      6: { band: 'adv', bullets: ['Distinguish direct vs. indirect speech in reading and writing', 'Single quotation marks for quotes within dialogue', 'Quotation marks beyond dialogue: titles, emphasis, scare quotes'], note: 'Connect to reading — find examples in class novels to analyse before writing.' }
+    }
+  },
+  {
+    id: 'capitalization',
+    label: 'Capitalization',
+    grades: {
+      3: { band: 'formal', bullets: ['Own name, the letter I, sentence beginnings', 'Names of people, pets, days, months, holidays', 'Titles (Mr., Ms., Dr.), locations (street, city)', 'Book, film, and brand names', 'Greetings and closings in letters/email'], note: 'Grade 3 students often over-capitalise nouns in general; contrast proper vs. common noun examples regularly.' },
+      4: { band: 'refine', bullets: ['All Grade 3 rules, applied consistently', 'More-complex titles: headings, historical time periods, province abbreviations', 'Acronyms (UNICEF) and initialisms (UFO)'], note: 'Province abbreviations and initialisms are high-frequency in informational writing — address in context.' },
+      5: { band: 'refine', bullets: ['All previous rules, applied in longer multi-paragraph writing', 'Apply rules consistently across genres (narrative, informational, opinion)'], note: 'Shift focus to editing: students self-check capitalisation during revision rather than at point of writing.' },
+      6: { band: 'adv', bullets: ['Capitalisation in formal genres: scripts, memos, formal letters', 'Apply rules in digital writing contexts (email headers, headings)'], note: 'Tie to digital writing unit — students apply rules in formatted typed documents.' }
+    }
+  },
+  {
+    id: 'grammar',
+    label: 'Grammar',
+    grades: {
+      3: { band: 'formal', bullets: ['Simple sentences: subject, verb, modifier', 'Syntactic structures for function (apology, request)', 'Compound sentences using prepositions and conjunctions', 'Consistent verb tense and correct pronoun reference', 'Varying sentence types; transitional phrases'], note: 'Sentence expansion via the "who, what, when, where, why, how" questions is effective at this level.' },
+      4: { band: 'formal', bullets: ['Direct objects for nouns', 'Intensive and reflexive pronouns', 'Proper adjectives', 'Correlative conjunctions', 'Identify dependent and independent clauses', 'Identify run-on sentences in a passage', 'Paragraph structure: topic sentence, supporting details, conclusion, transitions'], note: 'Clause identification is foundational for later punctuation work — invest time here.' },
+      5: { band: 'refine', bullets: ['Gerunds as nouns (Skiing is how I spend my weekends.)', 'Active vs. passive voice — distinguish and convert', 'Prepositional phrases', 'Direct vs. indirect speech', 'Paragraph structure review and application in longer writing'], note: 'Active/passive voice is best taught through mentor texts first — students identify before they produce.' },
+      6: { band: 'adv', bullets: ['Compound-complex sentences', 'Sentence fragments and run-ons: identify and revise', 'Complex sentences with adjective/relative clauses (The mother, who looked sad, ran across the street.)', 'Use grammar knowledge to craft deliberate stylistic effects'], note: 'Grade 6 grammar shifts toward revision and style — frame all instruction around choices writers make.' }
+    }
+  },
+  {
+    id: 'sentence-elab',
+    label: 'Sentence elaboration',
+    grades: {
+      3: { band: 'formal', bullets: ['Add details using adjectives and adverbs', 'Use question words (who, what, when, where, why, how) to expand sentences', 'Compound sentences: prepositions, conjunctions, interjections'], note: 'Sentence-stretching using the 5W+H is low-floor and high-ceiling — accessible to all writers.' },
+      4: { band: 'formal', bullets: ['All Grade 3 strategies applied more independently', 'Begin experimenting with figurative language: simile, onomatopoeia', 'Select words that create a picture in the reader\'s mind'], note: 'Vocabulary-rich read-alouds are the best source of models for word choice at this age.' },
+      5: { band: 'refine', bullets: ['Compound-complex sentences', 'Identify and repair sentence fragments and run-ons', 'Complex sentences with adjective/relative clauses', 'Literal and figurative language: imitation, invented words, rhyme'], note: 'Imitation tasks (copy the structure, change the content) lower the barrier to trying complex syntax.' },
+      6: { band: 'adv', bullets: ['Sophisticated word choice across all genres', 'Use syntax deliberately for voice, pacing, and emphasis', 'Advanced figurative devices: allusion, hyperbole, irony'], note: 'At Grade 6, sentence craft is about intentionality — returning to drafts to ask "does the sentence sound right?"' }
+    }
+  }
+];
+
+const bandClass = { formal: 'band-formal', refine: 'band-refine', adv: 'band-adv' };
+const bandText = { formal: 'Formal', refine: 'Refinement', adv: 'Advanced' };
+const bandLabelClass = { formal: 'band-label', refine: 'band-label', adv: 'band-label-adv' };
+
+const container = document.getElementById('rows');
+SKILLS.forEach(skill => {
+  const row = document.createElement('div');
+  row.className = 'grade-row';
+  const lbl = document.createElement('div');
+  lbl.className = 'sub-label';
+  lbl.textContent = skill.label;
+  row.appendChild(lbl);
+  [3,4,5,6].forEach(g => {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const gData = skill.grades[g];
+    if (gData) {
+      const band = document.createElement('div');
+      band.className = 'band ' + bandClass[gData.band];
+      const ltext = document.createElement('span');
+      ltext.className = bandLabelClass[gData.band];
+      ltext.textContent = bandText[gData.band];
+      band.appendChild(ltext);
+      cell.appendChild(band);
+      cell.addEventListener('click', (e) => openPopover(e, skill.label, g, gData));
+    } else {
+      const band = document.createElement('div');
+      band.className = 'band band-none';
+      cell.appendChild(band);
+    }
+    row.appendChild(cell);
+  });
+  container.appendChild(row);
+});
+
+function openPopover(e, skillName, grade, data) {
+  const pop = document.getElementById('popover');
+  const overlay = document.getElementById('overlay');
+  document.getElementById('pop-title').textContent = skillName;
+  document.getElementById('pop-grade').textContent = 'Grade ' + grade + (grade <= 4 ? ' — Cycle 2' : ' — Cycle 3');
+  const ul = document.getElementById('pop-bullets');
+  ul.innerHTML = '';
+  data.bullets.forEach(b => {
+    const li = document.createElement('li');
+    li.textContent = b;
+    ul.appendChild(li);
+  });
+  document.getElementById('pop-note').textContent = '💡 ' + data.note;
+  pop.classList.add('active');
+  overlay.classList.add('active');
+
+  const rect = e.currentTarget.getBoundingClientRect();
+  let left = rect.right + 8;
+  let top = rect.top;
+  if (left + 308 > window.innerWidth) left = rect.left - 316;
+  if (top + 320 > window.innerHeight) top = window.innerHeight - 330;
+  if (top < 8) top = 8;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+
+function closePopover() {
+  document.getElementById('popover').classList.remove('active');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+document.getElementById('overlay').addEventListener('click', closePopover);
+document.getElementById('popover-close').addEventListener('click', closePopover);
+</script>
