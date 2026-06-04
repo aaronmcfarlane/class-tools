@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POL Structures and Featur.PDF - Interactive Matrix</title>
+    <style>
+        :root {
+            --border-color: #e5e7eb;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-light: #f9fafb;
+            --accent: #2563eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background-color: #ffffff;
+            line-height: 1.5;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem 0;
+            color: #111827;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-group-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        .checkbox-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--text-main);
+        }
+
+        .cycle-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            border-left: 2px solid #dbeafe;
+            padding-left: 0.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            vertical-align: top;
+            min-width: 200px;
+        }
+
+        th:first-child, td:first-child {
+            min-width: 150px;
+            font-weight: 600;
+            background-color: var(--bg-light);
+        }
+
+        th {
+            background-color: var(--bg-light);
+            font-weight: 600;
+            color: #111827;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td:last-child, th:last-child {
+            border-right: none;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
+
+        li {
+            margin-bottom: 0.25rem;
+        }
+
+        .hidden-element {
+            display: none !important;
+        }
+        
+        .sub-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>POL Structures and Featur.PDF</h1>
+        <p>Interactive Curriculum Progression Matrix</p>
+    </header>
+
+    <div class="controls-section">
+        <!-- Strands Filter -->
+        <div>
+            <div class="control-group-title">Toggle Strands (Rows)</div>
+            <div class="checkbox-grid">
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="relational" checked> Relational</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="reflective" checked> Reflective</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="narrative" checked> Narrative & Literary</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="planning" checked> Planning</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="explanatory" checked> Explanatory</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="descriptive" checked> Descriptive Reports</label>
+                <label class="checkbox-label"><input type="checkbox" class="strand-toggle" data-strand="persuasive" checked> Persuasive</label>
+            </div>
+        </div>
+
+        <!-- Cycles Filter -->
+        <div>
+            <div class="control-group-title">Toggle Cycles (Columns)</div>
+            <div class="checkbox-grid">
+                <div class="cycle-block">
+                    <label class="checkbox-label" style="font-weight:600;"><input type="checkbox" class="cycle-broad-toggle" data-broad="c1" checked> Cycle 1</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c11" data-parent="c1" checked> Sub-cycle 1.1</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c12" data-parent="c1" checked> Sub-cycle 1.2</label>
+                </div>
+                <div class="cycle-block" style="border-left-color: #fed7aa;">
+                    <label class="checkbox-label" style="font-weight:600;"><input type="checkbox" class="cycle-broad-toggle" data-broad="c2" checked> Cycle 2</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c21" data-parent="c2" checked> Sub-cycle 2.1</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c22" data-parent="c2" checked> Sub-cycle 2.2</label>
+                </div>
+                <div class="cycle-block" style="border-left-color: #bbf7d0;">
+                    <label class="checkbox-label" style="font-weight:600;"><input type="checkbox" class="cycle-broad-toggle" data-broad="c3" checked> Cycle 3</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c31" data-parent="c3" checked> Sub-cycle 3.1</label>
+                    <label class="checkbox-label" style="padding-left:1rem;"><input type="checkbox" class="col-toggle" data-col="c32" data-parent="c3" checked> Sub-cycle 3.2</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Strand</th>
+                    <th data-column="c11">Cycle 1.1</th>
+                    <th data-column="c12">Cycle 1.2</th>
+                    <th data-column="c21">Cycle 2.1</th>
+                    <th data-column="c22">Cycle 2.2</th>
+                    <th data-column="c31">Cycle 3.1</th>
+                    <th data-column="c32">Cycle 3.2</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Relational -->
+                <tr data-row="relational">
+                    <td>Texts that Reinforce Relationships</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Thank-you notes</li>
+                            <li>Invitations</li>
+                            <li>Introductions</li>
+                            <li>Greeting Cards</li>
+                            <li>Friendly Letters</li>
+                            <li>Poetry</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Thank-you notes</li>
+                            <li>Invitations</li>
+                            <li>Introductions</li>
+                            <li>Greeting Cards</li>
+                            <li>Friendly Letters</li>
+                            <li>Poetry</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Thank-you notes (informal/formal) <span class="sub-text">*oral</span></li>
+                            <li>Expressions of appreciation/support <span class="sub-text">*oral</span></li>
+                            <li>Introductions</li>
+                            <li>Poetry <span class="sub-text">*oral</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Thank-you notes (informal/formal) <span class="sub-text">*oral</span></li>
+                            <li>Expressions of appreciation/support <span class="sub-text">*oral</span></li>
+                            <li>Introductions</li>
+                            <li>Poetry <span class="sub-text">*oral</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c31" style="color:var(--text-muted); font-style:italic;">None listed</td>
+                    <td data-column="c32" style="color:var(--text-muted); font-style:italic;">None listed</td>
+                </tr>
+
+                <!-- Reflective -->
+                <tr data-row="reflective">
+                    <td>Reflective Texts</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Conferences & portfolios <span class="sub-text">*oral</span></li>
+                            <li>Journals</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Conferences & portfolios <span class="sub-text">*oral</span></li>
+                            <li>Journals</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Conferences & portfolios <span class="sub-text">*oral</span></li>
+                            <li>Journals</li>
+                            <li>Multimedia journals</li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Conferences & portfolios <span class="sub-text">*oral</span></li>
+                            <li>Journals</li>
+                            <li>Multimedia journals</li>
+                        </ul>
+                    </td>
+                    <td data-column="c31">
+                        <ul>
+                            <li>Conferences & portfolios <span class="sub-text">*oral</span></li>
+                            <li>Multimedia journals</li>
+                        </ul>
+                    </td>
+                    <td data-column="c32" style="color:var(--text-muted); font-style:italic;">None listed</td>
+                </tr>
+
+                <!-- Narrative -->
+                <tr data-row="narrative">
+                    <td>Narrative & Literary Texts</td>
+                    <td data-column="c11">
+                        <strong>Read/Listen:</strong> Nursery rhymes, wordless & picture books, poetry, fairy tales, early chapter books. Comic strips, magazine/online articles, talking books, biographical picture books.<br><br>
+                        <strong>Write/Produce:</strong> Character role-play\*, storytelling\*, original stories, comic strips. <span class="sub-text">*oral</span>
+                    </td>
+                    <td data-column="c12">
+                        <strong>Read/Listen:</strong> Nursery rhymes, wordless & picture books, poetry, fairy tales, early chapter books. Comic strips, magazine/online articles, talking books, biographical picture books.<br><br>
+                        <strong>Write/Produce:</strong> Character role-play\*, storytelling\*, original stories, comic strips. <span class="sub-text">*oral</span>
+                    </td>
+                    <td data-column="c21">
+                        <strong>Read/Listen:</strong> Picture books (older children), poetry, fairy tales, early chapter books. Comic strips, articles, talking books, biographical picture books, memoirs, films, video clips, animation.<br><br>
+                        <strong>Write/Produce:</strong> Character role-play\*, storytelling\*, comic strips, picture books, photo stories. <span class="sub-text">*oral</span>
+                    </td>
+                    <td data-column="c22">
+                        <strong>Read/Listen:</strong> Picture books (older children), poetry, fairy tales, early chapter books. Comic strips, articles, talking books, biographical picture books, memoirs, films, video clips, animation.<br><br>
+                        <strong>Write/Produce:</strong> Character role-play\*, storytelling\*, comic strips, picture books, photo stories. <span class="sub-text">*oral</span>
+                    </td>
+                    <td data-column="c31">
+                        <strong>Read/Listen:</strong> Picture books (older), young adult literature, contemporary fiction (novels, poetry, graphic novels), articles, biographical picture books, memoirs, films, video clips, animation.<br><br>
+                        <strong>Write/Produce:</strong> Literature/nonfiction role-play\*, picture books, photo stories. <span class="sub-text">*oral</span>
+                    </td>
+                    <td data-column="c32">
+                        <strong>Read/Listen:</strong> Picture books (older), young adult literature, contemporary fiction (novels, poetry, graphic novels), articles, biographical picture books, memoirs, films, video clips, animation.
+                    </td>
+                </tr>
+
+                <!-- Planning -->
+                <tr data-row="planning">
+                    <td>Planning Texts</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Talk to compose first drafts of thoughts, ideas, info <span class="sub-text">*oral</span></li>
+                            <li>Learning/thinking logs & lists</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Talk to compose first drafts <span class="sub-text">*oral</span></li>
+                            <li>Talk to clarify steps in a procedure/plan <span class="sub-text">*oral</span></li>
+                            <li>Learning/thinking logs & lists</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Talk to clarify steps (brainstorming, questioning) <span class="sub-text">*oral</span></li>
+                            <li>Learning/thinking logs & lists</li>
+                            <li>Webbing and mapping texts</li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Talk to clarify steps (brainstorming, questioning) <span class="sub-text">*oral</span></li>
+                            <li>Learning/thinking logs & lists</li>
+                            <li>Webbing and mapping texts</li>
+                        </ul>
+                    </td>
+                    <td data-column="c31">
+                        <ul>
+                            <li>Webbing and mapping texts</li>
+                        </ul>
+                    </td>
+                    <td data-column="c32">
+                        <ul>
+                            <li>Webbing and mapping texts</li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <!-- Explanatory -->
+                <tr data-row="explanatory">
+                    <td>Explanatory Texts</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Directions and instructions <span class="sub-text">*oral</span></li>
+                            <li>Procedural/how-it-works explanations <span class="sub-text">*oral</span></li>
+                            <li>Process texts (rules, recipes, directions)</li>
+                            <li>Illustrated/multimedia how-to books</li>
+                            <li>Narrative structure explanation texts</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Directions and instructions <span class="sub-text">*oral</span></li>
+                            <li>Procedural/how-it-works explanations <span class="sub-text">*oral</span></li>
+                            <li>Explanation of reasons for a decision <span class="sub-text">*oral</span></li>
+                            <li>Process texts (rules, recipes, directions)</li>
+                            <li>Illustrated/multimedia how-to books</li>
+                            <li>Narrative structure explanation texts</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Procedural/how-it-works explanations <span class="sub-text">*oral</span></li>
+                            <li>Explanation of reasons for a decision <span class="sub-text">*oral</span></li>
+                            <li>Process texts <span class="sub-text">*read/view</span></li>
+                            <li>Illustrated/multimedia how-to books <span class="sub-text">*read/view</span></li>
+                            <li>Narrative structure explanations <span class="sub-text">*read/view</span></li>
+                            <li>Posters that explain <span class="sub-text">*read/view</span></li>
+                            <li>Websites <span class="sub-text">*read/view</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Procedural/how-it-works explanations <span class="sub-text">*oral</span></li>
+                            <li>Explanation of reasons for a decision <span class="sub-text">*oral</span></li>
+                            <li>Illustrated/multimedia how-to books <span class="sub-text">*read/view</span></li>
+                            <li>Narrative structure explanations <span class="sub-text">*read/view</span></li>
+                            <li>Posters that explain <span class="sub-text">*read/view</span></li>
+                            <li>Websites <span class="sub-text">*read/view</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c31">
+                        <ul>
+                            <li>Explanation of reasons for a decision <span class="sub-text">*oral</span></li>
+                            <li>Process texts <span class="sub-text">*read/view</span></li>
+                            <li>Websites <span class="sub-text">*read/view</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c32">
+                        <ul>
+                            <li>Websites <span class="sub-text">*read/view</span></li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <!-- Descriptive Reports -->
+                <tr data-row="descriptive">
+                    <td>Descriptive Reports</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Spoken reports (family/community/school) <span class="sub-text">*oral</span></li>
+                            <li>Nonfiction descriptive topics <span class="sub-text">*read</span></li>
+                            <li>Personal experience reports (family/class)</li>
+                            <li>Personal interest reports</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Spoken reports (family/community/school) <span class="sub-text">*oral</span></li>
+                            <li>Nonfiction descriptive topics <span class="sub-text">*read/listen</span></li>
+                            <li>Children's magazine articles <span class="sub-text">*read/listen</span></li>
+                            <li>Descriptive letters <span class="sub-text">*read/listen</span></li>
+                            <li>Newspaper articles <span class="sub-text">*read/listen</span></li>
+                            <li>Personal experience reports</li>
+                            <li>Personal interest reports</li>
+                            <li>Classroom/community updates (newspaper, site, blog)</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Spoken reports (how things are or were) <span class="sub-text">*oral</span></li>
+                            <li>Children's magazine articles <span class="sub-text">*read/listen</span></li>
+                            <li>Descriptive letters <span class="sub-text">*read/listen</span></li>
+                            <li>Newspapers, TV, radio reports <span class="sub-text">*read/listen</span></li>
+                            <li>Webpages, blogs, internet sites <span class="sub-text">*read/listen</span></li>
+                            <li>Classroom/local community reports <span class="sub-text">*write</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Spoken reports (how things are or were) <span class="sub-text">*oral</span></li>
+                            <li>Children's magazine articles <span class="sub-text">*read/listen</span></li>
+                            <li>Descriptive letters <span class="sub-text">*read/listen</span></li>
+                            <li>Newspapers, TV, radio reports <span class="sub-text">*read/listen</span></li>
+                            <li>Webpages, blogs, internet sites <span class="sub-text">*read/listen</span></li>
+                            <li>Classroom/local community reports <span class="sub-text">*write</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c31">
+                        <ul>
+                            <li>Radio and television news reports</li>
+                            <li>Webpages, blogs, and internet sites <span class="sub-text">*read/listen</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c32">
+                        <ul>
+                            <li>Radio and television news reports</li>
+                            <li>Webpages, blogs, and internet sites <span class="sub-text">*read/listen</span></li>
+                        </ul>
+                    </td>
+                </tr>
+
+                <!-- Persuasive -->
+                <tr data-row="persuasive">
+                    <td>Persuasive Texts</td>
+                    <td data-column="c11">
+                        <ul>
+                            <li>Popular signs and symbols (food chains, logos) <span class="sub-text">*read</span></li>
+                            <li>Product packaging aimed at children</li>
+                        </ul>
+                    </td>
+                    <td data-column="c12">
+                        <ul>
+                            <li>Popular signs and symbols <span class="sub-text">*read/listen</span></li>
+                            <li>Product packaging aimed at children</li>
+                            <li>Promotional posters or flyers</li>
+                            <li>TV Commercials</li>
+                            <li>Magazine and newspaper advertisements</li>
+                        </ul>
+                    </td>
+                    <td data-column="c21">
+                        <ul>
+                            <li>Produce persuasive arguments <span class="sub-text">*oral</span></li>
+                            <li>Promotional posters or flyers <span class="sub-text">*read/view</span></li>
+                            <li>TV Commercials <span class="sub-text">*read/view</span></li>
+                            <li>Magazine and newspaper ads <span class="sub-text">*read/view</span></li>
+                            <li>TV/movie reviews for children <span class="sub-text">*read/view</span></li>
+                            <li>Promotional/review media for peers/younger kids <span class="sub-text">*write</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c22">
+                        <ul>
+                            <li>Produce persuasive arguments <span class="sub-text">*oral</span></li>
+                            <li>Promotional posters or flyers <span class="sub-text">*read/view</span></li>
+                            <li>TV Commercials <span class="sub-text">*read/view</span></li>
+                            <li>Magazine and newspaper ads <span class="sub-text">*read/view</span></li>
+                            <li>TV/movie reviews for children <span class="sub-text">*read/view</span></li>
+                            <li>Promotional/review media for peers/younger kids <span class="sub-text">*write</span></li>
+                        </ul>
+                    </td>
+                    <td data-column="c31">
+                        <ul>
+                            <li>Produce persuasive arguments <span class="sub-text">*oral</span></li>
+                            <li>TV and/or movie reviews for children <span class="sub-text">*read/view</span></li>
+                            <li>Public Service Announcements (PSAs) and posters</li>
+                            <li>Opinion pieces (print/online) written for children</li>
+                        </ul>
+                    </td>
+                    <td data-column="c32">
+                        <ul>
+                            <li>TV and movie reviews for peers or younger children</li>
+                            <li>Public Service Announcements (PSAs) and posters</li>
+                            <li>Opinion pieces (print/online) written for children</li>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const strandToggles = document.querySelectorAll('.strand-toggle');
+            const colToggles = document.querySelectorAll('.col-toggle');
+            const broadToggles = document.querySelectorAll('.cycle-broad-toggle');
+
+            // Row (Strand) Visibility Handler
+            function updateRows() {
+                strandToggles.forEach(toggle => {
+                    const strand = toggle.getAttribute('data-strand');
+                    const row = document.querySelector(`tr[data-row="${strand}"]`);
+                    if (row) {
+                        if (toggle.checked) {
+                            row.classList.remove('hidden-element');
+                        } else {
+                            row.classList.add('hidden-element');
+                        }
+                    }
+                });
+            }
+
+            // Column (Cycle) Visibility Handler
+            function updateColumns() {
+                colToggles.forEach(toggle => {
+                    const colId = toggle.getAttribute('data-col');
+                    const elements = document.querySelectorAll(`[data-column="${colId}"]`);
+                    
+                    elements.forEach(el => {
+                        if (toggle.checked) {
+                            el.classList.remove('hidden-element');
+                        } else {
+                            el.classList.add('hidden-element');
+                        }
+                    });
+                });
+            }
+
+            // Broad Cycle Toggle Logic (selects/deselects sub-cycles)
+            broadToggles.forEach(broadToggle => {
+                broadToggle.addEventListener('change', (e) => {
+                    const broadId = broadToggle.getAttribute('data-broad');
+                    const children = document.querySelectorAll(`.col-toggle[data-parent="${broadId}"]`);
+                    
+                    children.forEach(child => {
+                        child.checked = broadToggle.checked;
+                    });
+                    updateColumns();
+                });
+            });
+
+            // If a sub-cycle is unchecked manually, update parent status
+            colToggles.forEach(toggle => {
+                toggle.addEventListener('change', () => {
+                    const parentId = toggle.getAttribute('data-parent');
+                    const parentCheckbox = document.querySelector(`.cycle-broad-toggle[data-broad="${parentId}"]`);
+                    const siblings = document.querySelectorAll(`.col-toggle[data-parent="${parentId}"]`);
+                    
+                    const allChecked = Array.from(siblings).every(sib => sib.checked);
+                    const anyChecked = Array.from(siblings).some(sib => sib.checked);
+                    
+                    parentCheckbox.checked = allChecked;
+                    parentCheckbox.indeterminate = anyChecked && !allChecked;
+                    
+                    updateColumns();
+                });
+            });
+
+            // Event Listeners for rows
+            strandToggles.forEach(toggle => toggle.addEventListener('change', updateRows));
+
+            // Initialization
+            updateRows();
+            updateColumns();
+        });
+    </script>
+</body>
+</html>
