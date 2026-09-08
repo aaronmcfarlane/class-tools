@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>👾 Monster Project Board</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --pink: #ff6b9d;
+  --pink-light: #ffe0ee;
+  --pink-dark: #e8457f;
+  --blue: #6ec6f5;
+  --blue-light: #e8f6ff;
+  --green: #7dd9a0;
+  --green-light: #e8fff0;
+  --yellow: #ffd166;
+  --yellow-light: #fff8e1;
+  --purple: #b78fff;
+  --purple-light: #f3eeff;
+  --bg: #fff5f9;
+  --card: #ffffff;
+  --text: #2d2d3a;
+  --muted: #9e9eae;
+  --radius: 18px;
+  --shadow: 0 4px 20px rgba(255,107,157,0.13);
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  background: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(255,107,157,0.12);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 { font-size: 1.3rem; font-weight: 900; color: var(--pink); letter-spacing: -0.5px; }
+.header-actions { display: flex; gap: 8px; }
+
+/* LAYOUT */
+.app {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+.main-content { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* CARDS */
+.card { background: var(--card); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); }
+.card-title { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+
+/* TEXTAREA / INPUTS */
+textarea {
+  width: 100%; height: 160px; border: 2px solid #f0e0ea; border-radius: 12px;
+  padding: 10px 12px; font-family: 'Nunito', sans-serif; font-size: 0.9rem;
+  resize: vertical; outline: none; transition: border 0.2s; color: var(--text);
+}
+textarea:focus { border-color: var(--pink); }
+
+select, input[type="text"] {
+  font-family: 'Nunito', sans-serif; font-size: 0.9rem; border: 2px solid #f0e0ea;
+  border-radius: 10px; padding: 7px 10px; outline: none; transition: border 0.2s;
+  color: var(--text); background: white;
+}
+select:focus, input[type="text"]:focus { border-color: var(--pink); }
+
+/* BUTTONS */
+button { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.88rem; border: none; border-radius: 10px; padding: 8px 14px; cursor: pointer; transition: transform 0.12s, opacity 0.15s; }
+button:active { transform: scale(0.95); }
+
+.btn-primary { background: var(--pink); color: white; width: 100%; padding: 11px; font-size: 1rem; font-weight: 800; border-radius: 12px; margin-top: 10px; }
+.btn-primary:hover { background: var(--pink-dark); }
+
+.btn-sm { background: var(--pink-light); color: var(--pink-dark); padding: 6px 10px; font-size: 0.8rem; }
+.btn-sm:hover { background: #ffd0e4; }
+
+.btn-ghost { background: transparent; color: var(--muted); padding: 6px 10px; font-size: 0.8rem; border: 2px solid #eee; }
+.btn-ghost:hover { border-color: var(--pink); color: var(--pink); }
+
+/* STUDENT CHIPS */
+.student-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  background: var(--pink-light); color: var(--pink-dark); border-radius: 20px; padding: 5px 10px;
+  font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 5px;
+  cursor: pointer; border: 2px solid transparent; transition: all 0.15s;
+}
+.chip.absent { background: #f0f0f0; color: #aaa; text-decoration: line-through; border-color: #ddd; }
+.chip:hover { border-color: var(--pink); }
+
+/* PROJECT TABS */
+.project-tabs {
+  display: flex; gap: 6px; background: #f5f0f5; padding: 5px; border-radius: 12px;
+  overflow-x: auto; align-items: center;
+}
+.project-tab {
+  display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 9px;
+  font-weight: 700; font-size: 0.85rem; color: var(--muted); cursor: pointer;
+  white-space: nowrap; transition: all 0.18s;
+}
+.project-tab.active { background: white; color: var(--pink); box-shadow: 0 2px 8px rgba(255,107,157,0.15); }
+.project-tab input {
+  border: none; background: transparent; font-family: inherit; font-weight: 700; font-size: 0.85rem;
+  color: inherit; padding: 0; width: auto; max-width: 140px;
+}
+.project-tab input:focus { outline: none; }
+.project-tab .del-project { background: none; border: none; color: #ccc; font-size: 0.85rem; padding: 0 2px; cursor: pointer; }
+.project-tab .del-project:hover { color: #e74c3c; }
+.project-tab.add-tab { color: var(--pink); font-weight: 900; padding: 7px 14px; }
+.project-tab.add-tab:hover { background: white; }
+
+/* BOARD */
+.board {
+  display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; align-items: flex-start;
+}
+.column {
+  border-radius: 16px; padding: 12px; min-width: 210px; max-width: 240px; flex: 0 0 auto;
+  display: flex; flex-direction: column; gap: 8px; min-height: 120px; transition: outline 0.1s;
+}
+.column:nth-child(6n+1) { background: var(--blue-light); }
+.column:nth-child(6n+2) { background: var(--green-light); }
+.column:nth-child(6n+3) { background: var(--yellow-light); }
+.column:nth-child(6n+4) { background: var(--purple-light); }
+.column:nth-child(6n+5) { background: var(--pink-light); }
+.column:nth-child(6n+6) { background: #fff0e6; }
+.column.drag-over { outline: 2px dashed var(--pink); }
+
+.column-header { display: flex; align-items: center; gap: 6px; }
+.column-title-input {
+  flex: 1; min-width: 0; background: rgba(255,255,255,0.6); border: 2px solid transparent;
+  font-weight: 800; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text); border-radius: 8px; padding: 5px 7px;
+}
+.column-title-input:focus { border-color: var(--pink); background: white; }
+.column-count { font-size: 0.72rem; font-weight: 800; color: var(--muted); min-width: 16px; text-align: center; }
+.column-delete { background: none; border: none; color: #c9a; opacity: 0.5; font-size: 0.95rem; cursor: pointer; padding: 2px 4px; }
+.column-delete:hover { opacity: 1; color: #e74c3c; }
+
+.column-body { display: flex; flex-direction: column; gap: 6px; min-height: 40px; border-radius: 10px; padding: 2px; }
+.column-empty { text-align: center; color: var(--muted); font-size: 0.78rem; padding: 10px 4px; opacity: 0.7; }
+
+.member {
+  display: flex; align-items: center; gap: 6px; padding: 7px 9px; border-radius: 8px;
+  font-size: 0.88rem; font-weight: 600; cursor: grab; background: rgba(255,255,255,0.55);
+  transition: background 0.15s, outline 0.1s;
+}
+.member:hover { background: rgba(255,255,255,0.85); }
+.member.dragging { opacity: 0.4; }
+.member.selected { outline: 2px solid var(--pink); background: rgba(255,255,255,0.9); }
+
+.add-column {
+  min-width: 150px; max-width: 150px; flex: 0 0 auto; border-radius: 16px; border: 2px dashed #e8c9d8;
+  display: flex; align-items: center; justify-content: center; color: var(--pink-dark); font-weight: 800;
+  font-size: 0.85rem; cursor: pointer; min-height: 120px; background: transparent; transition: background 0.15s;
+}
+.add-column:hover { background: var(--pink-light); }
+
+.empty-state { text-align: center; color: var(--muted); padding: 30px; font-size: 0.95rem; }
+
+.hidden { display: none !important; }
+
+/* FULLSCREEN TOOLBAR */
+#fullscreenToolbar {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  background: rgba(255,107,157,0.92);
+  backdrop-filter: blur(6px);
+  border-radius: 14px;
+  padding: 8px 12px;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+#fullscreenToolbar button {
+  background: rgba(255,255,255,0.25); color: white; font-weight: 800; font-size: 0.88rem;
+  border-radius: 10px; padding: 8px 14px; border: none; cursor: pointer;
+}
+#fullscreenToolbar button:hover { background: rgba(255,255,255,0.4); }
+
+/* FULLSCREEN MODE */
+body.fullscreen header,
+body.fullscreen .sidebar,
+body.fullscreen #studentsCard {
+  display: none;
+}
+body.fullscreen #fullscreenToolbar { display: flex; }
+body.fullscreen { overflow: hidden; }
+body.fullscreen .app {
+  grid-template-columns: 1fr;
+  max-width: 100%;
+  padding: 20px 20px 70px 20px;
+  height: 100vh;
+}
+body.fullscreen .main-content { height: calc(100vh - 40px - 70px); }
+body.fullscreen .board-card { height: 100%; display: flex; flex-direction: column; }
+body.fullscreen .board { flex: 1; align-items: stretch; }
+body.fullscreen .column { max-width: none; }
+
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; }
+}
+
+@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.column { animation: popIn 0.2s ease both; }
+
+/* FLOATING MONSTERS */
+.monster { position: fixed; font-size: 28px; opacity: 0.13; pointer-events: none; z-index: 0; user-select: none; }
+</style>
+</head>
+<body>
+
+<div id="fullscreenToolbar">
+  <button onclick="toggleFullscreen()">✕ Exit Fullscreen</button>
+</div>
+
+<header>
+  <h1>👾 Monster Project Board</h1>
+  <div class="header-actions">
+    <span id="autosaveNote" style="font-size:0.78rem;color:var(--muted);font-weight:700;align-self:center;">Saved</span>
+    <button class="btn-ghost" onclick="toggleFullscreen()">🖥 Fullscreen</button>
+  </div>
+</header>
+
+<div class="app" id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="card">
+      <div class="card-title">Students (one per line)</div>
+      <textarea id="names" placeholder="Enter student names..."></textarea>
+
+      <select onchange="loadPreset(this.value)" style="width:100%;margin-top:10px;">
+        <option value="">— Load a class —</option>
+        <option value="mcfarlane">Mr. McFarlane Grade 4</option>
+      </select>
+
+      <button class="btn-primary" onclick="updateRoster()">Update Roster</button>
+      <div style="font-size:0.76rem;color:var(--muted);margin-top:6px;">
+        New students are added to the first step. Removing a name here removes them from all projects.
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- PRESENT STUDENTS -->
+    <div class="card" id="studentsCard" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">Click to mark absent (hides from board)</div>
+        <span id="presentCount" style="font-size:0.82rem;font-weight:700;color:var(--muted);"></span>
+      </div>
+      <div class="student-chips" id="studentList"></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div class="card">
+      <div class="card-title">Projects</div>
+      <div class="project-tabs" id="projectTabs"></div>
+    </div>
+
+    <!-- BOARD -->
+    <div class="card board-card">
+      <div class="board" id="board"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const namesEl = document.getElementById("names");
+const studentsCard = document.getElementById("studentsCard");
+const studentListEl = document.getElementById("studentList");
+const projectTabsEl = document.getElementById("projectTabs");
+const boardEl = document.getElementById("board");
+
+const monsters = ["👾","👻","🐸","🐙","🦄","🐵","👹","🐱","🐼","🐰","🐯","🐨","🐮","🐷","🐧","🦊","🐻","🐔","🐢","🐍","🦖","🐲","🦕","🐺","🦁","🐗","🐬","🦈","🐝","🐞"];
+
+const STORAGE_KEY = "monsterKanban";
+const uid = () => "id" + Math.random().toString(36).slice(2, 9);
+
+let state = { students: [], projects: [], currentProjectId: null };
+let present = new Set();
+let dragItem = null;
+let selectedMember = null;
+
+/* ── PERSISTENCE ── */
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const note = document.getElementById("autosaveNote");
+  note.textContent = "Saved";
+}
+
+function load() {
+  const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if (raw && raw.students && raw.projects) {
+    state = raw;
+  }
+  if (state.students.length) {
+    namesEl.value = state.students.join("\n");
+  }
+  if (!state.projects.length) {
+    state.projects.push(makeProject("Project 1"));
+  }
+  if (!state.currentProjectId || !state.projects.some(p => p.id === state.currentProjectId)) {
+    state.currentProjectId = state.projects[0].id;
+  }
+  present = new Set(state.students);
+}
+
+function makeProject(name) {
+  const columns = [
+    { id: uid(), title: "To Do" },
+    { id: uid(), title: "In Progress" },
+    { id: uid(), title: "Done" }
+  ];
+  const placements = {};
+  state.students.forEach(s => { placements[s] = columns[0].id; });
+  return { id: uid(), name, columns, placements };
+}
+
+function getCurrentProject() {
+  return state.projects.find(p => p.id === state.currentProjectId);
+}
+
+/* ── ROSTER ── */
+function updateRoster() {
+  const newList = namesEl.value.split("\n").map(x => x.trim()).filter(x => x);
+  const oldSet = new Set(state.students);
+  const newSet = new Set(newList);
+
+  const added = newList.filter(s => !oldSet.has(s));
+  const removed = state.students.filter(s => !newSet.has(s));
+
+  state.students = newList;
+
+  state.projects.forEach(proj => {
+    removed.forEach(s => delete proj.placements[s]);
+    if (proj.columns.length) {
+      added.forEach(s => { proj.placements[s] = proj.columns[0].id; });
+    }
+  });
+
+  removed.forEach(s => present.delete(s));
+  added.forEach(s => present.add(s));
+
+  renderStudents();
+  renderBoard();
+  save();
+}
+
+function loadPreset(v) {
+  if (v === "mcfarlane") {
+    namesEl.value = `Alexia\nArianna\nAseel\nBenjamin\nBentley\nEthan\nJacqueline\nJaxson\nKayla\nKlayton\nKyle\nLaila\nMorgan\nNoah\nRiver\nRosalie\nSamuel`;
+    updateRoster();
+  }
+}
+
+function renderStudents() {
+  if (!state.students.length) { studentsCard.style.display = "none"; return; }
+  studentsCard.style.display = "";
+  studentListEl.innerHTML = "";
+  state.students.forEach(n => {
+    const chip = document.createElement("div");
+    chip.className = "chip" + (present.has(n) ? "" : " absent");
+    chip.textContent = getMonster(n) + " " + n;
+    chip.onclick = () => {
+      if (present.has(n)) present.delete(n); else present.add(n);
+      renderStudents();
+      renderBoard();
+    };
+    studentListEl.appendChild(chip);
+  });
+  document.getElementById("presentCount").textContent = `${present.size} present`;
+}
+
+/* ── PROJECTS ── */
+function renderProjectTabs() {
+  projectTabsEl.innerHTML = "";
+  state.projects.forEach(p => {
+    const tab = document.createElement("div");
+    tab.className = "project-tab" + (p.id === state.currentProjectId ? " active" : "");
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = p.name;
+    input.size = Math.max(4, p.name.length);
+    input.onclick = (e) => { e.stopPropagation(); };
+    input.oninput = () => { p.name = input.value; input.size = Math.max(4, input.value.length); save(); };
+    tab.appendChild(input);
+
+    if (state.projects.length > 1) {
+      const del = document.createElement("button");
+      del.className = "del-project";
+      del.textContent = "✕";
+      del.title = "Delete project";
+      del.onclick = (e) => { e.stopPropagation(); deleteProject(p.id); };
+      tab.appendChild(del);
+    }
+
+    tab.onclick = () => { state.currentProjectId = p.id; renderProjectTabs(); renderBoard(); save(); };
+    projectTabsEl.appendChild(tab);
+  });
+
+  const addTab = document.createElement("div");
+  addTab.className = "project-tab add-tab";
+  addTab.textContent = "+ New Project";
+  addTab.onclick = addProject;
+  projectTabsEl.appendChild(addTab);
+}
+
+function addProject() {
+  const proj = makeProject("New Project " + (state.projects.length + 1));
+  state.projects.push(proj);
+  state.currentProjectId = proj.id;
+  renderProjectTabs();
+  renderBoard();
+  save();
+}
+
+function deleteProject(id) {
+  if (state.projects.length <= 1) return;
+  const idx = state.projects.findIndex(p => p.id === id);
+  if (idx === -1) return;
+  const wasCurrent = state.currentProjectId === id;
+  state.projects.splice(idx, 1);
+  if (wasCurrent) state.currentProjectId = state.projects[0].id;
+  renderProjectTabs();
+  renderBoard();
+  save();
+}
+
+/* ── COLUMNS / BOARD ── */
+function addColumn() {
+  const proj = getCurrentProject();
+  proj.columns.push({ id: uid(), title: "New Step" });
+  renderBoard();
+  save();
+}
+
+function deleteColumn(colId) {
+  const proj = getCurrentProject();
+  if (proj.columns.length <= 1) return;
+  const idx = proj.columns.findIndex(c => c.id === colId);
+  if (idx === -1) return;
+  const fallback = proj.columns.find(c => c.id !== colId).id;
+  Object.keys(proj.placements).forEach(s => {
+    if (proj.placements[s] === colId) proj.placements[s] = fallback;
+  });
+  proj.columns.splice(idx, 1);
+  renderBoard();
+  save();
+}
+
+function moveStudent(student, colId) {
+  const proj = getCurrentProject();
+  proj.placements[student] = colId;
+  save();
+}
+
+function renderBoard() {
+  const proj = getCurrentProject();
+  boardEl.innerHTML = "";
+
+  if (!state.students.length) {
+    boardEl.innerHTML = '<div class="empty-state">Add students in the sidebar to get started 👆</div>';
+    return;
+  }
+
+  proj.columns.forEach(col => {
+    const colEl = document.createElement("div");
+    colEl.className = "column";
+
+    const header = document.createElement("div");
+    header.className = "column-header";
+
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.className = "column-title-input";
+    titleInput.value = col.title;
+    titleInput.oninput = () => { col.title = titleInput.value; save(); };
+    header.appendChild(titleInput);
+
+    const membersInCol = state.students.filter(s => present.has(s) && proj.placements[s] === col.id);
+    const count = document.createElement("span");
+    count.className = "column-count";
+    count.textContent = membersInCol.length;
+    header.appendChild(count);
+
+    if (proj.columns.length > 1) {
+      const del = document.createElement("button");
+      del.className = "column-delete";
+      del.textContent = "✕";
+      del.title = "Delete step";
+      del.onclick = () => deleteColumn(col.id);
+      header.appendChild(del);
+    }
+
+    colEl.appendChild(header);
+
+    const body = document.createElement("div");
+    body.className = "column-body";
+
+    body.ondragover = e => { e.preventDefault(); colEl.classList.add("drag-over"); };
+    body.ondragleave = () => colEl.classList.remove("drag-over");
+    body.ondrop = () => {
+      colEl.classList.remove("drag-over");
+      if (dragItem !== null) {
+        moveStudent(dragItem, col.id);
+        dragItem = null;
+        renderBoard();
+      }
+    };
+    body.onclick = () => {
+      if (selectedMember) {
+        moveStudent(selectedMember, col.id);
+        selectedMember = null;
+        renderBoard();
+      }
+    };
+
+    if (membersInCol.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "column-empty";
+      empty.textContent = "Drop here";
+      body.appendChild(empty);
+    }
+
+    membersInCol.forEach(n => {
+      const el = document.createElement("div");
+      el.className = "member";
+      el.draggable = true;
+      el.textContent = getMonster(n) + " " + n;
+
+      el.ondragstart = () => { dragItem = n; el.classList.add("dragging"); };
+      el.ondragend = () => { dragItem = null; el.classList.remove("dragging"); };
+
+      el.onclick = (e) => {
+        e.stopPropagation();
+        if (!selectedMember) {
+          selectedMember = n;
+          el.classList.add("selected");
+        } else if (selectedMember === n) {
+          selectedMember = null;
+          el.classList.remove("selected");
+        } else {
+          moveStudent(selectedMember, col.id);
+          selectedMember = null;
+          renderBoard();
+        }
+      };
+
+      body.appendChild(el);
+    });
+
+    colEl.appendChild(body);
+    boardEl.appendChild(colEl);
+  });
+
+  const addBtn = document.createElement("div");
+  addBtn.className = "add-column";
+  addBtn.textContent = "+ Add Step";
+  addBtn.onclick = addColumn;
+  boardEl.appendChild(addBtn);
+
+  applyFullscreenFontSize();
+}
+
+/* ── HELPERS ── */
+function getMonster(n) {
+  return monsters[[...n].reduce((a, c) => a + c.charCodeAt(0), 0) % monsters.length];
+}
+
+/* ── FULLSCREEN ── */
+function toggleFullscreen() {
+  document.body.classList.toggle("fullscreen");
+  applyFullscreenFontSize();
+}
+
+window.addEventListener("resize", applyFullscreenFontSize);
+
+function applyFullscreenFontSize() {
+  boardEl.style.fontSize = "";
+  if (!document.body.classList.contains("fullscreen")) return;
+
+  const proj = getCurrentProject();
+  if (!proj || !proj.columns.length) return;
+
+  // Available height: viewport minus app padding (20+70) minus board-card chrome
+  const availableH = window.innerHeight - 20 - 70 - 40;
+  const maxPerCol = Math.max(1, ...proj.columns.map(col =>
+    state.students.filter(s => present.has(s) && proj.placements[s] === col.id).length
+  ));
+
+  // Header (title input + count) is roughly 2.4x font, each member row roughly 2.3x font + gap
+  let lo = 12, hi = 60, best = 16;
+  for (let iter = 0; iter < 12; iter++) {
+    const mid = (lo + hi) / 2;
+    const headerH = mid * 2.4;
+    const rowH = mid * 2.3 + 6;
+    const colH = headerH + maxPerCol * rowH + 16;
+    if (colH <= availableH) { best = mid; lo = mid; } else { hi = mid; }
+  }
+
+  boardEl.style.fontSize = best + "px";
+}
+
+/* ── INIT ── */
+load();
+renderStudents();
+renderProjectTabs();
+renderBoard();
+
+/* ── FLOATING MONSTERS ── */
+(function() {
+  const COUNT = 16;
+  const pool = monsters;
+  const particles = Array.from({ length: COUNT }, () => {
+    const el = document.createElement("div");
+    el.className = "monster";
+    el.textContent = pool[Math.floor(Math.random() * pool.length)];
+    document.body.appendChild(el);
+    return {
+      el,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 1.2,
+      vy: (Math.random() - 0.5) * 1.2,
+      size: 22 + Math.random() * 18,
+    };
+  });
+  particles.forEach(p => { p.el.style.fontSize = p.size + "px"; });
+
+  function tick() {
+    const W = window.innerWidth, H = window.innerHeight;
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) { p.x = 0; p.vx *= -1; }
+      if (p.x > W) { p.x = W; p.vx *= -1; }
+      if (p.y < 0) { p.y = 0; p.vy *= -1; }
+      if (p.y > H) { p.y = H; p.vy *= -1; }
+      p.el.style.left = p.x + "px";
+      p.el.style.top = p.y + "px";
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
