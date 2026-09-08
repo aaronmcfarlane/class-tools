@@ -1,10 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Aaron's Classroom Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -112,8 +114,16 @@ h1 {
 .tab[data-cat="math"].active      { color: var(--green); }
 
 /* TOOL LISTS */
-.tool-list { display: none; flex-direction: column; gap: 14px; }
-.tool-list.active { display: flex; animation: fadeUp 0.2s ease both; }
+.tool-list {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tool-list.active {
+  display: flex;
+  animation: fadeUp 0.2s ease both;
+}
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
@@ -146,26 +156,82 @@ h1 {
   transition: opacity 0.2s;
 }
 
-.tool-card:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(80,40,40,0.15); }
-.tool-card:hover::before { opacity: 1; }
-.tool-card:active { transform: scale(0.98); }
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 32px rgba(80,40,40,0.15);
+}
 
-.tool-card.monsters  { border-left-color: var(--pink); }
-.tool-card.monsters::before  { background: linear-gradient(90deg, var(--pink-light), transparent); }
+.tool-card:hover::before {
+  opacity: 1;
+}
 
-.tool-card.drama     { border-left-color: var(--red); }
-.tool-card.drama::before     { background: linear-gradient(90deg, var(--red-light), transparent); }
+.tool-card:active {
+  transform: scale(0.98);
+}
 
-.tool-card.waveform  { border-left-color: var(--blue); }
-.tool-card.waveform::before  { background: linear-gradient(90deg, var(--blue-light), transparent); }
+.tool-card.monsters {
+  border-left-color: var(--pink);
+}
 
-.tool-card.decimalart { border-left-color: var(--green); }
-.tool-card.decimalart::before { background: linear-gradient(90deg, var(--green-light), transparent); }
+.tool-card.monsters::before {
+  background: linear-gradient(90deg, var(--pink-light), transparent);
+}
 
-.tool-icon { font-size: 2.2rem; flex-shrink: 0; line-height: 1; }
-.tool-text { flex: 1; }
-.tool-text h2 { font-size: 1.05rem; font-weight: 900; margin-bottom: 3px; }
-.tool-text p  { font-size: 0.83rem; font-weight: 600; color: var(--muted); line-height: 1.4; }
+.tool-card.drama {
+  border-left-color: var(--red);
+}
+
+.tool-card.drama::before {
+  background: linear-gradient(90deg, var(--red-light), transparent);
+}
+
+.tool-card.waveform {
+  border-left-color: var(--blue);
+}
+
+.tool-card.waveform::before {
+  background: linear-gradient(90deg, var(--blue-light), transparent);
+}
+
+.tool-card.decimalart {
+  border-left-color: var(--green);
+}
+
+.tool-card.decimalart::before {
+  background: linear-gradient(90deg, var(--green-light), transparent);
+}
+
+/* NEW: BULLSEYE TOOL */
+.tool-card.bullseye {
+  border-left-color: var(--orange);
+}
+
+.tool-card.bullseye::before {
+  background: linear-gradient(90deg, var(--orange-light), transparent);
+}
+
+.tool-icon {
+  font-size: 2.2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.tool-text {
+  flex: 1;
+}
+
+.tool-text h2 {
+  font-size: 1.05rem;
+  font-weight: 900;
+  margin-bottom: 3px;
+}
+
+.tool-text p {
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
 
 .tool-arrow {
   font-size: 1.1rem;
@@ -173,103 +239,322 @@ h1 {
   flex-shrink: 0;
   transition: transform 0.15s, color 0.15s;
 }
-.tool-card:hover .tool-arrow { transform: translateX(4px); color: var(--text); }
+
+.tool-card:hover .tool-arrow {
+  transform: translateX(4px);
+  color: var(--text);
+}
 </style>
+
 </head>
+
 <body>
 
 <div class="container">
+
   <div class="eyebrow">Mr. McFarlane · Grade 4</div>
+
   <h1>Classroom Tools</h1>
 
   <div class="tabs">
-    <div class="tab active" data-cat="utilities" onclick="showTab('utilities')">🛠 Utilities</div>
-    <div class="tab"        data-cat="math"      onclick="showTab('math')">🔢 Math</div>
-    <div class="tab"        data-cat="arts"      onclick="showTab('arts')">🎨 Arts</div>
-    <div class="tab"        data-cat="science"   onclick="showTab('science')">🔬 Science</div>
+
+```
+<div
+  class="tab active"
+  data-cat="utilities"
+  onclick="showTab('utilities')">
+  🛠 Utilities
+</div>
+
+<div
+  class="tab"
+  data-cat="math"
+  onclick="showTab('math')">
+  🔢 Math
+</div>
+
+<div
+  class="tab"
+  data-cat="arts"
+  onclick="showTab('arts')">
+  🎨 Arts
+</div>
+
+<div
+  class="tab"
+  data-cat="science"
+  onclick="showTab('science')">
+  🔬 Science
+</div>
+```
+
   </div>
+
+  <!-- UTILITIES -->
 
   <div class="tool-list active" id="cat-utilities">
-    <a href="group-maker.html" class="tool-card monsters">
-      <div class="tool-icon">👾</div>
-      <div class="tool-text">
-        <h2>Monster Group Maker</h2>
-        <p>Create balanced student groups with constraints, absence tracking, and drag-to-swap.</p>
-      </div>
-      <div class="tool-arrow">→</div>
-    </a>
+
+```
+<a href="group-maker.html" class="tool-card monsters">
+
+  <div class="tool-icon">👾</div>
+
+  <div class="tool-text">
+    <h2>Monster Group Maker</h2>
+
+    <p>
+      Create balanced student groups with constraints,
+      absence tracking, and drag-to-swap.
+    </p>
   </div>
+
+  <div class="tool-arrow">→</div>
+
+</a>
+```
+
+  </div>
+
+  <!-- MATH -->
 
   <div class="tool-list" id="cat-math">
-    <a href="decimal-art.html" class="tool-card decimalart">
-      <div class="tool-icon">🎨</div>
-      <div class="tool-text">
-        <h2>Decimal Art</h2>
-        <p>Colour a hundreds chart with 3 colours, then convert each section into fractions and decimals.</p>
-      </div>
-      <div class="tool-arrow">→</div>
-    </a>
+
+```
+<a href="decimal-art.html" class="tool-card decimalart">
+
+  <div class="tool-icon">🎨</div>
+
+  <div class="tool-text">
+
+    <h2>Decimal Art</h2>
+
+    <p>
+      Colour a hundreds chart with 3 colours, then convert
+      each section into fractions and decimals.
+    </p>
+
   </div>
+
+  <div class="tool-arrow">→</div>
+
+</a>
+
+
+<!-- NEW BULLSEYE TOOL -->
+
+<a href="bullseye.html" class="tool-card bullseye">
+
+  <div class="tool-icon">🎯</div>
+
+  <div class="tool-text">
+
+    <h2>Factor Bullseyes</h2>
+
+    <p>
+      Tap the numbers around each bullseye and race to fill
+      the red or blue target.
+    </p>
+
+  </div>
+
+  <div class="tool-arrow">→</div>
+
+</a>
+```
+
+  </div>
+
+  <!-- ARTS -->
 
   <div class="tool-list" id="cat-arts">
-    <a href="drama-scenario-generator.html" class="tool-card drama">
-      <div class="tool-icon">🎭</div>
-      <div class="tool-text">
-        <h2>Drama Scenario Generator</h2>
-        <p>Generate settings and conflicts for drama class — by grade, in English or French.</p>
-      </div>
-      <div class="tool-arrow">→</div>
-    </a>
+
+```
+<a
+  href="drama-scenario-generator.html"
+  class="tool-card drama">
+
+  <div class="tool-icon">🎭</div>
+
+  <div class="tool-text">
+
+    <h2>Drama Scenario Generator</h2>
+
+    <p>
+      Generate settings and conflicts for drama class —
+      by grade, in English or French.
+    </p>
+
   </div>
 
-  <div class="tool-list" id="cat-science">
-    <a href="sound-explorer.html" class="tool-card waveform">
-      <div class="tool-icon">🔊</div>
-      <div class="tool-text">
-        <h2>Sound Explorer</h2>
-        <p>Waveform visualizer, live decibel meter, and interactive ear &amp; larynx anatomy — all in one.</p>
-      </div>
-      <div class="tool-arrow">→</div>
-    </a>
+  <div class="tool-arrow">→</div>
+
+</a>
+```
+
   </div>
+
+  <!-- SCIENCE -->
+
+  <div class="tool-list" id="cat-science">
+
+```
+<a
+  href="sound-explorer.html"
+  class="tool-card waveform">
+
+  <div class="tool-icon">🔊</div>
+
+  <div class="tool-text">
+
+    <h2>Sound Explorer</h2>
+
+    <p>
+      Waveform visualizer, live decibel meter, and interactive
+      ear &amp; larynx anatomy — all in one.
+    </p>
+
+  </div>
+
+  <div class="tool-arrow">→</div>
+
+</a>
+```
+
+  </div>
+
 </div>
 
 <script>
+
 function showTab(cat) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tool-list').forEach(l => l.classList.remove('active'));
-  document.querySelector('.tab[data-cat="' + cat + '"]').classList.add('active');
-  document.getElementById('cat-' + cat).classList.add('active');
+
+  document
+    .querySelectorAll('.tab')
+    .forEach(t => t.classList.remove('active'));
+
+  document
+    .querySelectorAll('.tool-list')
+    .forEach(l => l.classList.remove('active'));
+
+
+  document
+    .querySelector('.tab[data-cat="' + cat + '"]')
+    .classList.add('active');
+
+
+  document
+    .getElementById('cat-' + cat)
+    .classList.add('active');
 }
 
+
+/* Floating background decorations */
+
 (function () {
-  const icons = ["👾","👻","🐸","🦄","🎭","🎬","🎪","🪄","🐙","🎨","🐼","🎩","🦊","🌟","✨","🎲","🎵","🔬","🧪","🎸"];
+
+  const icons = [
+    "👾","👻","🐸","🦄","🎭",
+    "🎬","🎪","🪄","🐙","🎨",
+    "🐼","🎩","🦊","🌟","✨",
+    "🎲","🎵","🔬","🧪","🎸",
+    "🎯","🔢"
+  ];
+
+
   for (let i = 0; i < 16; i++) {
+
     const el = document.createElement("div");
+
     el.className = "deco";
-    el.style.fontSize = (20 + Math.random() * 18) + "px";
-    el.textContent = icons[Math.floor(Math.random() * icons.length)];
+
+    el.style.fontSize =
+      (20 + Math.random() * 18) + "px";
+
+
+    el.textContent =
+      icons[Math.floor(Math.random() * icons.length)];
+
+
     document.body.appendChild(el);
+
+
     const s = {
+
       el,
+
       x: Math.random() * window.innerWidth,
+
       y: Math.random() * window.innerHeight,
+
       vx: (Math.random() - 0.5) * 0.85,
-      vy: (Math.random() - 0.5) * 0.85,
+
+      vy: (Math.random() - 0.5) * 0.85
+
     };
+
+
     (function tick() {
-      const W = window.innerWidth, H = window.innerHeight;
-      s.x += s.vx; s.y += s.vy;
-      if (s.x < 0) { s.x = 0; s.vx *= -1; }
-      if (s.x > W) { s.x = W; s.vx *= -1; }
-      if (s.y < 0) { s.y = 0; s.vy *= -1; }
-      if (s.y > H) { s.y = H; s.vy *= -1; }
+
+      const W = window.innerWidth;
+
+      const H = window.innerHeight;
+
+
+      s.x += s.vx;
+
+      s.y += s.vy;
+
+
+      if (s.x < 0) {
+
+        s.x = 0;
+
+        s.vx *= -1;
+
+      }
+
+
+      if (s.x > W) {
+
+        s.x = W;
+
+        s.vx *= -1;
+
+      }
+
+
+      if (s.y < 0) {
+
+        s.y = 0;
+
+        s.vy *= -1;
+
+      }
+
+
+      if (s.y > H) {
+
+        s.y = H;
+
+        s.vy *= -1;
+
+      }
+
+
       s.el.style.left = s.x + "px";
-      s.el.style.top  = s.y + "px";
+
+      s.el.style.top = s.y + "px";
+
+
       requestAnimationFrame(tick);
+
     })();
+
   }
+
 })();
+
 </script>
+
 </body>
 </html>
