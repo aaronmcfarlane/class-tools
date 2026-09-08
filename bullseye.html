@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Factor Bullseyes</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f5f5f5;
+    }
+
+    #app {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: 2vw;
+        padding: 2vh 2vw;
+    }
+
+    .bullseye-container {
+        height: 96vh;
+        width: 47vw;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    svg {
+        width: min(47vw, 92vh);
+        height: min(47vw, 92vh);
+        overflow: visible;
+        touch-action: manipulation;
+    }
+
+    .sector {
+        fill: white;
+        stroke: #222;
+        stroke-width: 3;
+        cursor: pointer;
+        transition: fill 0.15s ease;
+    }
+
+    .sector.left.active {
+        fill: #e53935;
+    }
+
+    .sector.right.active {
+        fill: #1976d2;
+    }
+
+    .number-label {
+        font-size: 34px;
+        font-weight: bold;
+        fill: #111;
+        pointer-events: none;
+        text-anchor: middle;
+        dominant-baseline: middle;
+    }
+
+    .center-circle {
+        fill: #fff;
+        stroke: #222;
+        stroke-width: 4;
+        cursor: pointer;
+    }
+
+    .center-number {
+        font-size: 90px;
+        font-weight: bold;
+        fill: #111;
+        text-anchor: middle;
+        dominant-baseline: middle;
+        pointer-events: none;
+    }
+
+    /* =========================
+       NUMBER KEYPAD
+       ========================= */
+
+    #keypad-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 200;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #keypad {
+        width: min(90vw, 600px);
+        background: white;
+        border-radius: 30px;
+        padding: 25px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    }
+
+    #keypad-title {
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    #keypad-display {
+        height: 80px;
+        border: 4px solid #333;
+        border-radius: 15px;
+        font-size: 52px;
+        font-weight: bold;
+        text-align: center;
+        padding-top: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+
+    #keypad-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+    .key {
+        height: 85px;
+        border: none;
+        border-radius: 15px;
+        font-size: 36px;
+        font-weight: bold;
+        background: #e5e5e5;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .key:active {
+        transform: scale(0.96);
+        background: #ccc;
+    }
+
+    .key.clear {
+        background: #ffb3b3;
+    }
+
+    .key.done {
+        background: #7edc8a;
+        grid-column: span 2;
+    }
+
+    .key.cancel {
+        background: #ddd;
+    }
+
+    /* =========================
+       CONFETTI
+       ========================= */
+
+    #confetti {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        top: -30px;
+        width: 14px;
+        height: 22px;
+        animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+        from {
+            transform: translateY(-50px) rotate(0deg);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(110vh) rotate(900deg);
+            opacity: 1;
+        }
+    }
+
+    @media (orientation: portrait) {
+
+        #app {
+            flex-direction: column;
+            padding: 1vh;
+            gap: 1vh;
+        }
+
+        .bullseye-container {
+            width: 96vw;
+            height: 47vh;
+        }
+
+        svg {
+            width: min(90vw, 46vh);
+            height: min(90vw, 46vh);
+        }
+    }
+
+</style>
+
+</head>
+
+<body>
+
+<div id="app">
+
+```
+<div class="bullseye-container">
+    <svg id="leftBullseye" viewBox="-250 -250 500 500"></svg>
+</div>
+
+<div class="bullseye-container">
+    <svg id="rightBullseye" viewBox="-250 -250 500 500"></svg>
+</div>
+```
+
+</div>
+
+<!-- NUMBER KEYPAD -->
+
+<div id="keypad-overlay">
+
+```
+<div id="keypad">
+
+    <div id="keypad-title">
+        Choose a Number
+    </div>
+
+    <div id="keypad-display"></div>
+
+    <div id="keypad-buttons">
+
+        <button class="key" data-number="1">1</button>
+        <button class="key" data-number="2">2</button>
+        <button class="key" data-number="3">3</button>
+
+        <button class="key" data-number="4">4</button>
+        <button class="key" data-number="5">5</button>
+        <button class="key" data-number="6">6</button>
+
+        <button class="key" data-number="7">7</button>
+        <button class="key" data-number="8">8</button>
+        <button class="key" data-number="9">9</button>
+
+        <button class="key clear" id="backspace">⌫</button>
+        <button class="key" data-number="0">0</button>
+        <button class="key clear" id="clear">C</button>
+
+        <button class="key cancel" id="cancel">Cancel</button>
+        <button class="key done" id="done">Done</button>
+
+    </div>
+
+</div>
+```
+
+</div>
+
+<div id="confetti"></div>
+
+<script>
+
+const FACTORS = Array.from({ length: 11 }, (_, i) => i);
+
+let activeCenterText = null;
+let keypadValue = "";
+
+
+/* =========================
+   KEYPAD
+   ========================= */
+
+const overlay = document.getElementById("keypad-overlay");
+const display = document.getElementById("keypad-display");
+
+function openKeypad(centerText) {
+
+    activeCenterText = centerText;
+
+    keypadValue = centerText.textContent;
+
+    display.textContent = keypadValue;
+
+    overlay.style.display = "flex";
+}
+
+function closeKeypad() {
+
+    overlay.style.display = "none";
+
+    activeCenterText = null;
+}
+
+document.querySelectorAll("[data-number]").forEach(button => {
+
+    button.addEventListener("pointerdown", () => {
+
+        if (keypadValue.length < 4) {
+
+            keypadValue += button.dataset.number;
+
+            display.textContent = keypadValue;
+        }
+    });
+});
+
+
+document.getElementById("backspace").addEventListener("pointerdown", () => {
+
+    keypadValue = keypadValue.slice(0, -1);
+
+    display.textContent = keypadValue;
+});
+
+
+document.getElementById("clear").addEventListener("pointerdown", () => {
+
+    keypadValue = "";
+
+    display.textContent = "";
+});
+
+
+document.getElementById("cancel").addEventListener("pointerdown", () => {
+
+    closeKeypad();
+});
+
+
+document.getElementById("done").addEventListener("pointerdown", () => {
+
+    if (keypadValue !== "" && activeCenterText) {
+
+        activeCenterText.textContent = keypadValue;
+
+        const bullseye = activeCenterText.bullseyeData;
+
+        // Reset the wedges when the number changes
+
+        bullseye.completed = false;
+
+        bullseye.sectors.forEach(sector => {
+
+            sector.dataset.active = "false";
+
+            sector.classList.remove("active");
+        });
+    }
+
+    closeKeypad();
+});
+
+
+/* =========================
+   BULLSEYE CREATION
+   ========================= */
+
+function polarToCartesian(radius, angleDegrees) {
+
+    const angleRadians =
+        (angleDegrees - 90) * Math.PI / 180;
+
+    return {
+        x: radius * Math.cos(angleRadians),
+        y: radius * Math.sin(angleRadians)
+    };
+}
+
+
+function createBullseye(svgId, side, startingNumber) {
+
+    const svg = document.getElementById(svgId);
+
+    const outerRadius = 220;
+    const innerRadius = 65;
+    const numberRadius = 145;
+
+    const sectors = [];
+
+    const bullseyeData = {
+        sectors: sectors,
+        completed: false
+    };
+
+
+    FACTORS.forEach((factor, index) => {
+
+        const startAngle =
+            index * (360 / FACTORS.length);
+
+        const endAngle =
+            (index + 1) * (360 / FACTORS.length);
+
+
+        const outerStart =
+            polarToCartesian(outerRadius, startAngle);
+
+        const outerEnd =
+            polarToCartesian(outerRadius, endAngle);
+
+        const innerStart =
+            polarToCartesian(innerRadius, startAngle);
+
+        const innerEnd =
+            polarToCartesian(innerRadius, endAngle);
+
+
+        const pathData = [
+
+            `M ${innerStart.x} ${innerStart.y}`,
+
+            `L ${outerStart.x} ${outerStart.y}`,
+
+            `A ${outerRadius} ${outerRadius}
+             0 0 1
+             ${outerEnd.x} ${outerEnd.y}`,
+
+            `L ${innerEnd.x} ${innerEnd.y}`,
+
+            `A ${innerRadius} ${innerRadius}
+             0 0 0
+             ${innerStart.x} ${innerStart.y}`,
+
+            "Z"
+
+        ].join(" ");
+
+
+        const path =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path"
+            );
+
+
+        path.setAttribute("d", pathData);
+
+        path.classList.add("sector", side);
+
+        path.dataset.active = "false";
+
+
+        path.addEventListener("pointerdown", () => {
+
+            if (bullseyeData.completed) return;
+
+
+            const isActive =
+                path.dataset.active === "true";
+
+
+            path.dataset.active =
+                isActive ? "false" : "true";
+
+
+            path.classList.toggle("active", !isActive);
+
+
+            checkCompletion();
+        });
+
+
+        svg.appendChild(path);
+
+        sectors.push(path);
+
+
+        /* Number label */
+
+        const middleAngle =
+            startAngle +
+            (360 / FACTORS.length) / 2;
+
+
+        const labelPosition =
+            polarToCartesian(
+                numberRadius,
+                middleAngle
+            );
+
+
+        const label =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+
+        label.setAttribute("x", labelPosition.x);
+
+        label.setAttribute("y", labelPosition.y);
+
+        label.classList.add("number-label");
+
+        label.textContent = factor;
+
+        svg.appendChild(label);
+    });
+
+
+    /* CENTER */
+
+    const centerCircle =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
+
+
+    centerCircle.setAttribute("cx", 0);
+
+    centerCircle.setAttribute("cy", 0);
+
+    centerCircle.setAttribute("r", innerRadius);
+
+    centerCircle.classList.add("center-circle");
+
+    svg.appendChild(centerCircle);
+
+
+    const centerText =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+        );
+
+
+    centerText.setAttribute("x", 0);
+
+    centerText.setAttribute("y", 5);
+
+    centerText.classList.add("center-number");
+
+    centerText.textContent = startingNumber;
+
+
+    // Store a reference to this bullseye's data
+
+    centerText.bullseyeData = bullseyeData;
+
+
+    function editNumber() {
+
+        openKeypad(centerText);
+    }
+
+
+    centerCircle.addEventListener(
+        "pointerdown",
+        editNumber
+    );
+
+
+    // The number itself doesn't receive touches,
+    // so tapping it passes through to the circle.
+
+    svg.appendChild(centerText);
+
+
+    function checkCompletion() {
+
+        const allFilled = sectors.every(
+            sector =>
+                sector.dataset.active === "true"
+        );
+
+
+        if (allFilled && !bullseyeData.completed) {
+
+            bullseyeData.completed = true;
+
+            celebrate();
+
+
+            setTimeout(() => {
+
+                bullseyeData.completed = false;
+
+                sectors.forEach(sector => {
+
+                    sector.dataset.active = "false";
+
+                    sector.classList.remove("active");
+                });
+
+            }, 3500);
+        }
+    }
+}
+
+
+/* =========================
+   CONFETTI
+   ========================= */
+
+function celebrate() {
+
+    const container =
+        document.getElementById("confetti");
+
+
+    const colors = [
+
+        "#f44336",
+        "#2196f3",
+        "#ffeb3b",
+        "#4caf50",
+        "#9c27b0",
+        "#ff9800",
+        "#00bcd4"
+
+    ];
+
+
+    for (let i = 0; i < 250; i++) {
+
+        const piece =
+            document.createElement("div");
+
+
+        piece.className =
+            "confetti-piece";
+
+
+        piece.style.left =
+            Math.random() * 100 + "vw";
+
+
+        piece.style.backgroundColor =
+            colors[
+                Math.floor(
+                    Math.random() * colors.length
+                )
+            ];
+
+
+        piece.style.animationDuration =
+            (2 + Math.random() * 2) + "s";
+
+
+        piece.style.animationDelay =
+            (Math.random() * 0.5) + "s";
+
+
+        container.appendChild(piece);
+
+
+        setTimeout(() => {
+
+            piece.remove();
+
+        }, 5000);
+    }
+}
+
+
+/* =========================
+   CREATE BOTH BULLSEYES
+   ========================= */
+
+createBullseye(
+    "leftBullseye",
+    "left",
+    5
+);
+
+createBullseye(
+    "rightBullseye",
+    "right",
+    5
+);
+
+</script>
+
+</body>
+</html>
