@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <title>Aaron's Classroom Tools</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
@@ -17,14 +18,19 @@
   --muted:        #9e8e80;
   --shadow:       0 4px 24px rgba(80,40,40,0.10);
   --radius:       20px;
+
   --pink:         #ff6b9d;
   --pink-light:   #ffe0ee;
+
   --red:          #c94040;
   --red-light:    #fdeaea;
+
   --blue:         #4a7fc1;
   --blue-light:   #e6eefa;
+
   --green:        #3a9e6f;
   --green-light:  #e0f5ec;
+
   --orange:       #e07c2a;
   --orange-light: #fef0e2;
 }
@@ -34,10 +40,12 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   padding: 40px 20px;
 }
 
@@ -75,31 +83,47 @@ h1 {
   margin-bottom: 28px;
 }
 
-/* TABS */
+
+/* =========================
+   TABS
+   ========================= */
+
 .tabs {
   display: flex;
   gap: 6px;
+
   background: #ede7e1;
   padding: 5px;
+
   border-radius: 14px;
   margin-bottom: 20px;
+
   flex-wrap: wrap;
 }
 
 .tab {
   flex: 1;
   min-width: 80px;
+
   padding: 9px 8px;
+
   border-radius: 10px;
+
   font-weight: 800;
   font-size: 0.82rem;
+
   cursor: pointer;
+
   color: var(--muted);
+
   transition: all 0.18s;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 5px;
+
   user-select: none;
 }
 
@@ -108,12 +132,27 @@ h1 {
   box-shadow: 0 2px 10px rgba(80,40,40,0.10);
 }
 
-.tab[data-cat="utilities"].active { color: var(--pink); }
-.tab[data-cat="arts"].active      { color: var(--red); }
-.tab[data-cat="science"].active   { color: var(--blue); }
-.tab[data-cat="math"].active      { color: var(--green); }
+.tab[data-cat="utilities"].active {
+  color: var(--pink);
+}
 
-/* TOOL LISTS */
+.tab[data-cat="arts"].active {
+  color: var(--red);
+}
+
+.tab[data-cat="science"].active {
+  color: var(--blue);
+}
+
+.tab[data-cat="math"].active {
+  color: var(--green);
+}
+
+
+/* =========================
+   TOOL LISTS
+   ========================= */
+
 .tool-list {
   display: none;
   flex-direction: column;
@@ -126,39 +165,71 @@ h1 {
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
 }
 
-/* TOOL CARDS */
+
+/* =========================
+   TOOL CARDS
+   ========================= */
+
 .tool-card {
   display: flex;
   align-items: center;
+
   gap: 18px;
+
   background: var(--card);
+
   border-radius: var(--radius);
+
   padding: 20px 22px;
+
   text-decoration: none;
+
   color: var(--text);
+
   box-shadow: var(--shadow);
+
   text-align: left;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+
   border-left: 6px solid transparent;
+
   position: relative;
+
   overflow: hidden;
 }
 
 .tool-card::before {
   content: '';
+
   position: absolute;
   inset: 0;
+
   opacity: 0;
+
   transition: opacity 0.2s;
 }
 
 .tool-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(80,40,40,0.15);
+
+  box-shadow:
+    0 10px 32px rgba(80,40,40,0.15);
 }
 
 .tool-card:hover::before {
@@ -169,46 +240,102 @@ h1 {
   transform: scale(0.98);
 }
 
+
+/* Monster Group Maker */
+
 .tool-card.monsters {
   border-left-color: var(--pink);
 }
 
 .tool-card.monsters::before {
-  background: linear-gradient(90deg, var(--pink-light), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      var(--pink-light),
+      transparent
+    );
 }
+
+
+/* Drama */
 
 .tool-card.drama {
   border-left-color: var(--red);
 }
 
 .tool-card.drama::before {
-  background: linear-gradient(90deg, var(--red-light), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      var(--red-light),
+      transparent
+    );
 }
+
+
+/* Sound */
 
 .tool-card.waveform {
   border-left-color: var(--blue);
 }
 
 .tool-card.waveform::before {
-  background: linear-gradient(90deg, var(--blue-light), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      var(--blue-light),
+      transparent
+    );
 }
+
+
+/* Decimal Art */
 
 .tool-card.decimalart {
   border-left-color: var(--green);
 }
 
 .tool-card.decimalart::before {
-  background: linear-gradient(90deg, var(--green-light), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      var(--green-light),
+      transparent
+    );
 }
 
-/* NEW: BULLSEYE TOOL */
+
+/* Factor Bullseye */
+
 .tool-card.bullseye {
   border-left-color: var(--orange);
 }
 
 .tool-card.bullseye::before {
-  background: linear-gradient(90deg, var(--orange-light), transparent);
+  background:
+    linear-gradient(
+      90deg,
+      var(--orange-light),
+      transparent
+    );
 }
+
+
+/* Task Tracker */
+
+.tool-card.tasks {
+  border-left-color: var(--pink);
+}
+
+.tool-card.tasks::before {
+  background:
+    linear-gradient(
+      90deg,
+      var(--pink-light),
+      transparent
+    );
+}
+
 
 .tool-icon {
   font-size: 2.2rem;
@@ -235,15 +362,21 @@ h1 {
 
 .tool-arrow {
   font-size: 1.1rem;
+
   color: var(--muted);
+
   flex-shrink: 0;
-  transition: transform 0.15s, color 0.15s;
+
+  transition:
+    transform 0.15s,
+    color 0.15s;
 }
 
 .tool-card:hover .tool-arrow {
   transform: translateX(4px);
   color: var(--text);
 }
+
 </style>
 
 </head>
@@ -252,9 +385,15 @@ h1 {
 
 <div class="container">
 
-  <div class="eyebrow">Mr. McFarlane · Grade 4</div>
+  <div class="eyebrow">
+    Mr. McFarlane · Grade 4
+  </div>
 
-  <h1>Classroom Tools</h1>
+  <h1>
+    Classroom Tools
+  </h1>
+
+  <!-- TABS -->
 
   <div class="tabs">
 
@@ -290,94 +429,170 @@ h1 {
 
   </div>
 
-  <!-- UTILITIES -->
+  <!-- =========================
+       UTILITIES
+       ========================= -->
 
-  <div class="tool-list active" id="cat-utilities">
+  <div
+    class="tool-list active"
+    id="cat-utilities">
 
 ```
-<a href="group-maker.html" class="tool-card monsters">
+<!-- TASK TRACKER -->
 
-  <div class="tool-icon">👾</div>
+<a
+  href="task-tracker.html"
+  class="tool-card tasks">
+
+  <div class="tool-icon">
+    ✅
+  </div>
 
   <div class="tool-text">
-    <h2>Monster Group Maker</h2>
+
+    <h2>
+      Task Tracker
+    </h2>
+
+    <p>
+      Keep track of classroom tasks, assignments,
+      and things that need to get done.
+    </p>
+
+  </div>
+
+  <div class="tool-arrow">
+    →
+  </div>
+
+</a>
+
+
+<!-- GROUP MAKER -->
+
+<a
+  href="group-maker.html"
+  class="tool-card monsters">
+
+  <div class="tool-icon">
+    👾
+  </div>
+
+  <div class="tool-text">
+
+    <h2>
+      Monster Group Maker
+    </h2>
 
     <p>
       Create balanced student groups with constraints,
       absence tracking, and drag-to-swap.
     </p>
+
   </div>
 
-  <div class="tool-arrow">→</div>
+  <div class="tool-arrow">
+    →
+  </div>
 
 </a>
 ```
 
   </div>
 
-  <!-- MATH -->
+  <!-- =========================
+       MATH
+       ========================= -->
 
-  <div class="tool-list" id="cat-math">
+  <div
+    class="tool-list"
+    id="cat-math">
 
 ```
-<a href="decimal-art.html" class="tool-card decimalart">
+<!-- DECIMAL ART -->
 
-  <div class="tool-icon">🎨</div>
+<a
+  href="decimal-art.html"
+  class="tool-card decimalart">
+
+  <div class="tool-icon">
+    🎨
+  </div>
 
   <div class="tool-text">
 
-    <h2>Decimal Art</h2>
+    <h2>
+      Decimal Art
+    </h2>
 
     <p>
-      Colour a hundreds chart with 3 colours, then convert
-      each section into fractions and decimals.
+      Colour a hundreds chart with 3 colours, then
+      convert each section into fractions and decimals.
     </p>
 
   </div>
 
-  <div class="tool-arrow">→</div>
+  <div class="tool-arrow">
+    →
+  </div>
 
 </a>
 
 
-<!-- NEW BULLSEYE TOOL -->
+<!-- FACTOR BULLSEYES -->
 
-<a href="bullseye.html" class="tool-card bullseye">
+<a
+  href="bullseye.html"
+  class="tool-card bullseye">
 
-  <div class="tool-icon">🎯</div>
+  <div class="tool-icon">
+    🎯
+  </div>
 
   <div class="tool-text">
 
-    <h2>Factor Bullseyes</h2>
+    <h2>
+      Factor Bullseyes
+    </h2>
 
     <p>
-      Tap the numbers around each bullseye and race to fill
-      the red or blue target.
+      Tap the numbers around each bullseye and race
+      to fill the red or blue target.
     </p>
 
   </div>
 
-  <div class="tool-arrow">→</div>
+  <div class="tool-arrow">
+    →
+  </div>
 
 </a>
 ```
 
   </div>
 
-  <!-- ARTS -->
+  <!-- =========================
+       ARTS
+       ========================= -->
 
-  <div class="tool-list" id="cat-arts">
+  <div
+    class="tool-list"
+    id="cat-arts">
 
 ```
 <a
   href="drama-scenario-generator.html"
   class="tool-card drama">
 
-  <div class="tool-icon">🎭</div>
+  <div class="tool-icon">
+    🎭
+  </div>
 
   <div class="tool-text">
 
-    <h2>Drama Scenario Generator</h2>
+    <h2>
+      Drama Scenario Generator
+    </h2>
 
     <p>
       Generate settings and conflicts for drama class —
@@ -386,36 +601,48 @@ h1 {
 
   </div>
 
-  <div class="tool-arrow">→</div>
+  <div class="tool-arrow">
+    →
+  </div>
 
 </a>
 ```
 
   </div>
 
-  <!-- SCIENCE -->
+  <!-- =========================
+       SCIENCE
+       ========================= -->
 
-  <div class="tool-list" id="cat-science">
+  <div
+    class="tool-list"
+    id="cat-science">
 
 ```
 <a
   href="sound-explorer.html"
   class="tool-card waveform">
 
-  <div class="tool-icon">🔊</div>
+  <div class="tool-icon">
+    🔊
+  </div>
 
   <div class="tool-text">
 
-    <h2>Sound Explorer</h2>
+    <h2>
+      Sound Explorer
+    </h2>
 
     <p>
-      Waveform visualizer, live decibel meter, and interactive
-      ear &amp; larynx anatomy — all in one.
+      Waveform visualizer, live decibel meter, and
+      interactive ear &amp; larynx anatomy — all in one.
     </p>
 
   </div>
 
-  <div class="tool-arrow">→</div>
+  <div class="tool-arrow">
+    →
+  </div>
 
 </a>
 ```
@@ -426,19 +653,31 @@ h1 {
 
 <script>
 
+
+/* =========================
+   TAB SWITCHING
+   ========================= */
+
 function showTab(cat) {
 
   document
     .querySelectorAll('.tab')
-    .forEach(t => t.classList.remove('active'));
+    .forEach(t =>
+      t.classList.remove('active')
+    );
+
 
   document
     .querySelectorAll('.tool-list')
-    .forEach(l => l.classList.remove('active'));
+    .forEach(l =>
+      l.classList.remove('active')
+    );
 
 
   document
-    .querySelector('.tab[data-cat="' + cat + '"]')
+    .querySelector(
+      '.tab[data-cat="' + cat + '"]'
+    )
     .classList.add('active');
 
 
@@ -448,31 +687,60 @@ function showTab(cat) {
 }
 
 
-/* Floating background decorations */
+/* =========================
+   FLOATING DECORATIONS
+   ========================= */
 
 (function () {
 
   const icons = [
-    "👾","👻","🐸","🦄","🎭",
-    "🎬","🎪","🪄","🐙","🎨",
-    "🐼","🎩","🦊","🌟","✨",
-    "🎲","🎵","🔬","🧪","🎸",
-    "🎯","🔢"
+
+    "👾",
+    "👻",
+    "🐸",
+    "🦄",
+    "🎭",
+    "🎬",
+    "🎪",
+    "🪄",
+    "🐙",
+    "🎨",
+    "🐼",
+    "🎩",
+    "🦊",
+    "🌟",
+    "✨",
+    "🎲",
+    "🎵",
+    "🔬",
+    "🧪",
+    "🎸",
+    "🎯",
+    "🔢",
+    "✅"
+
   ];
 
 
   for (let i = 0; i < 16; i++) {
 
-    const el = document.createElement("div");
+    const el =
+      document.createElement("div");
+
 
     el.className = "deco";
+
 
     el.style.fontSize =
       (20 + Math.random() * 18) + "px";
 
 
     el.textContent =
-      icons[Math.floor(Math.random() * icons.length)];
+      icons[
+        Math.floor(
+          Math.random() * icons.length
+        )
+      ];
 
 
     document.body.appendChild(el);
@@ -482,22 +750,32 @@ function showTab(cat) {
 
       el,
 
-      x: Math.random() * window.innerWidth,
+      x:
+        Math.random() *
+        window.innerWidth,
 
-      y: Math.random() * window.innerHeight,
+      y:
+        Math.random() *
+        window.innerHeight,
 
-      vx: (Math.random() - 0.5) * 0.85,
+      vx:
+        (Math.random() - 0.5) *
+        0.85,
 
-      vy: (Math.random() - 0.5) * 0.85
+      vy:
+        (Math.random() - 0.5) *
+        0.85
 
     };
 
 
     (function tick() {
 
-      const W = window.innerWidth;
+      const W =
+        window.innerWidth;
 
-      const H = window.innerHeight;
+      const H =
+        window.innerHeight;
 
 
       s.x += s.vx;
@@ -541,9 +819,11 @@ function showTab(cat) {
       }
 
 
-      s.el.style.left = s.x + "px";
+      s.el.style.left =
+        s.x + "px";
 
-      s.el.style.top = s.y + "px";
+      s.el.style.top =
+        s.y + "px";
 
 
       requestAnimationFrame(tick);
