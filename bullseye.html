@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Factor Bullseyes</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 
 <style>
     * {
@@ -14,27 +15,79 @@
         user-select: none;
     }
 
+    :root {
+        --bg:           #f7f2ee;
+        --card:         #ffffff;
+        --text:         #2a2420;
+        --muted:        #9e8e80;
+        --shadow:       0 4px 24px rgba(80,40,40,0.10);
+
+        --red:          #c94040;
+        --red-light:    #fdeaea;
+
+        --blue:         #4a7fc1;
+        --blue-light:   #e6eefa;
+
+        --orange:       #e07c2a;
+        --orange-light: #fef0e2;
+    }
+
     html, body {
         margin: 0;
         width: 100%;
         height: 100%;
         overflow: hidden;
-        font-family: Arial, Helvetica, sans-serif;
-        background: #f5f5f5;
+        font-family: 'Nunito', sans-serif;
+        background: var(--bg);
+        color: var(--text);
     }
 
     #app {
         width: 100vw;
         height: 100vh;
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-evenly;
-        gap: 2vw;
+        justify-content: center;
+        gap: 1.5vh;
         padding: 2vh 2vw;
     }
 
+    .header {
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .eyebrow {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--muted);
+        margin-bottom: 4px;
+    }
+
+    h1 {
+        font-family: 'Playfair Display', serif;
+        font-size: clamp(1.4rem, 4vw, 2.1rem);
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--text);
+        margin: 0;
+    }
+
+    .boards {
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        gap: 2vw;
+    }
+
     .bullseye-container {
-        height: 96vh;
+        height: 100%;
         width: 47vw;
         display: flex;
         align-items: center;
@@ -42,32 +95,34 @@
     }
 
     svg {
-        width: min(47vw, 92vh);
-        height: min(47vw, 92vh);
+        width: min(47vw, 78vh);
+        height: min(47vw, 78vh);
         overflow: visible;
         touch-action: manipulation;
+        filter: drop-shadow(0 6px 18px rgba(80,40,40,0.12));
     }
 
     .sector {
         fill: white;
-        stroke: #222;
-        stroke-width: 3;
+        stroke: var(--text);
+        stroke-width: 2.5;
         cursor: pointer;
         transition: fill 0.15s ease;
     }
 
     .sector.left.active {
-        fill: #e53935;
+        fill: var(--red);
     }
 
     .sector.right.active {
-        fill: #1976d2;
+        fill: var(--blue);
     }
 
     .number-label {
-        font-size: 34px;
-        font-weight: bold;
-        fill: #111;
+        font-family: 'Nunito', sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        fill: var(--text);
         pointer-events: none;
         text-anchor: middle;
         dominant-baseline: middle;
@@ -75,15 +130,16 @@
 
     .center-circle {
         fill: #fff;
-        stroke: #222;
-        stroke-width: 4;
+        stroke: var(--text);
+        stroke-width: 3.5;
         cursor: pointer;
     }
 
     .center-number {
-        font-size: 90px;
-        font-weight: bold;
-        fill: #111;
+        font-family: 'Nunito', sans-serif;
+        font-size: 86px;
+        font-weight: 900;
+        fill: var(--orange);
         text-anchor: middle;
         dominant-baseline: middle;
         pointer-events: none;
@@ -97,7 +153,7 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.65);
+        background: rgba(42, 36, 32, 0.6);
         z-index: 200;
         align-items: center;
         justify-content: center;
@@ -105,29 +161,33 @@
 
     #keypad {
         width: min(90vw, 600px);
-        background: white;
-        border-radius: 30px;
+        background: var(--card);
+        border-radius: 24px;
         padding: 25px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        box-shadow: 0 10px 40px rgba(80,40,40,0.35);
     }
 
     #keypad-title {
         text-align: center;
-        font-size: 28px;
-        font-weight: bold;
+        font-family: 'Playfair Display', serif;
+        font-size: 26px;
+        font-weight: 900;
+        color: var(--text);
         margin-bottom: 15px;
     }
 
     #keypad-display {
         height: 80px;
-        border: 4px solid #333;
+        border: 3px solid var(--text);
         border-radius: 15px;
         font-size: 52px;
-        font-weight: bold;
+        font-weight: 800;
+        color: var(--text);
         text-align: center;
         padding-top: 8px;
         margin-bottom: 20px;
         overflow: hidden;
+        background: var(--bg);
     }
 
     #keypad-buttons {
@@ -140,29 +200,34 @@
         height: 85px;
         border: none;
         border-radius: 15px;
-        font-size: 36px;
-        font-weight: bold;
-        background: #e5e5e5;
+        font-family: 'Nunito', sans-serif;
+        font-size: 34px;
+        font-weight: 800;
+        color: var(--text);
+        background: #ede7e1;
         cursor: pointer;
         touch-action: manipulation;
+        transition: transform 0.1s, background 0.1s;
     }
 
     .key:active {
         transform: scale(0.96);
-        background: #ccc;
+        background: #ddd3c8;
     }
 
     .key.clear {
-        background: #ffb3b3;
+        background: var(--red-light);
+        color: var(--red);
     }
 
     .key.done {
-        background: #7edc8a;
+        background: #e0f5ec;
+        color: #3a9e6f;
         grid-column: span 2;
     }
 
     .key.cancel {
-        background: #ddd;
+        background: #ede7e1;
     }
 
     /* =========================
@@ -199,9 +264,8 @@
 
     @media (orientation: portrait) {
 
-        #app {
+        .boards {
             flex-direction: column;
-            padding: 1vh;
             gap: 1vh;
         }
 
@@ -211,8 +275,8 @@
         }
 
         svg {
-            width: min(90vw, 46vh);
-            height: min(90vw, 46vh);
+            width: min(90vw, 44vh);
+            height: min(90vw, 44vh);
         }
     }
 
@@ -224,15 +288,22 @@
 
 <div id="app">
 
-```
-<div class="bullseye-container">
-    <svg id="leftBullseye" viewBox="-250 -250 500 500"></svg>
-</div>
+    <div class="header">
+        <div class="eyebrow">Mr. McFarlane · Grade 4</div>
+        <h1>Factor Bullseyes</h1>
+    </div>
 
-<div class="bullseye-container">
-    <svg id="rightBullseye" viewBox="-250 -250 500 500"></svg>
-</div>
-```
+    <div class="boards">
+
+        <div class="bullseye-container">
+            <svg id="leftBullseye" viewBox="-250 -250 500 500"></svg>
+        </div>
+
+        <div class="bullseye-container">
+            <svg id="rightBullseye" viewBox="-250 -250 500 500"></svg>
+        </div>
+
+    </div>
 
 </div>
 
@@ -240,40 +311,38 @@
 
 <div id="keypad-overlay">
 
-```
-<div id="keypad">
+    <div id="keypad">
 
-    <div id="keypad-title">
-        Choose a Number
+        <div id="keypad-title">
+            Choose a Number
+        </div>
+
+        <div id="keypad-display"></div>
+
+        <div id="keypad-buttons">
+
+            <button class="key" data-number="1">1</button>
+            <button class="key" data-number="2">2</button>
+            <button class="key" data-number="3">3</button>
+
+            <button class="key" data-number="4">4</button>
+            <button class="key" data-number="5">5</button>
+            <button class="key" data-number="6">6</button>
+
+            <button class="key" data-number="7">7</button>
+            <button class="key" data-number="8">8</button>
+            <button class="key" data-number="9">9</button>
+
+            <button class="key clear" id="backspace">⌫</button>
+            <button class="key" data-number="0">0</button>
+            <button class="key clear" id="clear">C</button>
+
+            <button class="key cancel" id="cancel">Cancel</button>
+            <button class="key done" id="done">Done</button>
+
+        </div>
+
     </div>
-
-    <div id="keypad-display"></div>
-
-    <div id="keypad-buttons">
-
-        <button class="key" data-number="1">1</button>
-        <button class="key" data-number="2">2</button>
-        <button class="key" data-number="3">3</button>
-
-        <button class="key" data-number="4">4</button>
-        <button class="key" data-number="5">5</button>
-        <button class="key" data-number="6">6</button>
-
-        <button class="key" data-number="7">7</button>
-        <button class="key" data-number="8">8</button>
-        <button class="key" data-number="9">9</button>
-
-        <button class="key clear" id="backspace">⌫</button>
-        <button class="key" data-number="0">0</button>
-        <button class="key clear" id="clear">C</button>
-
-        <button class="key cancel" id="cancel">Cancel</button>
-        <button class="key done" id="done">Done</button>
-
-    </div>
-
-</div>
-```
 
 </div>
 
@@ -432,15 +501,11 @@ function createBullseye(svgId, side, startingNumber) {
 
             `L ${outerStart.x} ${outerStart.y}`,
 
-            `A ${outerRadius} ${outerRadius}
-             0 0 1
-             ${outerEnd.x} ${outerEnd.y}`,
+            `A ${outerRadius} ${outerRadius} 0 0 1 ${outerEnd.x} ${outerEnd.y}`,
 
             `L ${innerEnd.x} ${innerEnd.y}`,
 
-            `A ${innerRadius} ${innerRadius}
-             0 0 0
-             ${innerStart.x} ${innerStart.y}`,
+            `A ${innerRadius} ${innerRadius} 0 0 0 ${innerStart.x} ${innerStart.y}`,
 
             "Z"
 
@@ -622,13 +687,13 @@ function celebrate() {
 
     const colors = [
 
-        "#f44336",
-        "#2196f3",
-        "#ffeb3b",
-        "#4caf50",
-        "#9c27b0",
-        "#ff9800",
-        "#00bcd4"
+        "#c94040",
+        "#4a7fc1",
+        "#e07c2a",
+        "#3a9e6f",
+        "#ff6b9d",
+        "#f0c14b",
+        "#9c6fd6"
 
     ];
 
