@@ -49,8 +49,8 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 1.5vh;
-        padding: 2vh 2vw;
+        gap: 0.5vh;
+        padding: 0.5vh 0.5vw;
     }
 
     .header {
@@ -59,17 +59,17 @@
     }
 
     .eyebrow {
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 2px;
         color: var(--muted);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
     h1 {
         font-family: 'Playfair Display', serif;
-        font-size: clamp(1.4rem, 4vw, 2.1rem);
+        font-size: clamp(1.2rem, 3.2vw, 1.8rem);
         font-weight: 900;
         line-height: 1.1;
         color: var(--text);
@@ -83,23 +83,62 @@
         display: flex;
         align-items: center;
         justify-content: space-evenly;
-        gap: 2vw;
+        gap: 0.5vw;
     }
 
     .bullseye-container {
         height: 100%;
-        width: 47vw;
+        width: 50vw;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     svg {
-        width: min(47vw, 78vh);
-        height: min(47vw, 78vh);
+        width: min(50vw, 94vh);
+        height: min(50vw, 94vh);
         overflow: visible;
         touch-action: manipulation;
         filter: drop-shadow(0 6px 18px rgba(80,40,40,0.12));
+    }
+
+    /* =========================
+       SHUFFLE BUTTON
+       ========================= */
+
+    #shuffle-btn {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 50;
+
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        background: var(--card);
+        border: none;
+        border-radius: 999px;
+
+        padding: 10px 18px;
+
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: var(--text);
+
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: transform 0.12s ease;
+    }
+
+    #shuffle-btn:active {
+        transform: scale(0.95);
+    }
+
+    #shuffle-btn .icon {
+        font-size: 1.05rem;
     }
 
     .sector {
@@ -266,17 +305,17 @@
 
         .boards {
             flex-direction: column;
-            gap: 1vh;
+            gap: 0.5vh;
         }
 
         .bullseye-container {
-            width: 96vw;
-            height: 47vh;
+            width: 98vw;
+            height: 49vh;
         }
 
         svg {
-            width: min(90vw, 44vh);
-            height: min(90vw, 44vh);
+            width: min(96vw, 48vh);
+            height: min(96vw, 48vh);
         }
     }
 
@@ -285,6 +324,11 @@
 </head>
 
 <body>
+
+<button id="shuffle-btn">
+    <span class="icon">🔀</span>
+    <span>Shuffle</span>
+</button>
 
 <div id="app">
 
@@ -354,6 +398,7 @@ const FACTORS = Array.from({ length: 11 }, (_, i) => i);
 
 let activeCenterText = null;
 let keypadValue = "";
+let awaitingFreshEntry = false;
 
 
 /* =========================
@@ -371,6 +416,11 @@ function openKeypad(centerText) {
 
     display.textContent = keypadValue;
 
+    // The next digit typed should replace this
+    // starting value rather than append to it.
+
+    awaitingFreshEntry = true;
+
     overlay.style.display = "flex";
 }
 
@@ -385,6 +435,13 @@ document.querySelectorAll("[data-number]").forEach(button => {
 
     button.addEventListener("pointerdown", () => {
 
+        if (awaitingFreshEntry) {
+
+            keypadValue = "";
+
+            awaitingFreshEntry = false;
+        }
+
         if (keypadValue.length < 4) {
 
             keypadValue += button.dataset.number;
@@ -397,6 +454,10 @@ document.querySelectorAll("[data-number]").forEach(button => {
 
 document.getElementById("backspace").addEventListener("pointerdown", () => {
 
+    // Backspacing counts as editing, not fresh entry.
+
+    awaitingFreshEntry = false;
+
     keypadValue = keypadValue.slice(0, -1);
 
     display.textContent = keypadValue;
@@ -404,6 +465,8 @@ document.getElementById("backspace").addEventListener("pointerdown", () => {
 
 
 document.getElementById("clear").addEventListener("pointerdown", () => {
+
+    awaitingFreshEntry = false;
 
     keypadValue = "";
 
@@ -457,6 +520,24 @@ function polarToCartesian(radius, angleDegrees) {
 }
 
 
+function shuffledFactors() {
+
+    const shuffled = FACTORS.slice();
+
+    // Fisher-Yates shuffle
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [shuffled[i], shuffled[j]] =
+            [shuffled[j], shuffled[i]];
+    }
+
+    return shuffled;
+}
+
+
 function createBullseye(svgId, side, startingNumber) {
 
     const svg = document.getElementById(svgId);
@@ -466,14 +547,18 @@ function createBullseye(svgId, side, startingNumber) {
     const numberRadius = 145;
 
     const sectors = [];
+    const labels = [];
 
     const bullseyeData = {
         sectors: sectors,
+        labels: labels,
         completed: false
     };
 
 
-    FACTORS.forEach((factor, index) => {
+    const order = shuffledFactors();
+
+    order.forEach((factor, index) => {
 
         const startAngle =
             index * (360 / FACTORS.length);
@@ -581,6 +666,8 @@ function createBullseye(svgId, side, startingNumber) {
         label.textContent = factor;
 
         svg.appendChild(label);
+
+        labels.push(label);
     });
 
 
@@ -672,6 +759,32 @@ function createBullseye(svgId, side, startingNumber) {
             }, 3500);
         }
     }
+
+
+    bullseyeData.shuffle = function () {
+
+        const newOrder = shuffledFactors();
+
+        labels.forEach((label, index) => {
+
+            label.textContent = newOrder[index];
+        });
+
+        // Clear any taps so the board isn't left in a
+        // confusing half-filled state after the numbers move.
+
+        bullseyeData.completed = false;
+
+        sectors.forEach(sector => {
+
+            sector.dataset.active = "false";
+
+            sector.classList.remove("active");
+        });
+    };
+
+
+    return bullseyeData;
 }
 
 
@@ -744,16 +857,27 @@ function celebrate() {
    CREATE BOTH BULLSEYES
    ========================= */
 
-createBullseye(
+const leftBullseyeData = createBullseye(
     "leftBullseye",
     "left",
     5
 );
 
-createBullseye(
+const rightBullseyeData = createBullseye(
     "rightBullseye",
     "right",
     5
+);
+
+
+document.getElementById("shuffle-btn").addEventListener(
+    "pointerdown",
+    () => {
+
+        leftBullseyeData.shuffle();
+
+        rightBullseyeData.shuffle();
+    }
 );
 
 </script>
